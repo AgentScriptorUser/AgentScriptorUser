@@ -1,0 +1,216 @@
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local targetPlayer = nil
+local maxYOffset = -13
+local minYOffset = -7
+local yOffset = maxYOffset
+local isTeleporting = false
+
+-- Function to create and set up the GUI
+local function createGUI()
+    -- Create the ScreenGui if it doesn't already exist
+    local ScreenGui = LocalPlayer:FindFirstChild("PlayerGui"):FindFirstChild("CrispyHubGui")
+
+    if not ScreenGui then
+        ScreenGui = Instance.new("ScreenGui")
+        ScreenGui.Name = "CrispyHubGui"
+        ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+    end
+
+    -- Create a simple frame for the GUI
+    local MainFrame = Instance.new("Frame", ScreenGui)
+    MainFrame.Size = UDim2.new(0, 400, 0, 300)  -- Size of the main frame
+    MainFrame.Position = UDim2.new(0, 10, 0.5, -150)  -- Left-aligned
+    MainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    MainFrame.BackgroundTransparency = 0.5
+    MainFrame.BorderSizePixel = 0  -- Optional: remove the border
+
+    -- Title Label (Admin/Staff CrispyHub)
+    local TitleLabel = Instance.new("TextLabel", MainFrame)
+    TitleLabel.Size = UDim2.new(0, 400, 0, 40)  -- Size of the title label
+    TitleLabel.Position = UDim2.new(0, 0, 0, 0)  -- Positioned at the top of MainFrame
+    TitleLabel.Text = "Admin/Staff CrispyHub"
+    TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    TitleLabel.BackgroundTransparency = 1  -- No background
+    TitleLabel.Font = Enum.Font.GothamBold
+    TitleLabel.TextSize = 24
+    TitleLabel.TextStrokeTransparency = 0.8  -- Optional: add stroke for readability
+    TitleLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+
+    -- Username Input Box
+    local UsernameBox = Instance.new("TextBox", MainFrame)
+    UsernameBox.Size = UDim2.new(0, 360, 0, 40)  -- Size of the input box
+    UsernameBox.Position = UDim2.new(0, 20, 0, 60)  -- Positioned below title
+    UsernameBox.PlaceholderText = "Enter Player Username or Display Name"
+    UsernameBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+    UsernameBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    UsernameBox.Font = Enum.Font.GothamBold
+    UsernameBox.TextSize = 20
+    UsernameBox.ClearTextOnFocus = true
+
+    -- Target Button (Inside the MainFrame)
+    local TargetButton = Instance.new("TextButton", MainFrame)
+    TargetButton.Size = UDim2.new(0, 360, 0, 60)  -- Button size inside the frame
+    TargetButton.Position = UDim2.new(0, 20, 0, 110)  -- Adjusted position below input box
+    TargetButton.Text = "Teleport to Player"
+    TargetButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    TargetButton.BackgroundColor3 = Color3.fromRGB(0, 0, 255)
+    TargetButton.Font = Enum.Font.GothamBold
+    TargetButton.TextSize = 24
+
+    -- Stop Button (Inside the MainFrame)
+    local StopButton = Instance.new("TextButton", MainFrame)
+    StopButton.Size = UDim2.new(0, 360, 0, 60)  -- Button size inside the frame
+    StopButton.Position = UDim2.new(0, 20, 0, 180)  -- Added more space between buttons
+    StopButton.Text = "Stop Teleporting"
+    StopButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    StopButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    StopButton.Font = Enum.Font.GothamBold
+    StopButton.TextSize = 24
+
+    -- Status Label (Inside the MainFrame)
+    local StatusLabel = Instance.new("TextLabel", MainFrame)
+    StatusLabel.Size = UDim2.new(0, 360, 0, 60)  -- Adjusted size for readability
+    StatusLabel.Position = UDim2.new(0, 20, 0, 250)  -- Increased vertical gap
+    StatusLabel.Text = "Ready"
+    StatusLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    StatusLabel.BackgroundTransparency = 1
+    StatusLabel.Font = Enum.Font.GothamBold
+    StatusLabel.TextSize = 24
+
+    -- Draggable functionality
+    local dragStart = nil
+    local startPos = nil
+
+    local function makeDraggable(gui)
+        local dragging = false
+
+        -- User touches the GUI to start dragging
+        gui.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.Touch then
+                dragging = true
+                dragStart = input.Position
+                startPos = gui.Position
+            end
+        end)
+
+        -- User moves their finger to drag the GUI
+        gui.InputChanged:Connect(function(input)
+            if dragging and input.UserInputType == Enum.UserInputType.Touch then
+                local delta = input.Position - dragStart
+                gui.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+            end
+        end)
+
+        -- Stop dragging when the user stops touching
+        gui.InputEnded:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.Touch then
+                dragging = false
+            end
+        end)
+    end
+
+    -- Make the MainFrame draggable
+    makeDraggable(MainFrame)
+
+    -- Update the status
+    local function updateStatus(text)
+        StatusLabel.Text = text
+    end
+
+    -- Function to find and teleport to the player by partial username or display name
+    local function findPlayerByPartialUsernameOrDisplayName(partialInput)
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player.Name:lower():find(partialInput:lower()) or player.DisplayName:lower():find(partialInput:lower()) then
+                return player
+            end
+        end
+        return nil
+    end
+
+    -- Teleport to the selected player
+    local function teleportToPlayer(player)
+        if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            targetPlayer = player
+            isTeleporting = true
+            updateStatus("Teleporting to " .. player.Name)
+        else
+            updateStatus("Player not found!")
+        end
+    end
+
+    -- Button for selecting a player to teleport
+    TargetButton.MouseButton1Click:Connect(function()
+        local input = UsernameBox.Text
+        if input and input ~= "" then
+            local player = findPlayerByPartialUsernameOrDisplayName(input)
+            teleportToPlayer(player)
+        else
+            updateStatus("Please enter a username or display name.")
+        end
+    end)
+
+    StopButton.MouseButton1Click:Connect(function()
+        isTeleporting = false
+        targetPlayer = nil
+        yOffset = maxYOffset
+        updateStatus("Ready")
+
+        local myChar = LocalPlayer.Character
+        if myChar and myChar:FindFirstChild("HumanoidRootPart") then
+            local humanoid = myChar:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid.PlatformStand = false
+            end
+
+            -- Move above ground and reset rotation
+            local pos = myChar.HumanoidRootPart.Position
+            myChar.HumanoidRootPart.CFrame = CFrame.new(pos + Vector3.new(0, 10, 0)) * CFrame.Angles(0, 0, 0)
+
+            -- Reset velocity to avoid being stuck
+            if myChar:FindFirstChild("HumanoidRootPart") then
+                myChar.HumanoidRootPart.Velocity = Vector3.zero
+            end
+
+            -- Play get-up animation
+            local animator = humanoid:FindFirstChildOfClass("Animator") or Instance.new("Animator", humanoid)
+            local getUpAnimation = Instance.new("Animation")
+            getUpAnimation.AnimationId = "rbxassetid://507767968"
+            local track = animator:LoadAnimation(getUpAnimation)
+            track:Play()
+        end
+    end)
+
+    local function layDown(character)
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid.PlatformStand = true
+        end
+        character:SetPrimaryPartCFrame(character.HumanoidRootPart.CFrame * CFrame.Angles(math.pi / 2, 0, 0))
+    end
+
+    task.spawn(function()
+        while task.wait(0.05) do
+            if isTeleporting and targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                local targetRoot = targetPlayer.Character.HumanoidRootPart
+                local myChar = LocalPlayer.Character
+                if myChar and myChar:FindFirstChild("HumanoidRootPart") then
+                    myChar.HumanoidRootPart.CFrame = targetRoot.CFrame * CFrame.new(0, yOffset, 0)
+                    layDown(myChar)
+                    if yOffset < minYOffset then
+                        yOffset = yOffset + 0.2
+                    end
+                end
+            end
+        end
+    end)
+end
+
+-- Create GUI when the player respawns or when the script is first run
+LocalPlayer.CharacterAdded:Connect(function()
+    -- Wait for the character to fully load before creating the GUI
+    createGUI()
+end)
+
+-- Create the GUI initially
+createGUI()
