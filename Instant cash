@@ -1,0 +1,46 @@
+-- UI and Library Setup
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/bloodball/-back-ups-for-libs/main/wizard"))()
+local SnipeyUI = Library:NewWindow("AgentScripts")
+
+game.StarterGui:SetCore("SendNotification", {
+    Title = "Scripts",
+    Text = "!Sub!",
+    Duration = 5
+})
+
+task.wait(1)
+
+local MainSection = SnipeyUI:NewSection("Main")
+
+-- Instant Cash Toggle Button
+local isClaiming = false
+
+MainSection:CreateToggle("Instant Cash", function(state)
+    isClaiming = state
+
+    if isClaiming then
+        -- Start claiming rewards when toggled on
+        task.spawn(function()
+            while isClaiming do
+                local args = { [1] = "150kM" }
+                game:GetService("ReplicatedStorage"):WaitForChild("Rewards"):WaitForChild("Claim"):FireServer(unpack(args))
+                task.wait(0.1) -- Delay adjusted to 0.1 seconds
+            end
+        end)
+    else
+        -- Stop claiming rewards when toggled off
+        isClaiming = false
+    end
+end)
+
+-- Rejoin Game Button
+MainSection:CreateButton("Rejoin Game", function()
+    local TeleportService = game:GetService("TeleportService")
+    local Players = game:GetService("Players")
+    local player = Players.LocalPlayer
+
+    TeleportService:Teleport(game.PlaceId, player)
+end)
+
+-- Credits Section
+local Cat = SnipeyUI:NewSection("YT: AgentScriptor")
