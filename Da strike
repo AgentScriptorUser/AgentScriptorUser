@@ -1,0 +1,286 @@
+-- Wait until the game is fully loaded
+if not game:IsLoaded() then
+    game.Loaded:Wait()
+end
+
+-- Load Adonis cries script
+loadstring(game:HttpGet("https://raw.githubusercontent.com/Pixeluted/adoniscries/main/Source.lua", true))()
+
+-- Rayfield UI
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local player = game.Players.LocalPlayer
+local username = player.Name
+
+-- Rainbow color function
+local function getRainbowColor()
+    local t = tick() * 2
+    return Color3.fromHSV(t % 1, 1, 1)
+end
+
+-- Main Window
+local Window = Rayfield:CreateWindow({
+    Name = "CrispyHub",
+    LoadingTitle = "CrispyHub",
+    LoadingSubtitle = "by YourName",
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = nil,
+        FileName = "CrispyConfig"
+    },
+    Discord = {
+        Enabled = true,
+        Invite = "swaggerst",
+        RememberJoins = true
+    },
+    KeySystem = false
+})
+
+-- HOME Tab
+local HomeTab = Window:CreateTab("Home", 4483362458)
+HomeTab:CreateSection("Welcome to Swag Mode, " .. username .. "!")
+HomeTab:CreateParagraph({ Title = "Username", Content = username })
+HomeTab:CreateParagraph({ Title = "Rank", Content = "None" })
+
+-- TARGET Tab
+local TargetTab = Window:CreateTab("Target", 4483362458)
+TargetTab:CreateInput({
+    Name = "Set Target",
+    PlaceholderText = "Username",
+    RemoveTextAfterFocusLost = true,
+    Callback = function(Value)
+        print("Target set to:", Value)
+    end,
+})
+
+-- TOGGLES Tab
+local TogglesTab = Window:CreateTab("Toggles", 4483362458)
+getgenv().Silent = {
+    Settings = {
+        Toggled = false,
+        AimPart = "HumanoidRootPart",
+        HitChance = 100,
+        Prediction = { Enabled = true, Horizontal = 0.138, Vertical = 0.138 },
+        Circle = {
+            Visible = true,
+            Color = Color3.fromRGB(255, 255, 255),
+            Transparency = 1,
+            Thickness = 1.5,
+            NumSides = 1000,
+            Radius = 250,
+            Filled = false,
+        },
+    },
+}
+
+local function loadSilentAim()
+    local success, err = pcall(function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/TheRealXORA/Roblox/Scripts/Basic%20Silent-Aim", true))()
+    end)
+    if not success then warn("Silent Aim failed:", err) end
+end
+
+local function disableSilentAim()
+    getgenv().Silent.Settings.Toggled = false
+    print("Silent Aim Disabled!")
+end
+
+TogglesTab:CreateButton({
+    Name = "Toggle Silent Aim",
+    Callback = function()
+        if getgenv().Silent.Settings.Toggled then
+            disableSilentAim()
+        else
+            getgenv().Silent.Settings.Toggled = true
+            loadSilentAim()
+        end
+    end
+})
+
+-- Rainbow circle update
+spawn(function()
+    while true do
+        pcall(function()
+            if getgenv().Silent.Settings.Circle.Visible and Drawing then
+                getgenv().Silent.Settings.Circle.Color = getRainbowColor()
+            end
+        end)
+        task.wait()
+    end
+end)
+
+-- QUICK BUY Tab
+local BuyTab = Window:CreateTab("Quick Buy", 4483362458)
+
+-- Auto Buy Armor
+local autoBuyArmorEnabled = false
+local function buyArmor()
+    local pad = workspace:WaitForChild("MAP"):WaitForChild("Pads"):FindFirstChild("[Medium Armor]")
+    if pad then
+        local cd = pad:FindFirstChildOfClass("ClickDetector")
+        if cd then fireclickdetector(cd) end
+    end
+end
+local function hasArmor()
+    for _, tool in ipairs(player.Backpack:GetChildren()) do
+        if tool:IsA("Tool") and tool.Name:lower():find("armor") then return true end
+    end
+    for _, tool in ipairs(player.Character:GetChildren()) do
+        if tool:IsA("Tool") and tool.Name:lower():find("armor") then return true end
+    end
+    return false
+end
+task.spawn(function()
+    while true do
+        if autoBuyArmorEnabled and not hasArmor() then buyArmor() end
+        task.wait(1)
+    end
+end)
+
+-- Auto Buy Pizza
+local autoBuyPizzaEnabled = false
+local function buyPizza()
+    local pad = workspace:WaitForChild("MAP"):WaitForChild("Pads"):FindFirstChild("[Pizza]")
+    if pad then
+        local cd = pad:FindFirstChildOfClass("ClickDetector")
+        if cd then fireclickdetector(cd) end
+    end
+end
+local function hasPizza()
+    for _, tool in ipairs(player.Backpack:GetChildren()) do
+        if tool:IsA("Tool") and tool.Name:lower():find("pizza") then return true end
+    end
+    for _, tool in ipairs(player.Character:GetChildren()) do
+        if tool:IsA("Tool") and tool.Name:lower():find("pizza") then return true end
+    end
+    return false
+end
+task.spawn(function()
+    while true do
+        if autoBuyPizzaEnabled and not hasPizza() then buyPizza() end
+        task.wait(1)
+    end
+end)
+
+-- Auto Buy USP
+local autoBuyUSPEnabled = false
+local function buyUSP()
+    local pad = workspace:WaitForChild("MAP"):WaitForChild("Pads"):FindFirstChild("[USP]")
+    if pad then
+        local cd = pad:FindFirstChildOfClass("ClickDetector")
+        if cd then fireclickdetector(cd) end
+    end
+end
+local function hasUSP()
+    for _, tool in ipairs(player.Backpack:GetChildren()) do
+        if tool:IsA("Tool") and tool.Name == "USP" then return true end
+    end
+    for _, tool in ipairs(player.Character:GetChildren()) do
+        if tool:IsA("Tool") and tool.Name == "USP" then return true end
+    end
+    return false
+end
+task.spawn(function()
+    while true do
+        if autoBuyUSPEnabled and not hasUSP() then buyUSP() end
+        task.wait(1)
+    end
+end)
+
+-- Auto Buy Tactical Shotgun
+local autoBuyShotgunEnabled = false
+local function buyShotgun()
+    local pad = workspace:WaitForChild("MAP"):WaitForChild("Pads"):FindFirstChild("[Tactical Shotgun]")
+    if pad then
+        local cd = pad:FindFirstChildOfClass("ClickDetector")
+        if cd then fireclickdetector(cd) end
+    end
+end
+local function hasShotgun()
+    for _, tool in ipairs(player.Backpack:GetChildren()) do
+        if tool:IsA("Tool") and tool.Name == "Tactical Shotgun" then return true end
+    end
+    for _, tool in ipairs(player.Character:GetChildren()) do
+        if tool:IsA("Tool") and tool.Name == "Tactical Shotgun" then return true end
+    end
+    return false
+end
+task.spawn(function()
+    while true do
+        if autoBuyShotgunEnabled and not hasShotgun() then buyShotgun() end
+        task.wait(1)
+    end
+end)
+
+-- Auto Buy Bloxy Cola
+local autoBuyBloxyColaEnabled = false
+local function buyBloxyCola()
+    local pad = workspace:FindFirstChild("[Bloxy Cola]")
+    if pad then
+        local clickDetector = pad:FindFirstChildOfClass("ClickDetector")
+        if clickDetector then
+            fireclickdetector(clickDetector)
+        end
+    end
+end
+
+task.spawn(function()
+    while true do
+        local hasCola = false
+
+        -- Check in Backpack
+        for _, item in ipairs(player.Backpack:GetChildren()) do
+            if item:IsA("Tool") and item.Name == "Bloxy Cola" then
+                hasCola = true
+                break
+            end
+        end
+
+        -- Check in Character
+        if not hasCola and player.Character then
+            for _, item in ipairs(player.Character:GetChildren()) do
+                if item:IsA("Tool") and item.Name == "Bloxy Cola" then
+                    hasCola = true
+                    break
+                end
+            end
+        end
+
+        if not hasCola and autoBuyBloxyColaEnabled then
+            buyBloxyCola()
+        end
+
+        task.wait(1)
+    end
+end)
+
+-- Create toggles
+BuyTab:CreateToggle({
+    Name = "Auto Buy Armor",
+    CurrentValue = autoBuyArmorEnabled,
+    Callback = function(v) autoBuyArmorEnabled = v end
+})
+
+BuyTab:CreateToggle({
+    Name = "Auto Buy Pizza",
+    CurrentValue = autoBuyPizzaEnabled,
+    Callback = function(v) autoBuyPizzaEnabled = v end
+})
+
+BuyTab:CreateToggle({
+    Name = "Auto Buy USP",
+    CurrentValue = autoBuyUSPEnabled,
+    Callback = function(v) autoBuyUSPEnabled = v end
+})
+
+BuyTab:CreateToggle({
+    Name = "Auto Buy Tactical Shotgun",
+    CurrentValue = autoBuyShotgunEnabled,
+    Callback = function(v) autoBuyShotgunEnabled = v end
+})
+
+BuyTab:CreateToggle({
+    Name = "Auto Buy Bloxy Cola",
+    CurrentValue = autoBuyBloxyColaEnabled,
+    Callback = function(v) autoBuyBloxyColaEnabled = v end
+})
