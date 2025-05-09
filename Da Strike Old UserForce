@@ -1,0 +1,909 @@
+getgenv().TargetName = nil
+
+-- Wait until the game is fully loaded
+if not game:IsLoaded() then
+    game.Loaded:Wait()
+end
+
+-- Load Adonis cries script
+loadstring(game:HttpGet("https://raw.githubusercontent.com/Pixeluted/adoniscries/main/Source.lua", true))()
+
+-- Rayfield UI
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local player = game.Players.LocalPlayer
+local username = player.Name
+
+-- Rainbow color function
+local function getRainbowColor()
+    local t = tick() * 2
+    return Color3.fromHSV(t % 1, 1, 1)
+end
+
+-- Main Window
+local Window = Rayfield:CreateWindow({
+    Name = "CrispyHub",
+    LoadingTitle = "CrispyHub",
+    LoadingSubtitle = "by YourName",
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = nil,
+        FileName = "CrispyConfig"
+    },
+    Discord = {
+        Enabled = true,
+        Invite = "swaggerst",
+        RememberJoins = true
+    },
+    KeySystem = false
+})
+
+-- HOME Tab
+local HomeTab = Window:CreateTab("Home", 4483362458)
+HomeTab:CreateSection("Welcome to Crispyhub, " .. username .. "!")
+HomeTab:CreateParagraph({ Title = "Username", Content = username })
+HomeTab:CreateParagraph({ Title = "Rank", Content = "None" })
+
+-- TARGET Tab
+local TargetTab = Window:CreateTab("Target", 4483362458)
+TargetTab:CreateInput({
+    Name = "Set Target Display Name",
+    PlaceholderText = "Partial Display Name",
+    RemoveTextAfterFocusLost = true,
+    Callback = function(Value)
+        getgenv().TargetName = Value
+        print("Target set to:", Value)
+    end,
+})
+
+-- Spectate Button
+local targetNameLabel = TargetTab:CreateLabel("Target Name: None")  -- Add a label to display target name
+TargetTab:CreateButton({
+    Name = "Spectate Target",
+    Callback = function()
+        if getgenv().TargetName then
+            local foundPlayer = nil
+            for _, plr in pairs(game.Players:GetPlayers()) do
+                -- Check if the player's display name contains the TargetName (case-insensitive)
+                if plr.DisplayName:lower():find(getgenv().TargetName:lower()) then
+                    foundPlayer = plr
+                    break
+                end
+            end
+
+            if foundPlayer and foundPlayer.Character and foundPlayer.Character:FindFirstChild("Humanoid") then
+                workspace.CurrentCamera.CameraSubject = foundPlayer.Character:FindFirstChild("Humanoid")
+                targetNameLabel.Text = "Target Name: " .. foundPlayer.DisplayName  -- Update label with the target's display name
+                print("Spectating:", foundPlayer.DisplayName)
+            else
+                warn("Target not found or not valid.")
+            end
+        else
+            warn("No target set.")
+        end
+    end
+})
+
+-- UnSpectate Button
+TargetTab:CreateButton({
+    Name = "UnSpectate",
+    Callback = function()
+        -- Reset camera to local player
+        workspace.CurrentCamera.CameraSubject = player.Character:FindFirstChild("Humanoid")
+        targetNameLabel.Text = "Target Name: None"  -- Reset the label when unspectating
+        print("Stopped spectating.")
+    end
+})
+
+-- TOGGLES Tab
+local TogglesTab = Window:CreateTab("Toggles", 4483362458)
+getgenv().Silent = {
+    Settings = {
+        Toggled = false,
+        AimPart = "HumanoidRootPart",
+        HitChance = 100,
+        Prediction = { Enabled = true, Horizontal = 0.138, Vertical = 0.138 },
+        Circle = {
+            Visible = true,
+            Color = Color3.fromRGB(255, 255, 255),
+            Transparency = 1,
+            Thickness = 1.5,
+            NumSides = 1000,
+            Radius = 250,
+            Filled = false,
+        },
+    },
+}
+
+local function loadSilentAim()
+    local success, err = pcall(function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/TheRealXORA/Roblox/Scripts/Basic%20Silent-Aim", true))()
+    end)
+    if not success then warn("Silent Aim failed:", err) end
+end
+
+local function disableSilentAim()
+    getgenv().Silent.Settings.Toggled = false
+    print("Silent Aim Disabled!")
+end
+
+TogglesTab:CreateButton({
+    Name = "Toggle Silent Aim",
+    Callback = function()
+        if getgenv().Silent.Settings.Toggled then
+            disableSilentAim()
+        else
+            getgenv().Silent.Settings.Toggled = true
+            loadSilentAim()
+        end
+    end
+})
+
+-- Rainbow circle update
+spawn(function()
+    while true do
+        pcall(function()
+            if getgenv().Silent.Settings.Circle.Visible and Drawing then
+                getgenv().Silent.Settings.Circle.Color = getRainbowColor()
+            end
+        end)
+        task.wait()
+    end
+end)
+
+-- Auto Reload toggle
+local autoReloadEnabled = false
+
+TogglesTab:CreateToggle({
+    Name = "Auto Reload",
+    CurrentValue = autoReloadEnabled,
+    Callback = function(v) autoReloadEnabled = v end
+})
+
+-- Auto Reload loop
+task.spawn(function()
+    while true do
+        if autoReloadEnabled then
+            local veerve = game:GetService("Players").LocalPlayer
+
+            if veerve.Character then
+                local veerve1 = veerve.Character:FindFirstChildWhichIsA("Tool")
+                if veerve1 then
+                    local veerve2 = veerve1:FindFirstChild("AMMO")
+                    if veerve2 and veerve2.Value <= 0 then
+                        veerve1.rl:FireServer()
+                    end
+                end
+            end
+
+            for _, tool in pairs(veerve.Backpack:GetChildren()) do
+                if tool:IsA("Tool") then
+                    local veerve2 = tool:FindFirstChild("AMMO")
+                    if veerve2 and veerve2.Value <= 0 then
+                        tool.rl:FireServer()
+                    end
+                end
+            end
+        end
+        task.wait()
+    end
+end)
+
+-- Anti-Fling Toggle
+local RunService = game:GetService("RunService")
+local antiFlingConnection
+
+TogglesTab:CreateToggle({
+    Name = "Anti-Fling",
+    CurrentValue = false,
+    Flag = "AntiFlingToggle",
+    Callback = function(Value)
+        if Value then
+            antiFlingConnection = RunService.Stepped:Connect(function()
+                for _, player in pairs(game.Players:GetPlayers()) do
+                    if player ~= game.Players.LocalPlayer and player.Character then
+                        for _, part in pairs(player.Character:GetDescendants()) do
+                            if part:IsA("BasePart") then
+                                part.CustomPhysicalProperties = PhysicalProperties.new(0, 0, 0)
+                                part.CanCollide = false
+                                part.Velocity = Vector3.zero
+                                part.RotVelocity = Vector3.zero
+                            end
+                        end
+                    end
+                end
+            end)
+        else
+            if antiFlingConnection then
+                antiFlingConnection:Disconnect()
+                antiFlingConnection = nil
+            end
+        end
+    end,
+})
+
+
+local Players = game:GetService("Players")
+
+local espPlayersEnabled = false
+
+function createBillboard(player)
+    local character = player.Character or player.CharacterAdded:Wait()
+    local head = character:WaitForChild("Head")
+
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "NameTag"
+    billboard.Adornee = head
+    billboard.Size = UDim2.new(0, 100, 0, 40)
+    billboard.StudsOffset = Vector3.new(0, 2, 0)
+    billboard.AlwaysOnTop = true
+
+    local nameLabel = Instance.new("TextLabel")
+    nameLabel.Parent = billboard
+    nameLabel.Size = UDim2.new(1, 0, 1, 0)
+    nameLabel.Text = player.Name
+    nameLabel.BackgroundTransparency = 1
+    nameLabel.TextColor3 = Color3.new(1, 0, 0)
+    nameLabel.TextScaled = true
+    nameLabel.Font = Enum.Font.SourceSansBold
+
+    billboard.Parent = head
+end
+
+local function toggleEspPlayers()
+    if espPlayersEnabled then
+        for _, player in pairs(Players:GetPlayers()) do
+            if player.Character and player.Character:FindFirstChild("Head") then
+                local head = player.Character.Head
+                local tag = head:FindFirstChild("NameTag")
+                if tag then tag:Destroy() end
+            end
+        end
+    else
+        for _, player in pairs(Players:GetPlayers()) do
+            if player.Character then
+                task.delay(1, function()
+                    createBillboard(player)
+                end)
+            end
+        end
+    end
+end
+
+-- ESP Toggle added to TogglesTab
+TogglesTab:CreateToggle({
+    Name = "ESP Players",
+    CurrentValue = espPlayersEnabled,
+    Callback = function(value)
+        espPlayersEnabled = value
+        toggleEspPlayers()
+    end
+})
+
+-- ESP for players who join after toggle
+Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function()
+        task.wait(1)
+        if espPlayersEnabled then
+            createBillboard(player)
+        end
+    end)
+end)
+
+-- ESP for already connected players
+for _, player in pairs(Players:GetPlayers()) do
+    if player.Character then
+        if espPlayersEnabled then
+            createBillboard(player)
+        end
+    else
+        player.CharacterAdded:Connect(function()
+            task.wait(1)
+            if espPlayersEnabled then
+                createBillboard(player)
+            end
+        end)
+    end
+end
+
+
+-- QUICK BUY Tab
+local BuyTab = Window:CreateTab("Quick Buy", 4483362458)
+
+-- Auto Buy functions (unchanged, but now wrapped in respawn check)
+local function buyItem(padName)
+    local pad = workspace:WaitForChild("MAP"):WaitForChild("Pads"):FindFirstChild(padName)
+    if pad then
+        local cd = pad:FindFirstChildOfClass("ClickDetector")
+        if cd then
+            print("Clicking " .. padName .. " pad...")
+            fireclickdetector(cd)
+        else
+            print("No ClickDetector found for " .. padName)
+        end
+    else
+        print("No " .. padName .. " pad found!")
+    end
+end
+
+-- Auto Buy Donut
+local autoBuyDonutEnabled = false
+local function buyDonut() buyItem("[Donut]") end
+
+-- Auto Buy Silencer
+local autoBuySilencerEnabled = false
+local function buySilencer() buyItem("[Silencer]") end
+
+-- Auto Buy High-Medium Armor
+local autoBuyArmorEnabled = false
+local function buyArmor() buyItem("[High-Medium Armor]") end
+
+-- Auto Buy Bloxy Cola
+local autoBuyBloxyColaEnabled = false
+local function buyBloxyCola() buyItem("[Bloxy Cola]") end
+
+-- Auto Buy USP
+local autoBuyUSPEnabled = false
+local function buyUSP() buyItem("[USP]") end
+
+-- Auto Buy Tactical Shotgun
+local autoBuyShotgunEnabled = false
+local function buyShotgun() buyItem("[Tactical Shotgun]") end
+
+-- Auto Buy Pizza
+local autoBuyPizzaEnabled = false
+local function buyPizza() buyItem("[Pizza]") end
+
+-- Auto Buy Medium Armor
+local autoBuyMediumArmorEnabled = false
+local function buyMediumArmor() buyItem("[Medium Armor]") end
+
+-- Loop for checking and triggering auto-buys (with respawn fix)
+task.spawn(function()
+    while true do
+        -- Reset any purchases that may need to happen after respawn
+        if autoBuyDonutEnabled then
+            buyDonut()
+        end
+        if autoBuySilencerEnabled then
+            buySilencer()
+        end
+        if autoBuyArmorEnabled then
+            buyArmor()
+        end
+        if autoBuyBloxyColaEnabled then
+            buyBloxyCola()
+        end
+        if autoBuyUSPEnabled then
+            buyUSP()
+        end
+        if autoBuyShotgunEnabled then
+            buyShotgun()
+        end
+        if autoBuyPizzaEnabled then
+            buyPizza()
+        end
+        if autoBuyMediumArmorEnabled then
+            buyMediumArmor()
+        end
+        task.wait(1)  -- Increase the wait time to reduce unnecessary checks
+    end
+end)
+
+-- Create toggles for buying items in Quick Buy tab
+BuyTab:CreateToggle({
+    Name = "Auto Buy Donut",
+    CurrentValue = autoBuyDonutEnabled,
+    Callback = function(v) autoBuyDonutEnabled = v end
+})
+
+BuyTab:CreateToggle({
+    Name = "Auto Buy Silencer",
+    CurrentValue = autoBuySilencerEnabled,
+    Callback = function(v) autoBuySilencerEnabled = v end
+})
+
+BuyTab:CreateToggle({
+    Name = "Auto Buy High-Medium Armor",
+    CurrentValue = autoBuyArmorEnabled,
+    Callback = function(v) autoBuyArmorEnabled = v end
+})
+
+BuyTab:CreateToggle({
+    Name = "Auto Buy Bloxy Cola",
+    CurrentValue = autoBuyBloxyColaEnabled,
+    Callback = function(v) autoBuyBloxyColaEnabled = v end
+})
+
+BuyTab:CreateToggle({
+    Name = "Auto Buy USP",
+    CurrentValue = autoBuyUSPEnabled,
+    Callback = function(v) autoBuyUSPEnabled = v end
+})
+
+BuyTab:CreateToggle({
+    Name = "Auto Buy Tactical Shotgun",
+    CurrentValue = autoBuyShotgunEnabled,
+    Callback = function(v) autoBuyShotgunEnabled = v end
+})
+
+BuyTab:CreateToggle({
+    Name = "Auto Buy Pizza",
+    CurrentValue = autoBuyPizzaEnabled,
+    Callback = function(v) autoBuyPizzaEnabled = v end
+})
+
+BuyTab:CreateToggle({
+    Name = "Auto Buy Medium Armor",
+    CurrentValue = autoBuyMediumArmorEnabled,
+    Callback = function(v) autoBuyMediumArmorEnabled = v end
+})
+
+-- Auto Stomp logic
+local args = {
+    [1] = "STOMP"
+}
+
+local autoStompEnabled = false
+
+-- TOGGLES Tab (continued)
+TogglesTab:CreateToggle({
+    Name = "Auto Stomp",  -- The name of the toggle button
+    CurrentValue = autoStompEnabled,  -- Default value (whether it's enabled or not)
+    Callback = function(v)  -- Callback function to handle state change
+        autoStompEnabled = v  -- Update the autoStompEnabled variable
+    end
+})
+
+-- Auto Stomp loop
+task.spawn(function()
+    while true do
+        if autoStompEnabled then
+            game:GetService("ReplicatedStorage"):WaitForChild("MAINEVENT"):FireServer(unpack(args))
+        end
+        wait(0.1)  -- Delay between stomps (0.1 seconds)
+    end
+end)
+
+local FunTab = Window:CreateTab("Fun Stuff", 4483362458) -- Fun tab with an icon
+
+-- EmotionalDamage Button
+FunTab:CreateButton({
+    Name = "EmotionaDamage!",
+    Callback = function()
+        -- Fun surprise!
+        local messages = {
+            "You found the secret pizza yay eat it it has food poison!",
+            "Dang no more food.",
+            "Who the hell hit me !",
+            "Oops, did I just do poop somebody yarn?",
+            "That tickled imma shot you in the gun now."
+        }
+        local randomMessage = messages[math.random(1, #messages)]
+        Rayfield:Notify({
+            Title = "Fun Stuff!",
+            Content = randomMessage,
+            Duration = 4
+        })
+
+        -- Play a funny sound  
+        local sound = Instance.new("Sound", workspace)  
+        sound.SoundId = "rbxassetid://8362816791" -- Replace with any funny sound asset  
+        sound.Volume = 1  
+        sound:Play()  
+        game:GetService("Debris"):AddItem(sound, 5)  
+    end,
+})
+
+-- Astronaut 0 Gravity toggle
+local astronautEnabled = false
+local originalGravity = workspace.Gravity
+local floatForce
+local character
+local humanoid
+local rootPart
+local childAddedConnection
+local childRemovedConnection
+
+FunTab:CreateToggle({
+    Name = "Astronaut 0 Gravity",
+    CurrentValue = astronautEnabled,
+    Callback = function(v)
+        astronautEnabled = v
+        character = player.Character or player.CharacterAdded:Wait()
+        humanoid = character:WaitForChild("Humanoid")
+        rootPart = character:WaitForChild("HumanoidRootPart")
+
+        if astronautEnabled then  
+            workspace.Gravity = 50  
+            humanoid.JumpPower = 100  
+            humanoid.WalkSpeed = 30  
+
+            -- Floating effect when holding tool  
+            local function applyFloat()  
+                local tool = character:FindFirstChildOfClass("Tool")  
+                if tool and not floatForce then  
+                    floatForce = Instance.new("BodyVelocity")  
+                    floatForce.MaxForce = Vector3.new(4000, 4000, 4000)  
+                    floatForce.Velocity = Vector3.new(0, 15, 0)  
+                    floatForce.Parent = rootPart  
+                elseif not tool and floatForce then  
+                    floatForce:Destroy()  
+                    floatForce = nil  
+                end  
+            end  
+
+            -- Connect the float effect to the character's tool changes  
+            childAddedConnection = character.ChildAdded:Connect(applyFloat)  
+            childRemovedConnection = character.ChildRemoved:Connect(applyFloat)  
+            applyFloat()  
+        else  
+            -- Restore original gravity and stats  
+            workspace.Gravity = originalGravity  
+            humanoid.WalkSpeed = 16  
+            humanoid.JumpPower = 50  
+
+            -- Destroy float force if it exists  
+            if floatForce then  
+                floatForce:Destroy()  
+                floatForce = nil  
+            end  
+
+            -- Disconnect the events to stop applying the floating effect  
+            if childAddedConnection then  
+                childAddedConnection:Disconnect()  
+                childAddedConnection = nil  
+            end  
+            if childRemovedConnection then  
+                childRemovedConnection:Disconnect()  
+                childRemovedConnection = nil  
+            end  
+        end  
+    end
+})
+
+-- Add Spiderman Button to Fun Stuff Tab
+FunTab:CreateButton({
+    Name = "Spiderman",  -- Button name "Spiderman"
+    Callback = function()
+        loadstring(game:HttpGet('https://pastebin.com/raw/ehdxq4vN', true))()
+    end
+})
+
+-- Add WalkOnWalls Button to Fun Stuff Tab using loadstring
+FunTab:CreateButton({
+    Name = "WalkOnWalls",  -- Button name "WalkOnWalls"
+    Callback = function()
+        loadstring(game:HttpGet("https://pastebin.com/raw/zXk4Rq2r"))()  -- Load the script for WalkOnWalls
+    end
+})
+
+-- Add Illusion Button to Fun Stuff Tab
+FunTab:CreateButton({
+    Name = "Invisible",  -- Button name "Invisible"
+    Callback = function()
+        loadstring(game:HttpGet('https://pastebin.com/raw/3Rnd9rHf'))()
+    end,
+})
+
+-- Create "Animations" Tab
+local AnimationsTab = Window:CreateTab("Animations", 4483362458)
+
+-- Setup
+local Players = game:GetService("Players")
+local plr = Players.LocalPlayer
+local originalAnims = {}
+
+-- Save original animations
+local function SaveOriginals()
+	local anims = plr.Character:WaitForChild("Animate")
+	originalAnims = {
+		idle1 = anims.idle.Animation1.AnimationId,
+		idle2 = anims.idle.Animation2.AnimationId,
+		walk = anims.walk.WalkAnim.AnimationId,
+		run = anims.run.RunAnim.AnimationId,
+		jump = anims.jump.JumpAnim.AnimationId,
+		climb = anims.climb.ClimbAnim.AnimationId,
+		fall = anims.fall.FallAnim.AnimationId,
+	}
+end
+
+local function StopAnim()
+	for _, track in ipairs(plr.Character.Humanoid:GetPlayingAnimationTracks()) do
+		track:Stop()
+	end
+end
+
+local function SetAnimation(ids)
+	local anims = plr.Character:WaitForChild("Animate")
+	anims.Disabled = true
+	StopAnim()
+	anims.idle.Animation1.AnimationId = ids.idle1
+	anims.idle.Animation2.AnimationId = ids.idle2
+	anims.walk.WalkAnim.AnimationId = ids.walk
+	anims.run.RunAnim.AnimationId = ids.run
+	anims.jump.JumpAnim.AnimationId = ids.jump
+	anims.climb.ClimbAnim.AnimationId = ids.climb
+	anims.fall.FallAnim.AnimationId = ids.fall
+	plr.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+	anims.Disabled = false
+end
+
+-- Store animations
+local animations = {
+Ghost = {
+idle1 = "http://www.roblox.com/asset/?id=616006778",
+idle2 = "http://www.roblox.com/asset/?id=616008087",
+walk = "http://www.roblox.com/asset/?id=616010382",
+run = "http://www.roblox.com/asset/?id=616013216",
+jump = "http://www.roblox.com/asset/?id=616008936",
+climb = "http://www.roblox.com/asset/?id=616003713",
+fall = "http://www.roblox.com/asset/?id=616005863",
+},
+Mage = {
+idle1 = "http://www.roblox.com/asset/?id=707742142",
+idle2 = "http://www.roblox.com/asset/?id=707855907",
+walk = "http://www.roblox.com/asset/?id=707897309",
+run = "http://www.roblox.com/asset/?id=707861613",
+jump = "http://www.roblox.com/asset/?id=707853694",
+climb = "http://www.roblox.com/asset/?id=707826056",
+fall = "http://www.roblox.com/asset/?id=707829716",
+},
+Werewolf = {
+idle1 = "http://www.roblox.com/asset/?id=1083195517",
+idle2 = "http://www.roblox.com/asset/?id=1083214717",
+walk = "http://www.roblox.com/asset/?id=1083178339",
+run = "http://www.roblox.com/asset/?id=1083216690",
+jump = "http://www.roblox.com/asset/?id=1083218792",
+climb = "http://www.roblox.com/asset/?id=1083182000",
+fall = "http://www.roblox.com/asset/?id=1083189019",
+},
+Sneaky = {
+idle1 = "http://www.roblox.com/asset/?id=1132473842",
+idle2 = "http://www.roblox.com/asset/?id=1132477671",
+walk = "http://www.roblox.com/asset/?id=1132510133",
+run = "http://www.roblox.com/asset/?id=1132494274",
+jump = "http://www.roblox.com/asset/?id=1132489853",
+climb = "http://www.roblox.com/asset/?id=1132461372",
+fall = "http://www.roblox.com/asset/?id=1132469004",
+},
+Patrol = {
+idle1 = "http://www.roblox.com/asset/?id=1149612882",
+idle2 = "http://www.roblox.com/asset/?id=1150842221",
+walk = "http://www.roblox.com/asset/?id=1151231493",
+run = "http://www.roblox.com/asset/?id=1150967949",
+jump = "http://www.roblox.com/asset/?id=1150944216",
+climb = "http://www.roblox.com/asset/?id=1148811837",
+fall = "http://www.roblox.com/asset/?id=1148863382",
+},
+Zombie = {
+idle1 = "http://www.roblox.com/asset/?id=3489171152",
+idle2 = "http://www.roblox.com/asset/?id=3489171152",
+walk = "http://www.roblox.com/asset/?id=3489174223",
+run = "http://www.roblox.com/asset/?id=3489173414",
+jump = "http://www.roblox.com/asset/?id=616161997",
+climb = "http://www.roblox.com/asset/?id=616156119",
+fall = "http://www.roblox.com/asset/?id=616157476",
+},
+Popstar = {
+idle1 = "http://www.roblox.com/asset/?id=1212900985",
+idle2 = "http://www.roblox.com/asset/?id=1212900985",
+walk = "http://www.roblox.com/asset/?id=1212980338",
+run = "http://www.roblox.com/asset/?id=1212980348",
+jump = "http://www.roblox.com/asset/?id=1212954642",
+climb = "http://www.roblox.com/asset/?id=1213044953",
+fall = "http://www.roblox.com/asset/?id=1212900995",
+},
+Knight = {
+idle1 = "http://www.roblox.com/asset/?id=657595757",
+idle2 = "http://www.roblox.com/asset/?id=657568135",
+walk = "http://www.roblox.com/asset/?id=657552124",
+run = "http://www.roblox.com/asset/?id=657564596",
+jump = "http://www.roblox.com/asset/?id=658409194",
+climb = "http://www.roblox.com/asset/?id=658360781",
+fall = "http://www.roblox.com/asset/?id=657600338",
+},
+Toy = {
+idle1 = "http://www.roblox.com/asset/?id=782841498",
+idle2 = "http://www.roblox.com/asset/?id=782845736",
+walk = "http://www.roblox.com/asset/?id=782843345",
+run = "http://www.roblox.com/asset/?id=782842708",
+jump = "http://www.roblox.com/asset/?id=782847020",
+climb = "http://www.roblox.com/asset/?id=782843869",
+fall = "http://www.roblox.com/asset/?id=782846423",
+},
+Cartoon = {
+idle1 = "http://www.roblox.com/asset/?id=742637544",
+idle2 = "http://www.roblox.com/asset/?id=742638445",
+walk = "http://www.roblox.com/asset/?id=742640026",
+run = "http://www.roblox.com/asset/?id=742638842",
+jump = "http://www.roblox.com/asset/?id=742637942",
+climb = "http://www.roblox.com/asset/?id=742636889",
+fall = "http://www.roblox.com/asset/?id=742637151",
+},
+Pirate = {
+idle1 = "http://www.roblox.com/asset/?id=750781874",
+idle2 = "http://www.roblox.com/asset/?id=750782770",
+walk = "http://www.roblox.com/asset/?id=750785693",
+run = "http://www.roblox.com/asset/?id=750783738",
+jump = "http://www.roblox.com/asset/?id=750782230",
+climb = "http://www.roblox.com/asset/?id=750779899",
+fall = "http://www.roblox.com/asset/?id=750780242",
+},
+Ninja = {
+idle1 = "http://www.roblox.com/asset/?id=656117400",
+idle2 = "http://www.roblox.com/asset/?id=656118341",
+walk = "http://www.roblox.com/asset/?id=656121766",
+run = "http://www.roblox.com/asset/?id=656118852",
+jump = "http://www.roblox.com/asset/?id=656117878",
+climb = "http://www.roblox.com/asset/?id=656114359",
+fall = "http://www.roblox.com/asset/?id=656115606",
+},
+Astronaut = {
+idle1 = "http://www.roblox.com/asset/?id=891621366",
+idle2 = "http://www.roblox.com/asset/?id=891633237",
+walk = "http://www.roblox.com/asset/?id=891667138",
+run = "http://www.roblox.com/asset/?id=891636393",
+jump = "http://www.roblox.com/asset/?id=891627522",
+climb = "http://www.roblox.com/asset/?id=891609353",
+fall = "http://www.roblox.com/asset/?id=891617961",
+},
+Elder = {
+idle1 = "http://www.roblox.com/asset/?id=845397899",
+idle2 = "http://www.roblox.com/asset/?id=845400520",
+walk = "http://www.roblox.com/asset/?id=845403856",
+run = "http://www.roblox.com/asset/?id=845386501",
+jump = "http://www.roblox.com/asset/?id=845398858",
+climb = "http://www.roblox.com/asset/?id=845392038",
+fall = "http://www.roblox.com/asset/?id=845396048",
+},
+Levitation = {
+idle1 = "http://www.roblox.com/asset/?id=616006778",
+idle2 = "http://www.roblox.com/asset/?id=616008087",
+walk = "http://www.roblox.com/asset/?id=616013216",
+run = "http://www.roblox.com/asset/?id=616010382",
+jump = "http://www.roblox.com/asset/?id=616008936",
+climb = "http://www.roblox.com/asset/?id=616003713",
+fall = "http://www.roblox.com/asset/?id=616005863",
+},
+}
+
+-- Tryhard Animation Toggle
+AnimationsTab:CreateToggle({
+Name = "Tryhard Animation",
+CurrentValue = false,
+Callback = function(state)
+local Animate = plr.Character:WaitForChild("Animate")
+Animate.Disabled = true
+StopAnim()
+
+if state then
+-- Tryhard Animation
+Animate.idle.Animation1.AnimationId = "http://www.roblox.com/asset/?id=616158929"
+Animate.idle.Animation2.AnimationId = "http://www.roblox.com/asset/?id=616160636"
+Animate.walk.WalkAnim.AnimationId = "http://www.roblox.com/asset/?id=616168032"
+Animate.run.RunAnim.AnimationId = "http://www.roblox.com/asset/?id=616163682"
+Animate.jump.JumpAnim.AnimationId = "http://www.roblox.com/asset/?id=616161997"
+Animate.climb.ClimbAnim.AnimationId = "http://www.roblox.com/asset/?id=616156119"
+Animate.fall.FallAnim.AnimationId = "http://www.roblox.com/asset/?id=616157476"
+plr.Character.Humanoid:ChangeState(3) -- Set character state to "Jumping"
+else
+-- Reset to original animations
+SetAnimation(originalAnims)
+end
+
+Animate.Disabled = false
+
+end,
+
+})
+
+AnimationsTab:CreateToggle({
+Name = "Hero Animation",
+CurrentValue = false,
+Callback = function(state)
+local Animate = plr.Character:WaitForChild("Animate")
+
+if state then
+Animate.idle.Animation1.AnimationId = "http://www.roblox.com/asset/?id=616111295"
+Animate.idle.Animation2.AnimationId = "http://www.roblox.com/asset/?id=616113536"
+Animate.walk.WalkAnim.AnimationId = "http://www.roblox.com/asset/?id=616122287"
+Animate.run.RunAnim.AnimationId = "http://www.roblox.com/asset/?id=616117076"
+Animate.jump.JumpAnim.AnimationId = "http://www.roblox.com/asset/?id=616115533"
+Animate.climb.ClimbAnim.AnimationId = "http://www.roblox.com/asset/?id=616104706"
+Animate.fall.FallAnim.AnimationId = "http://www.roblox.com/asset/?id=616108001"
+else
+SetAnimation(originalAnims)
+end
+end,
+
+})
+
+local originalAnims = {
+idle1 = plr.Character.Animate.idle.Animation1.AnimationId,
+idle2 = plr.Character.Animate.idle.Animation2.AnimationId,
+walk = plr.Character.Animate.walk.WalkAnim.AnimationId,
+run = plr.Character.Animate.run.RunAnim.AnimationId,
+jump = plr.Character.Animate.jump.JumpAnim.AnimationId,
+climb = plr.Character.Animate.climb.ClimbAnim.AnimationId,
+fall = plr.Character.Animate.fall.FallAnim.AnimationId,
+}
+
+local function SetAnimation(anims)
+local Animate = plr.Character.Animate
+Animate.idle.Animation1.AnimationId = anims.idle1
+Animate.idle.Animation2.AnimationId = anims.idle2
+Animate.walk.WalkAnim.AnimationId = anims.walk
+Animate.run.RunAnim.AnimationId = anims.run
+Animate.jump.JumpAnim.AnimationId = anims.jump
+Animate.climb.ClimbAnim.AnimationId = anims.climb
+Animate.fall.FallAnim.AnimationId = anims.fall
+end
+
+AnimationsTab:CreateToggle({
+Name = "Vampire Animation",
+CurrentValue = false,
+Callback = function(state)
+local Animate = plr.Character:WaitForChild("Animate")
+
+if state then
+Animate.idle.Animation1.AnimationId = "http://www.roblox.com/asset/?id=1083445855"
+Animate.idle.Animation2.AnimationId = "http://www.roblox.com/asset/?id=1083450166"
+Animate.walk.WalkAnim.AnimationId = "http://www.roblox.com/asset/?id=1083473930"
+Animate.run.RunAnim.AnimationId = "http://www.roblox.com/asset/?id=1083462077"
+Animate.jump.JumpAnim.AnimationId = "http://www.roblox.com/asset/?id=1083455352"
+Animate.climb.ClimbAnim.AnimationId = "http://www.roblox.com/asset/?id=1083439238"
+Animate.fall.FallAnim.AnimationId = "http://www.roblox.com/asset/?id=1083443587"
+else
+SetAnimation(originalAnims)
+end
+end,
+
+})
+-- Save originals initially
+SaveOriginals()
+
+-- Create toggles
+for animName, ids in pairs(animations) do
+	AnimationsTab:CreateToggle({
+		Name = animName .. " Animation",
+		CurrentValue = false,
+		Callback = function(state)
+			if state then
+				SetAnimation(ids)
+			else
+				SetAnimation(originalAnims)
+			end
+		end
+	})
+end
+
+
+-- CREDITS Tab
+local CreditsTab = Window:CreateTab("Credits", 4483362458)
+
+CreditsTab:CreateSection("Made By")
+
+CreditsTab:CreateParagraph({
+    Title = "Developers",
+    Content = "AgentScriptor,RizenScRipt,OFF_GENIUSES"
+})
+
+CreditsTab:CreateSection("Support Server")
+
+CreditsTab:CreateParagraph({
+    Title = "Join the server if there's any bug!",
+    Content = "https://discord.gg/VDAY3dyt6f"
+})
+
+CreditsTab:CreateButton({
+    Name = "Copy Discord Invite",
+    Callback = function()
+        setclipboard("https://discord.gg/VDAY3dyt6f")
+        Rayfield:Notify({
+            Title = "Copied!",
+            Content = "Discord invite link copied to clipboard!",
+            Duration = 4,
+        })
+    end
+})
