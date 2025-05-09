@@ -1,0 +1,122 @@
+-- Variables
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local mouse = player:GetMouse()
+local tweenService = game:GetService("TweenService")
+local userInputService = game:GetService("UserInputService")
+
+local webSpeed = 2    -- Speed of the swing (lower value for slower swing)
+
+-- Tool Setup
+local tool = Instance.new("Tool")
+tool.Name = "WebSwing"
+tool.RequiresHandle = false
+tool.Parent = player.Backpack
+
+-- Sound Setup
+local swingSound = Instance.new("Sound")
+swingSound.SoundId = "rbxassetid://1284846268"  -- Your WebSwing sound ID
+swingSound.Volume = 0.5  -- Adjust volume as needed
+swingSound.Parent = character:WaitForChild("HumanoidRootPart")
+
+-- Variables to control web-slinging state
+local isEquipped = false
+local currentTween = nil
+local currentWebPart = nil
+local isSwinging = false  -- To track whether swinging is active or not
+
+-- Function to create the web part (Rope)
+local function createWeb(position)
+    -- Create a part for the web (webline)
+    local webPart = Instance.new("Part")
+    webPart.Size = Vector3.new(0.2, 0.2, (position - character.HumanoidRootPart.Position).Magnitude)
+    webPart.Anchored = true
+    webPart.CanCollide = false
+    webPart.Material = Enum.Material.SmoothPlastic
+    webPart.Color = Color3.fromRGB(255, 255, 255)
+    webPart.CFrame = CFrame.new(character.HumanoidRootPart.Position, position) * CFrame.new(0, 0, -webPart.Size.Z/2)
+    webPart.Parent = game.Workspace
+
+    -- Detect wall collision (Stop swinging if it touches a wall)
+    webPart.Touched:Connect(function(hit)
+        if hit and hit:IsA("BasePart") and hit.CanCollide then
+            stopSwinging()  -- Stop swinging when the web touches a wall
+        end
+    end)
+
+    return webPart
+end
+
+-- Function to stop swinging (clearing the tween and web part)
+local function stopSwinging()
+    if currentTween then
+        currentTween:Cancel()  -- Cancel the tween if it's active
+        currentTween = nil
+    end
+    if currentWebPart then
+        currentWebPart:Destroy()  -- Remove the web part if it's created
+        currentWebPart = nil
+    end
+    isSwinging = false  -- Set swinging state to false
+end
+
+-- Function to start the swinging action with tween
+local function startSwinging()
+    if not isEquipped or isSwinging then return end  -- Only swing if the tool is equipped and not already swinging
+
+    -- Mark that swinging has started
+    isSwinging = true
+
+    -- Ensure previous web and tween are cleared
+    stopSwinging()
+
+    local targetPosition = mouse.Hit.p
+    local direction = (targetPosition - character.HumanoidRootPart.Position).unit
+    local swingTargetPosition = targetPosition - direction * 3  -- Swing to a position near the target point
+
+    -- Create the web part (webline)
+    currentWebPart = createWeb(swingTargetPosition)
+    
+    -- Create the tween to smoothly move the player towards the web target
+    local tweenInfo = TweenInfo.new(webSpeed, Enum.EasingStyle.Linear, Enum.EasingDirection.Out, 0, false, 0)
+    local goal = {CFrame = CFrame.new(swingTargetPosition)}
+    currentTween = tweenService:Create(character.HumanoidRootPart, tweenInfo, goal)
+    
+    -- Play the tween to move towards the web point
+    currentTween:Play()
+
+    -- Play the WebSwing sound effect
+    swingSound:Play()
+
+    -- Once at the web point, remove the web part
+    currentTween.Completed:Connect(function()
+        stopSwinging()  -- Clean up once the swing is complete
+    end)
+end
+
+-- Function to handle when the tool is equipped
+local function onEquipped()
+    isEquipped = true
+    -- Connect the tool's activated event to start swinging
+    tool.Activated:Connect(startSwinging)
+end
+
+-- Function to handle when the tool is unequipped
+local function onUnequipped()
+    isEquipped = false
+    -- Disconnect the activated event when tool is unequipped
+    stopSwinging()  -- Ensure any existing swing is stopped
+end
+
+-- Tool events
+tool.Equipped:Connect(onEquipped)
+tool.Unequipped:Connect(onUnequipped)
+
+-- Prevent swinging if the player is pressing 'W' or any movement key
+userInputService.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Keyboard then
+        if input.KeyCode == Enum.KeyCode.W or input.KeyCode == Enum.KeyCode.A or input.KeyCode == Enum.KeyCode.S or input.KeyCode == Enum.KeyCode.D then
+            stopSwinging()  -- Stop swinging if player starts moving
+        end
+    end
+end)
