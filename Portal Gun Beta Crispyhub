@@ -1,0 +1,104 @@
+function make_portal_gun()
+    local portal_gun = Instance.new("Tool")
+    portal_gun.Name = "Portal_Gun"
+    portal_gun.Parent = workspace
+
+    local Handle = Instance.new("Part")
+    Handle.Name = "Handle"
+    Handle.Parent = portal_gun
+    Handle.Color = Color3.fromRGB(231, 231, 236)
+    Handle.Material = Enum.Material.Plastic
+    Handle.Size = Vector3.new(1.045, 0.453, 0.453)
+    Handle.Position = Vector3.new(-10.028, 4.312, 19.112)
+    Handle.Orientation = Vector3.new(0, -180, 107.64)
+    Handle.BackSurface = Enum.SurfaceType.SmoothNoOutlines
+    Handle.BottomSurface = Enum.SurfaceType.SmoothNoOutlines
+    Handle.FrontSurface = Enum.SurfaceType.SmoothNoOutlines
+    Handle.LeftSurface = Enum.SurfaceType.SmoothNoOutlines
+    Handle.RightSurface = Enum.SurfaceType.SmoothNoOutlines
+    Handle.TopSurface = Enum.SurfaceType.SmoothNoOutlines
+
+    local portal_sound = Instance.new("Sound")
+    portal_sound.Parent = Handle
+    portal_sound.SoundId = "rbxassetid://1013378689"
+    portal_sound.Volume = 2.5
+
+    -- Variables to store the portals
+    local portals = {}
+    local max_portals = 2  -- Set the max number of portals (2 for now)
+
+    -- Function to create a portal
+    local function create_portal(position, color)
+        -- Check if the portal count is at max, if so, remove the oldest portal
+        if #portals >= max_portals then
+            portals[1]:Destroy()  -- Remove the first portal created
+            table.remove(portals, 1)
+        end
+
+        -- Create the portal object
+        local portal = Instance.new("Part")
+        portal.Size = Vector3.new(5, 5, 0.2)  -- Adjust size of the portal
+        portal.Position = position
+        portal.Color = color
+        portal.Material = Enum.Material.SmoothPlastic
+        portal.Anchored = true
+        portal.CanCollide = false
+        portal.Parent = workspace
+
+        local portal_touch = Instance.new("Part")
+        portal_touch.Size = Vector3.new(5, 5, 0.1)
+        portal_touch.Position = position
+        portal_touch.Anchored = true
+        portal_touch.CanCollide = false
+        portal_touch.Parent = portal
+
+        -- Store the portal for later matching
+        table.insert(portals, portal)
+
+        -- Teleportation logic (no tweening, direct teleport)
+        local function onTouched(hit)
+            local character = hit.Parent
+            if character:FindFirstChild("Humanoid") and not character:FindFirstChild("HasTeleported") then
+                -- Mark the player as teleported
+                local teleportedTag = Instance.new("BoolValue")
+                teleportedTag.Name = "HasTeleported"
+                teleportedTag.Parent = character
+
+                -- Teleport player to the other portal's position directly
+                for _, other_portal in pairs(portals) do
+                    if other_portal ~= portal then
+                        local other_position = other_portal.Position
+                        -- Directly set the player's position to the other portal's position
+                        character:SetPrimaryPartCFrame(CFrame.new(other_position))
+
+                        -- Play teleport sound for effect
+                        portal_sound:Play()
+
+                        -- Disconnect the touch event after teleportation to prevent looping
+                        portal_touch.Touched:Disconnect()
+                    end
+                end
+            end
+        end
+
+        -- Connect the touch event to teleportation logic
+        portal_touch.Touched:Connect(onTouched)
+    end
+
+    -- Activate portal gun
+    portal_gun.Activated:Connect(function()
+        local mouse = game.Players.LocalPlayer:GetMouse()
+        local target_pos = mouse.Hit.p
+        local color = Color3.fromRGB(0, 255, 255)  -- Portal color
+
+        -- Create the portal
+        create_portal(target_pos, color)
+
+        -- Play the portal sound
+        portal_sound:Play()
+    end)
+
+    portal_gun.Parent = game.Players.LocalPlayer.Backpack
+end
+
+make_portal_gun()
