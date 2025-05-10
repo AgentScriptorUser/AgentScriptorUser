@@ -366,54 +366,34 @@ togglesTab.MouseButton1Click:Connect(function()
     rowLayout.Parent = buttonRow
 
     -- Anti-Fling
-    local antiFlingEnabled = false
-    createToggleButton("Toggle Anti-Fling", function(button)
-        button.MouseButton1Click:Connect(function()
-            antiFlingEnabled = not antiFlingEnabled
-            button.BackgroundColor3 = antiFlingEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 255, 255)
-            if antiFlingEnabled then
-                -- Apply Anti-Fling Effect
-                game:GetService("Players").PlayerAdded:Connect(function(player)
-                    player.CharacterAdded:Connect(function()
-                        -- Anti-Fling logic
-                        local function preventFling(player)
-                            local character = player.Character
-                            if character then
-                                local humanoid = character:WaitForChild("Humanoid")
-                                local rootPart = character:WaitForChild("HumanoidRootPart")
-                                local originalPosition = rootPart.Position
+local antiFlingEnabled = false
+createToggleButton("Enable Anti-Fling", function(button)
+    button.MouseButton1Click:Connect(function()
+        antiFlingEnabled = not antiFlingEnabled
+        button.BackgroundColor3 = antiFlingEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 255, 255)
+        button.Text = antiFlingEnabled and "Disable Anti-Fling" or "Enable Anti-Fling"
 
-                                -- Create a BodyPosition to smooth teleport back
-                                local bodyPosition = Instance.new("BodyPosition")
-                                bodyPosition.MaxForce = Vector3.new(400000, 400000, 400000)  -- High force to prevent movement
-                                bodyPosition.D = 1000  -- Damping to make the movement smooth
-                                bodyPosition.P = 10000  -- Power to make it fast
-                                bodyPosition.Position = originalPosition  -- Target position is where the player originally stood
-                                bodyPosition.Parent = rootPart
-
-                                -- Smoothly return to original position
-                                game.Debris:AddItem(bodyPosition, 1)  -- Removes the BodyPosition after 1 second
-
-                                -- Prevent flinging by resetting the player's velocity
-                                local bodyVelocity = Instance.new("BodyVelocity")
-                                bodyVelocity.MaxForce = Vector3.new(400000, 400000, 400000)
-                                bodyVelocity.Velocity = Vector3.new(0, 0, 0)  -- Stop all motion
-                                bodyVelocity.Parent = rootPart
-
-                                -- Remove the BodyVelocity after a short duration to restore normal physics
-                                game.Debris:AddItem(bodyVelocity, 0.5)
+        if antiFlingEnabled then
+            task.spawn(function()
+                while antiFlingEnabled do
+                    for _, player in pairs(game.Players:GetPlayers()) do
+                        if player ~= game.Players.LocalPlayer and player.Character then
+                            for _, part in pairs(player.Character:GetDescendants()) do
+                                if part:IsA("BasePart") then
+                                    part.CustomPhysicalProperties = PhysicalProperties.new(0, 0, 0)
+                                    part.CanCollide = false
+                                    part.Velocity = Vector3.zero
+                                    part.RotVelocity = Vector3.zero
+                                end
                             end
                         end
-
-                        -- Trigger Anti-Fling when a player is added
-                        preventFling(player)
-                    end)
-                end)
-            else
-                -- Disable Anti-Fling (No action needed, it's automatically removed)
-            end
-        end)
-    end, buttonRow)
+                    end
+                    task.wait()
+                end
+            end)
+        end
+    end)
+end, buttonRow)
 
     -- Auto Reload
     local autoReloadEnabled = false
