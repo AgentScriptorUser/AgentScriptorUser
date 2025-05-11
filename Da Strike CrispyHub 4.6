@@ -527,7 +527,7 @@ funTab.MouseButton1Click:Connect(function()
     clearContent()
     updateLogBox.Visible = false  -- Hide Update Log Box on Fun tab
 
-    -- Helper function to create buttons
+    -- Helper function to create fun buttons
     local function createFunButton(name, onClick, parent)
         local btn = Instance.new("TextButton")
         btn.Size = UDim2.new(0, 150, 0, 40)
@@ -540,49 +540,49 @@ funTab.MouseButton1Click:Connect(function()
         btn.MouseButton1Click:Connect(onClick)
     end
 
-    -- First row
-    local firstRow = Instance.new("Frame")
-    firstRow.Size = UDim2.new(1, 0, 0, 50)
-    firstRow.BackgroundTransparency = 1
-    firstRow.Parent = ContentFrame
+    -- First row for Fun buttons
+    local funButtonRow = Instance.new("Frame")
+    funButtonRow.Size = UDim2.new(1, 0, 0, 50)
+    funButtonRow.BackgroundTransparency = 1
+    funButtonRow.Parent = ContentFrame
 
-    local firstRowLayout = Instance.new("UIListLayout")
-    firstRowLayout.FillDirection = Enum.FillDirection.Horizontal
-    firstRowLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-    firstRowLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    firstRowLayout.Padding = UDim.new(0, 15)
-    firstRowLayout.Parent = firstRow
+    local funRowLayout = Instance.new("UIListLayout")
+    funRowLayout.FillDirection = Enum.FillDirection.Horizontal
+    funRowLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    funRowLayout.Padding = UDim.new(0, 15)
+    funRowLayout.Parent = funButtonRow
 
-    -- First row buttons
+    -- Spiderman Button
     createFunButton("Spiderman", function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Da%20Strike%20web%20swing%20sound"))()
-    end, firstRow)
+    end, funButtonRow)
 
+    -- WalkOnWalls Button
     createFunButton("WalkOnWalls", function()
         loadstring(game:HttpGet("https://pastebin.com/raw/zXk4Rq2r"))()
-    end, firstRow)
+    end, funButtonRow)
 
+    -- Invisible Button
     createFunButton("Invisible", function()
         loadstring(game:HttpGet("https://pastebin.com/raw/3Rnd9rHf"))()
-    end, firstRow)
+    end, funButtonRow)
 
-    -- Second row
-    local secondRow = Instance.new("Frame")
-    secondRow.Size = UDim2.new(1, 0, 0, 50)
-    secondRow.BackgroundTransparency = 1
-    secondRow.Parent = ContentFrame
+    -- Second row for Fun buttons
+    local funButtonRow2 = Instance.new("Frame")
+    funButtonRow2.Size = UDim2.new(1, 0, 0, 50)
+    funButtonRow2.BackgroundTransparency = 1
+    funButtonRow2.Parent = ContentFrame
 
-    local secondRowLayout = Instance.new("UIListLayout")
-    secondRowLayout.FillDirection = Enum.FillDirection.Horizontal
-    secondRowLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-    secondRowLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    secondRowLayout.Padding = UDim.new(0, 15)
-    secondRowLayout.Parent = secondRow
+    local funRowLayout2 = Instance.new("UIListLayout")
+    funRowLayout2.FillDirection = Enum.FillDirection.Horizontal
+    funRowLayout2.SortOrder = Enum.SortOrder.LayoutOrder
+    funRowLayout2.Padding = UDim.new(0, 15)
+    funRowLayout2.Parent = funButtonRow2
 
-    -- Second row buttons
+    -- Portal Gun Button
     createFunButton("Portal Gun", function()
         loadstring(game:HttpGet("https://pastebin.com/raw/c3jQjUyx"))()
-    end, secondRow)
+    end, funButtonRow2)
 end)
 
 -- Connect Home tab to function
