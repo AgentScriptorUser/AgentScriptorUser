@@ -1,0 +1,167 @@
+-- Auto Redeem Script with Retry Logic for Da Hood integrated with DropCash GUI
+
+local codes = {
+    "Duck", "Watch", "Sushi", "HOUSE", "VIP", "SHRIMP", "2025", "THANKSGIVING24",
+    "DACARNIVAL", "HALLOWEEN2024", "RUBY", "pumpkins2023", "TRADEME!", "DAUP",
+    "MIDNIGHT", "VALENTINES2025", "Easter25", "BLOSSOM", "Beary", "HOODMAS24",
+    "ShortCake", "GPO2", "GRUMPY"
+}
+
+local replicatedStorage = game:GetService("ReplicatedStorage")
+local mainEvent = replicatedStorage:WaitForChild("MainEvent")
+
+-- Function to redeem a single code with retries
+local function redeemCode(code)
+    for attempt = 1, 3 do
+        local success, err = pcall(function()
+            mainEvent:FireServer("EnterPromoCode", code)
+        end)
+        if success then
+            print("[âœ“] Redeemed: " .. code)
+            return true
+        else
+            warn("[!] Attempt " .. attempt .. " failed for code: " .. code .. " (" .. tostring(err) .. ")")
+            wait(2)
+        end
+    end
+    warn("[X] Could not redeem: " .. code)
+    return false
+end
+
+-- Wait for game to load completely
+if not game:IsLoaded() then
+    game.Loaded:Wait()
+end
+wait(3)
+
+-- Create GUI
+local player = game.Players.LocalPlayer
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "PromoCodeGUI"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = game:GetService("CoreGui")
+
+local AutoDropFrame = Instance.new("Frame")
+AutoDropFrame.Size = UDim2.new(0, 300, 0, 180)
+AutoDropFrame.Position = UDim2.new(0.5, -150, 0.5, -90)
+AutoDropFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+AutoDropFrame.BorderSizePixel = 0
+AutoDropFrame.Parent = screenGui
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 6)
+UICorner.Parent = AutoDropFrame
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 30)
+title.Position = UDim2.new(0, 0, 0, 0)
+title.BackgroundTransparency = 1
+title.Text = "CrispyWave - CashDrop"
+title.Font = Enum.Font.SourceSansBold
+title.TextColor3 = Color3.new(1, 1, 1)
+title.TextScaled = true
+title.Parent = AutoDropFrame
+
+local AutoDrop = Instance.new("TextButton")
+AutoDrop.Size = UDim2.new(0, 260, 0, 40)
+AutoDrop.Position = UDim2.new(0.5, -130, 0, 50)
+AutoDrop.Text = "DropCash"
+AutoDrop.Font = Enum.Font.SourceSansBold
+AutoDrop.TextColor3 = Color3.fromRGB(255, 255, 255)
+AutoDrop.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+AutoDrop.TextScaled = true
+AutoDrop.Parent = AutoDropFrame
+
+local RedeemButton = Instance.new("TextButton")
+RedeemButton.Size = UDim2.new(0, 260, 0, 40)
+RedeemButton.Position = UDim2.new(0.5, -130, 0, 100)
+RedeemButton.Text = "Redeem Codes"
+RedeemButton.Font = Enum.Font.SourceSansBold
+RedeemButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+RedeemButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+RedeemButton.TextScaled = true
+RedeemButton.Parent = AutoDropFrame
+
+-- Logic for DropCash button
+AutoDrop.MouseButton1Click:Connect(function()
+    if AutoDrop.BackgroundColor3 == Color3.fromRGB(50, 50, 50) then
+        AutoDrop.BackgroundColor3 = Color3.fromRGB(0, 255, 0) -- Turn green
+        local Loop
+        local loopFunction = function()
+            local DropAm = 15000
+            if player.DataFolder.Currency.Value > 15000 then
+                DropAm = '15000'
+            else
+                DropAm = tostring(player.DataFolder.Currency.Value)
+            end
+            local args = { 'DropMoney', DropAm }
+            mainEvent:FireServer(unpack(args))
+        end
+
+        local Start = function()
+            Loop = game:GetService("RunService").Heartbeat:Connect(loopFunction)
+        end
+
+        local Pause = function()
+            Loop:Disconnect()
+        end
+
+        Start()
+        repeat task.wait() until AutoDrop.BackgroundColor3 == Color3.fromRGB(50, 50, 50)
+        Pause()
+    else
+        AutoDrop.BackgroundColor3 = Color3.fromRGB(50, 50, 50) -- Reset to original
+    end
+end)
+
+-- Redeem Codes Logic with Notification
+RedeemButton.MouseButton1Click:Connect(function()
+    -- Show notification
+    local notification = Instance.new("TextLabel")
+    notification.Size = UDim2.new(1, 0, 0, 30)
+    notification.Position = UDim2.new(0, 0, 0, 140)
+    notification.BackgroundTransparency = 1
+    notification.Text = "Redeeming codes..."
+    notification.Font = Enum.Font.SourceSansBold
+    notification.TextColor3 = Color3.new(1, 1, 1)
+    notification.TextScaled = true
+    notification.Parent = AutoDropFrame
+
+    print("Starting Auto Redeem...")
+    for _, code in ipairs(codes) do
+        redeemCode(code)
+        wait(2.5)
+    end
+
+    -- Remove notification
+    notification:Destroy()
+end)
+
+-- Mobile Draggable UI
+local dragging = false
+local dragStart, startPos
+
+AutoDropFrame.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    if input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = AutoDropFrame.Position
+    end
+end)
+
+AutoDropFrame.InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.Touch then
+        local delta = input.Position - dragStart
+        AutoDropFrame.Position = UDim2.new(
+            startPos.X.Scale, startPos.X.Offset + delta.X,
+            startPos.Y.Scale, startPos.Y.Offset + delta.Y
+        )
+    end
+end)
+
+AutoDropFrame.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch then
+        dragging = false
+    end
+end)
