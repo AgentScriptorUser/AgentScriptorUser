@@ -25,7 +25,7 @@ local function applyHitboxToCharacter(character)
     end
 end
 
--- Repeatedly scan and apply hitboxes every 3 seconds
+-- Repeatedly scan and apply hitboxes every 0.1 seconds
 task.spawn(function()
     while true do
         for _, player in ipairs(Players:GetPlayers()) do
@@ -33,6 +33,6 @@ task.spawn(function()
                 applyHitboxToCharacter(player.Character)
             end
         end
-        task.wait(3)
+        task.wait(0.1)
     end
 end)
