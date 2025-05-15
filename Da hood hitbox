@@ -1,0 +1,38 @@
+local Players = game.Players
+local LocalPlayer = Players.LocalPlayer
+
+-- Check if the character's hitbox is already applied
+local function hasHitboxApplied(character)
+    local hrp = character:FindFirstChild("HumanoidRootPart")
+    return hrp and hrp.Size == Vector3.new(20, 20, 20) and hrp.Color == Color3.fromRGB(255, 255, 0)
+end
+
+-- Apply the yellow hitbox to the character
+local function applyHitboxToCharacter(character)
+    local hrp = character:FindFirstChild("HumanoidRootPart")
+    if hrp and not hasHitboxApplied(character) then
+        hrp.Size = Vector3.new(20, 20, 20)
+        hrp.Transparency = 0.3
+        hrp.Material = Enum.Material.ForceField
+        hrp.Color = Color3.fromRGB(255, 255, 0)
+        hrp.CanCollide = false
+    end
+
+    for _, part in ipairs(character:GetChildren()) do
+        if part:IsA("BasePart") then
+            part.CanCollide = false
+        end
+    end
+end
+
+-- Repeatedly scan and apply hitboxes every 3 seconds
+task.spawn(function()
+    while true do
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer and player.Character then
+                applyHitboxToCharacter(player.Character)
+            end
+        end
+        task.wait(3)
+    end
+end)
