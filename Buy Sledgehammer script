@@ -1,0 +1,44 @@
+function Buy(ObjectName)
+    local LockPicker = workspace.Ignored.Shop[ObjectName]
+    local head = LockPicker:FindFirstChild("Head")
+    local clickDetector = LockPicker:FindFirstChild("ClickDetector") or (head and head:FindFirstChildOfClass("ClickDetector"))
+
+    if head and clickDetector then
+        local plr = game.Players.LocalPlayer
+        local character = plr.Character or plr.CharacterAdded:Wait()
+        local backpack = plr:WaitForChild("Backpack")
+        local hrp = character:WaitForChild("HumanoidRootPart")
+
+        local originalCFrame = hrp.CFrame
+        hrp.CFrame = head.CFrame + Vector3.new(0, 3, 0)
+        task.wait(1)  -- wait 1 second
+
+        -- Buy multiple sledgehammers
+        for i = 1, 2 do
+            fireclickdetector(clickDetector)
+            task.wait(1)  -- wait 1 second between buys
+        end
+
+        task.wait(1)  -- wait 1 second before teleporting back
+        hrp.CFrame = originalCFrame
+
+        -- Equip all SledgeHammers
+        for _, tool in ipairs(backpack:GetChildren()) do
+            if tool.Name == "SledgeHammer" and tool:IsA("Tool") then
+                character.Humanoid:EquipTool(tool)
+                task.wait(1)  -- wait 1 second between equips
+            end
+        end
+
+        -- Crouch like Da Hood
+        local mainEvent = game.ReplicatedStorage:FindFirstChild("MainEvent")
+        if mainEvent then
+            mainEvent:FireServer("Crouch")
+        end
+    else
+        warn("Head or ClickDetector not found in the object:", ObjectName)
+    end
+end
+
+-- Run Buy once
+Buy("[SledgeHammer] - $382")
