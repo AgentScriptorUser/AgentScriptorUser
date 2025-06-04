@@ -1,0 +1,80 @@
+-- Combined Script: Spin First, Then Attach Tools
+
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+local backpack = player:WaitForChild("Backpack")
+
+-- === SPIN SCRIPT ===
+local rotationSpeed = math.rad(2000)  -- Rotation speed in radians
+
+-- Start spinning in a coroutine so it doesn't block the rest of the script
+coroutine.wrap(function()
+    while true do
+        humanoidRootPart.CFrame = humanoidRootPart.CFrame * CFrame.Angles(0, rotationSpeed, 0)
+        wait(0.03)
+    end
+end)()
+
+-- === TOOL ATTACH SCRIPT ===
+
+-- Function to weld a Tool's Handle to the HumanoidRootPart
+local function weldTool(tool)
+    if tool:IsA("Tool") and tool:FindFirstChild("Handle") then
+        local oldWeld = tool.Handle:FindFirstChild("ToolWeld")
+        if oldWeld then
+            oldWeld:Destroy()
+        end
+
+        local weld = Instance.new("WeldConstraint")
+        weld.Name = "ToolWeld"
+        weld.Part0 = humanoidRootPart
+        weld.Part1 = tool.Handle
+        weld.Parent = tool.Handle
+
+        tool.CanBeDropped = false
+    end
+end
+
+-- Function to unweld the Tool
+local function unweldTool(tool)
+    if tool:IsA("Tool") and tool:FindFirstChild("Handle") then
+        local weld = tool.Handle:FindFirstChild("ToolWeld")
+        if weld then
+            weld:Destroy()
+        end
+    end
+end
+
+-- Adjust katana position
+local function adjustKatanaPosition(katana)
+    if katana and katana:FindFirstChild("Handle") then
+        katana.Handle.CFrame = humanoidRootPart.CFrame * CFrame.new(0, -1, 5) * CFrame.Angles(math.rad(180), 0, 0)
+    end
+end
+
+-- Listen for tools added to character
+character.ChildAdded:Connect(function(child)
+    if child:IsA("Tool") then
+        if child.Name == "Katana" then
+            adjustKatanaPosition(child)
+        end
+        weldTool(child)
+    end
+end)
+
+-- Listen for tools removed from character
+character.ChildRemoved:Connect(function(child)
+    if child:IsA("Tool") then
+        unweldTool(child)
+        child.Parent = backpack
+    end
+end)
+
+-- Equip tools already in backpack
+for _, tool in ipairs(backpack:GetChildren()) do
+    if tool:IsA("Tool") then
+        tool.Parent = character
+        weldTool(tool)
+    end
+end
