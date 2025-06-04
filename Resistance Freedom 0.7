@@ -752,6 +752,76 @@ local function IsLocalPlayerRagdolled()
     return false
 end
 
+local function AntiStompStart()
+    if antiStompConnection then return end
+
+    antiStompConnection = RunService.RenderStepped:Connect(function()
+        if antiStompEnabled and IsLocalPlayerRagdolled() then
+            local character = Client.Character or Client.CharacterAdded:Wait()
+            local humanoid = character:FindFirstChild("Humanoid")
+            if humanoid and humanoid.Health > 0 then
+                humanoid.Health = 0
+            end
+        end
+    end)
+end
+
+local function AntiStompStop()
+    if antiStompConnection then
+        antiStompConnection:Disconnect()
+        antiStompConnection = nil
+    end
+end
+
+local antiStompToggle = Instance.new("TextButton", scrollFrame)
+antiStompToggle.Size = UDim2.new(1, -20, 0, 40)
+antiStompToggle.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+antiStompToggle.TextColor3 = Color3.fromRGB(0, 0, 0)
+antiStompToggle.Font = Enum.Font.Gotham
+antiStompToggle.TextSize = 18
+antiStompToggle.Text = "Anti Stomp: OFF"
+antiStompToggle.LayoutOrder = 34
+antiStompToggle.BorderSizePixel = 0
+Instance.new("UICorner", antiStompToggle).CornerRadius = UDim.new(0, 6)
+
+antiStompToggle.MouseButton1Click:Connect(function()
+    antiStompEnabled = not antiStompEnabled
+    antiStompToggle.Text = "Anti Stomp: " .. (antiStompEnabled and "ON" or "OFF")
+    antiStompToggle.BackgroundColor3 = antiStompEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(255, 165, 0)
+
+    if antiStompEnabled then  
+        AntiStompStart()
+    else  
+        AntiStompStop()
+    endv
+end) I 
+
+-- Anti Grab Toggle 
+local antiGrabEnabled = false
+
+local antiGrabToggle = Instance.new("TextButton", scrollFrame)
+antiGrabToggle.Size = UDim2.new(1, -20, 0, 40)
+antiGrabToggle.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+antiGrabToggle.TextColor3 = Color3.fromRGB(0, 0, 0) CV
+antiGrabToggle.Font = Enum.Font.Gotham
+antiGrabToggle.TextSize = 18
+antiGrabToggle.Text = "Anti Grab: OFF"
+antiGrabToggle.LayoutOrder = 36 -- Adjust as needed
+antiGrabToggle.BorderSizePixel = 0
+Instance.new("UICorner", antiGrabToggle).CornerRadius = UDim.new(0, 6)
+
+antiGrabToggle.MouseButton1Click:Connect(function()
+    antiGrabEnabled = not antiGrabEnabled
+    antiGrabToggle.Text = "Anti Grab: " .. (antiGrabEnabled and "ON" or "OFF")
+    antiGrabToggle.BackgroundColor3 = antiGrabEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(255, 165, 0)
+
+    if antiGrabEnabled then
+        StartAntiGrab()
+    else
+        StopAntiGrab()
+    end
+end)
+
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
@@ -890,76 +960,6 @@ if localPlayer.Character then
         onHealthChanged(humanoid.Health)
     end
 end
-
-local function AntiStompStart()
-    if antiStompConnection then return end
-
-    antiStompConnection = RunService.RenderStepped:Connect(function()
-        if antiStompEnabled and IsLocalPlayerRagdolled() then
-            local character = Client.Character or Client.CharacterAdded:Wait()
-            local humanoid = character:FindFirstChild("Humanoid")
-            if humanoid and humanoid.Health > 0 then
-                humanoid.Health = 0
-            end
-        end
-    end)
-end
-
-local function AntiStompStop()
-    if antiStompConnection then
-        antiStompConnection:Disconnect()
-        antiStompConnection = nil
-    end
-end
-
-local antiStompToggle = Instance.new("TextButton", scrollFrame)
-antiStompToggle.Size = UDim2.new(1, -20, 0, 40)
-antiStompToggle.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
-antiStompToggle.TextColor3 = Color3.fromRGB(0, 0, 0)
-antiStompToggle.Font = Enum.Font.Gotham
-antiStompToggle.TextSize = 18
-antiStompToggle.Text = "Anti Stomp: OFF"
-antiStompToggle.LayoutOrder = 34
-antiStompToggle.BorderSizePixel = 0
-Instance.new("UICorner", antiStompToggle).CornerRadius = UDim.new(0, 6)
-
-antiStompToggle.MouseButton1Click:Connect(function()
-    antiStompEnabled = not antiStompEnabled
-    antiStompToggle.Text = "Anti Stomp: " .. (antiStompEnabled and "ON" or "OFF")
-    antiStompToggle.BackgroundColor3 = antiStompEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(255, 165, 0)
-
-    if antiStompEnabled then  
-        AntiStompStart()
-    else  
-        AntiStompStop()
-    endv
-end) I 
-
--- Anti Grab Toggle 
-local antiGrabEnabled = false
-
-local antiGrabToggle = Instance.new("TextButton", scrollFrame)
-antiGrabToggle.Size = UDim2.new(1, -20, 0, 40)
-antiGrabToggle.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
-antiGrabToggle.TextColor3 = Color3.fromRGB(0, 0, 0) CV
-antiGrabToggle.Font = Enum.Font.Gotham
-antiGrabToggle.TextSize = 18
-antiGrabToggle.Text = "Anti Grab: OFF"
-antiGrabToggle.LayoutOrder = 36 -- Adjust as needed
-antiGrabToggle.BorderSizePixel = 0
-Instance.new("UICorner", antiGrabToggle).CornerRadius = UDim.new(0, 6)
-
-antiGrabToggle.MouseButton1Click:Connect(function()
-    antiGrabEnabled = not antiGrabEnabled
-    antiGrabToggle.Text = "Anti Grab: " .. (antiGrabEnabled and "ON" or "OFF")
-    antiGrabToggle.BackgroundColor3 = antiGrabEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(255, 165, 0)
-
-    if antiGrabEnabled then
-        StartAntiGrab()
-    else
-        StopAntiGrab()
-    end
-end)
 
 -- NoClip Toggle
 local Noclip = false
