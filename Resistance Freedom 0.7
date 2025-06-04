@@ -796,6 +796,145 @@ antiStompToggle.MouseButton1Click:Connect(function()
     end
 end)
 
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local localPlayer = Players.LocalPlayer
+local shop = workspace.Ignored.Shop
+local chickenItem = shop:GetChildren()[43]
+
+local newChickenCFrame = CFrame.new(
+    300.77301, 49.8827477, -627.567017,
+    0.99999994, -0.000258984684, -8.62661327e-05,
+    0.000258947432, 0.999999881, -0.000431621302,
+    8.6377906e-05, 0.00043159895, 0.999999881
+)
+
+local buyCoroutine = nil
+local isBuying = false
+local returnCFrame = nil
+local autoHealEnabled = false
+
+local function stopBuying()
+    if buyCoroutine and coroutine.status(buyCoroutine) ~= "dead" then
+        isBuying = false
+        buyCoroutine = nil
+        if returnCFrame and localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            localPlayer.Character.HumanoidRootPart.CFrame = returnCFrame
+            returnCFrame = nil
+        end
+    end
+end
+
+local function buyChickenLoop()
+    isBuying = true
+    if localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        returnCFrame = localPlayer.Character.HumanoidRootPart.CFrame
+    end
+
+    while isBuying do
+        if not localPlayer.Character or not localPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            wait(1)
+            continue
+        end
+
+        localPlayer.Character.HumanoidRootPart.CFrame = newChickenCFrame * CFrame.new(0, 5, 0)
+
+        if chickenItem and chickenItem:FindFirstChild("ClickDetector") then
+            fireclickdetector(chickenItem.ClickDetector)
+        end
+
+        wait(0.4)
+
+        local chickenTool = localPlayer.Backpack:FindFirstChild("[Chicken]")
+        if chickenTool and localPlayer.Character and localPlayer.Character:FindFirstChild("Humanoid") then
+            localPlayer.Character.Humanoid:EquipTool(chickenTool)
+            if localPlayer.Character:FindFirstChild("[Chicken]") then
+                localPlayer.Character["[Chicken]"]:Activate()
+            end
+        end
+
+        wait(0.5)
+    end
+end
+
+local function onHealthChanged(hp)
+    if not autoHealEnabled then return end
+    local humanoid = localPlayer.Character and localPlayer.Character:FindFirstChild("Humanoid")
+    if not humanoid then return end
+
+    if hp < humanoid.MaxHealth then
+        if not isBuying then
+            buyCoroutine = coroutine.create(buyChickenLoop)
+            coroutine.resume(buyCoroutine)
+        end
+    else
+        stopBuying()
+    end
+end
+
+local function startHeal()
+    if autoHealEnabled then return end
+    autoHealEnabled = true
+    if localPlayer.Character then
+        local humanoid = localPlayer.Character:FindFirstChild("Humanoid")
+        if humanoid then
+            onHealthChanged(humanoid.Health)
+        end
+    end
+end
+
+local function stopHeal()
+    if not autoHealEnabled then return end
+    autoHealEnabled = false
+    stopBuying()
+end
+
+-- UI toggle button (replace scrollFrame with your UI container)
+local scrollFrame = -- your UI container here
+local autoHealToggle = Instance.new("TextButton")
+autoHealToggle.Size = UDim2.new(1, -20, 0, 40)
+autoHealToggle.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+autoHealToggle.TextColor3 = Color3.fromRGB(0, 0, 0)
+autoHealToggle.Font = Enum.Font.Gotham
+autoHealToggle.TextSize = 18
+autoHealToggle.Text = "Auto Heal: OFF"
+autoHealToggle.LayoutOrder = 35
+autoHealToggle.BorderSizePixel = 0
+autoHealToggle.Parent = scrollFrame
+Instance.new("UICorner", autoHealToggle).CornerRadius = UDim.new(0, 6)
+
+autoHealToggle.MouseButton1Click:Connect(function()
+    if autoHealEnabled then
+        stopHeal()
+        autoHealToggle.Text = "Auto Heal: OFF"
+        autoHealToggle.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+    else
+        startHeal()
+        autoHealToggle.Text = "Auto Heal: ON"
+        autoHealToggle.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+    end
+end)
+
+-- Connect health changed event
+if localPlayer then
+    localPlayer.CharacterAdded:Connect(function(character)
+        local humanoid = character:WaitForChild("Humanoid")
+        humanoid.HealthChanged:Connect(onHealthChanged)
+        wait(0.5)
+        onHealthChanged(humanoid.Health)
+    end)
+
+    if localPlayer.Character then
+        local humanoid = localPlayer.Character:FindFirstChild("Humanoid")
+        if humanoid then
+            humanoid.HealthChanged:Connect(onHealthChanged)
+            wait(0.5)
+            onHealthChanged(humanoid.Health)
+        end
+    end
+end
+
 -- Anti Grab Toggle 
 local antiGrabEnabled = false
 
@@ -806,7 +945,7 @@ antiGrabToggle.TextColor3 = Color3.fromRGB(0, 0, 0)
 antiGrabToggle.Font = Enum.Font.Gotham
 antiGrabToggle.TextSize = 18
 antiGrabToggle.Text = "Anti Grab: OFF"
-antiGrabToggle.LayoutOrder = 35 -- Adjust as needed
+antiGrabToggle.LayoutOrder = 36 -- Adjust as needed
 antiGrabToggle.BorderSizePixel = 0
 Instance.new("UICorner", antiGrabToggle).CornerRadius = UDim.new(0, 6)
 
@@ -864,7 +1003,7 @@ noClipToggle.TextColor3 = Color3.fromRGB(0, 0, 0)
 noClipToggle.Font = Enum.Font.Gotham
 noClipToggle.TextSize = 18
 noClipToggle.Text = "NoClip: OFF"
-noClipToggle.LayoutOrder = 36
+noClipToggle.LayoutOrder = 37
 noClipToggle.BorderSizePixel = 0
 Instance.new("UICorner", noClipToggle).CornerRadius = UDim.new(0, 6)
  
@@ -978,7 +1117,7 @@ doubleJumpToggle.TextColor3 = Color3.fromRGB(0, 0, 0)
 doubleJumpToggle.Font = Enum.Font.Gotham
 doubleJumpToggle.TextSize = 18
 doubleJumpToggle.Text = "Double Jump: OFF"
-doubleJumpToggle.LayoutOrder = 37
+doubleJumpToggle.LayoutOrder = 38
 doubleJumpToggle.BorderSizePixel = 0
 Instance.new("UICorner", doubleJumpToggle).CornerRadius = UDim.new(0, 6)
  
@@ -1039,7 +1178,7 @@ if game.PlaceId == 2788229376 then
     noJumpCooldownButton.Font = Enum.Font.Gotham
     noJumpCooldownButton.TextSize = 18
     noJumpCooldownButton.Text = "No Jump Cooldown: OFF"
-    noJumpCooldownButton.LayoutOrder = 38
+    noJumpCooldownButton.LayoutOrder = 39
     noJumpCooldownButton.BorderSizePixel = 0
     Instance.new("UICorner", noJumpCooldownButton).CornerRadius = UDim.new(0, 6)
  
@@ -1098,7 +1237,7 @@ noFogToggle.TextColor3 = Color3.fromRGB(0, 0, 0)
 noFogToggle.Font = Enum.Font.Gotham
 noFogToggle.TextSize = 18
 noFogToggle.Text = "No Fog: OFF"
-noFogToggle.LayoutOrder = 39
+noFogToggle.LayoutOrder = 40
 noFogToggle.BorderSizePixel = 0
 Instance.new("UICorner", noFogToggle).CornerRadius = UDim.new(0, 6)
  
