@@ -1114,158 +1114,6 @@ noFogToggle.MouseButton1Click:Connect(function()
     end
 end)
 
--- Auto Heal Toggle 
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-
-local player = Players.LocalPlayer
-local runService = RunService
-
-local shop = workspace.Ignored.Shop
-local chickenItem = shop:GetChildren()[43]
-
-local newChickenCFrame = CFrame.new(
-    300.77301, 49.8827477, -627.567017,
-    0.99999994, -0.000258984684, -8.62661327e-05,
-    0.000258947432, 0.999999881, -0.000431621302,
-    8.6377906e-05, 0.00043159895, 0.999999881
-)
-
-local buyCoroutine
-local isBuying = false
-local returnCFrame = nil
-
-local function stopBuying()
-    if buyCoroutine and coroutine.status(buyCoroutine) ~= "dead" then
-        isBuying = false
-        buyCoroutine = nil
-        if returnCFrame and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-            player.Character.HumanoidRootPart.CFrame = returnCFrame
-            returnCFrame = nil
-        end
-    end
-end
-
-local function buyChickenLoop()
-    isBuying = true
-    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-        returnCFrame = player.Character.HumanoidRootPart.CFrame
-    end
-
-    while isBuying do
-        if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then
-            wait(1)
-            continue
-        end
-        
-        player.Character.HumanoidRootPart.CFrame = newChickenCFrame * CFrame.new(0, 5, 0)
-
-        if chickenItem and chickenItem:FindFirstChild("ClickDetector") then
-            fireclickdetector(chickenItem.ClickDetector)
-        end
-
-        wait(0.4)
-
-        local chickenTool = player.Backpack:FindFirstChild("[Chicken]")
-        if chickenTool and player.Character and player.Character:FindFirstChild("Humanoid") then
-            player.Character.Humanoid:EquipTool(chickenTool)
-            if player.Character:FindFirstChild("[Chicken]") then
-                player.Character["[Chicken]"]:Activate()
-            end
-        end
-
-        wait(0.5)
-    end
-end
-
-local function onHealthChanged(hp)
-    local humanoid = player.Character and player.Character:FindFirstChild("Humanoid")
-    if not humanoid then return end
-
-    if hp < humanoid.MaxHealth then
-        if not isBuying then
-            buyCoroutine = coroutine.create(buyChickenLoop)
-            coroutine.resume(buyCoroutine)
-        end
-    else
-        stopBuying()
-    end
-end
-
-if player then
-    player.CharacterAdded:Connect(function(character)
-        local humanoid = character:WaitForChild("Humanoid")
-        humanoid.HealthChanged:Connect(onHealthChanged)
-        wait(0.5)
-        onHealthChanged(humanoid.Health)
-    end)
-
-    if player.Character then
-        local humanoid = player.Character:FindFirstChild("Humanoid")
-        if humanoid then
-            humanoid.HealthChanged:Connect(onHealthChanged)
-            wait(0.5)
-            onHealthChanged(humanoid.Health)
-        end
-    end
-end
-
-
--- Auto Heal Toggle
-local autoHealEnabled = false
-local autoHealConnection = nil
-
-local function autoHeal()
-    return runService.Heartbeat:Connect(function()
-        local char = player.Character
-        if char then
-            local humanoid = char:FindFirstChildWhichIsA("Humanoid")
-            if humanoid and humanoid.Health < humanoid.MaxHealth then
-                local shop = workspace:FindFirstChild("ChickenShop") -- Update if needed
-                if shop and shop:FindFirstChild("ClickDetector") then
-                    fireclickdetector(shop.ClickDetector)
-                end
-
-                -- Equip and use chicken (assuming it's a tool)
-                local backpack = player:FindFirstChild("Backpack")
-                if backpack then
-                    local chicken = backpack:FindFirstChild("Chicken")
-                    if chicken then
-                        player.Character.Humanoid:EquipTool(chicken)
-                        chicken:Activate()
-                    end
-                end
-            end
-        end
-    end)
-end
-
-local autoHealToggle = Instance.new("TextButton", scrollFrame)
-autoHealToggle.Size = UDim2.new(1, -20, 0, 40)
-autoHealToggle.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
-autoHealToggle.TextColor3 = Color3.fromRGB(0, 0, 0)
-autoHealToggle.Font = Enum.Font.Gotham
-autoHealToggle.TextSize = 18
-autoHealToggle.Text = "Auto Heal: OFF"
-autoHealToggle.LayoutOrder = 40
-autoHealToggle.BorderSizePixel = 0
-Instance.new("UICorner", autoHealToggle).CornerRadius = UDim.new(0, 6)
-
-autoHealToggle.MouseButton1Click:Connect(function()
-    autoHealEnabled = not autoHealEnabled
-    autoHealToggle.Text = "Auto Heal: " .. (autoHealEnabled and "ON" or "OFF")
-    autoHealToggle.BackgroundColor3 = autoHealEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(255, 165, 0)
-
-    if autoHealEnabled then
-        autoHealConnection = autoHeal()
-    else
-        if autoHealConnection then
-            autoHealConnection:Disconnect()
-            autoHealConnection = nil
-        end
-    end
-end)
-
 -- Main Section Label
 local mainSectionLabel = Instance.new("TextLabel", scrollFrame)
 mainSectionLabel.Size = UDim2.new(1, -20, 0, 30)
@@ -1275,7 +1123,7 @@ mainSectionLabel.Font = Enum.Font.GothamBold
 mainSectionLabel.TextSize = 20
 mainSectionLabel.Text = "Main"
 mainSectionLabel.TextXAlignment = Enum.TextXAlignment.Left
-mainSectionLabel.LayoutOrder = 41
+mainSectionLabel.LayoutOrder = 40
 mainSectionLabel.BorderSizePixel = 0
 Instance.new("UICorner", mainSectionLabel).CornerRadius = UDim.new(0, 6)
  
@@ -1384,7 +1232,7 @@ flyToggle.TextColor3 = Color3.fromRGB(0, 0, 0)
 flyToggle.Font = Enum.Font.Gotham
 flyToggle.TextSize = 18
 flyToggle.Text = "Fly: OFF"
-flyToggle.LayoutOrder = 42
+flyToggle.LayoutOrder = 41
 flyToggle.BorderSizePixel = 0
 Instance.new("UICorner", flyToggle).CornerRadius = UDim.new(0, 6)
 
@@ -1596,7 +1444,7 @@ flySpeedLabel.TextColor3 = Color3.fromRGB(255, 165, 0)  -- Orange color
 flySpeedLabel.Font = Enum.Font.GothamBold
 flySpeedLabel.TextSize = 16
 flySpeedLabel.Text = "Fly Speed: " .. tostring(speed)
-flySpeedLabel.LayoutOrder = 43
+flySpeedLabel.LayoutOrder = 42
 flySpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
  
 -- Slider Background Frame
@@ -1604,7 +1452,7 @@ local sliderFrame = Instance.new("Frame", scrollFrame)
 sliderFrame.Size = UDim2.new(1, -20, 0, 20)
 sliderFrame.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
 sliderFrame.BorderSizePixel = 0
-sliderFrame.LayoutOrder = 44
+sliderFrame.LayoutOrder = 43
 Instance.new("UICorner", sliderFrame).CornerRadius = UDim.new(0, 6)
  
 -- Slider Fill Frame
@@ -1692,7 +1540,7 @@ flyToggle.TextColor3 = Color3.fromRGB(0, 0, 0)
 flyToggle.Font = Enum.Font.Gotham
 flyToggle.TextSize = 18
 flyToggle.Text = "SuperHero Fly: OFF"
-flyToggle.LayoutOrder = 45
+flyToggle.LayoutOrder = 44
 flyToggle.BorderSizePixel = 0
 Instance.new("UICorner", flyToggle).CornerRadius = UDim.new(0, 6)
 
@@ -1946,7 +1794,7 @@ flySpeedLabel.TextColor3 = Color3.fromRGB(255, 165, 0)  -- Orange color
 flySpeedLabel.Font = Enum.Font.GothamBold
 flySpeedLabel.TextSize = 16
 flySpeedLabel.Text = "Fly Speed: " .. tostring(speed)
-flySpeedLabel.LayoutOrder = 46
+flySpeedLabel.LayoutOrder = 45
 flySpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
 
 -- Slider Background Frame
@@ -1954,7 +1802,7 @@ local sliderFrame = Instance.new("Frame", scrollFrame)
 sliderFrame.Size = UDim2.new(1, -20, 0, 20)
 sliderFrame.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
 sliderFrame.BorderSizePixel = 0
-sliderFrame.LayoutOrder = 47
+sliderFrame.LayoutOrder = 46
 Instance.new("UICorner", sliderFrame).CornerRadius = UDim.new(0, 6)
 
 -- Slider Fill Frame
@@ -2025,7 +1873,7 @@ cframeToggle.TextColor3 = Color3.fromRGB(0, 0, 0)
 cframeToggle.Font = Enum.Font.Gotham
 cframeToggle.TextSize = 18
 cframeToggle.Text = "CFrame: OFF"
-cframeToggle.LayoutOrder = 48
+cframeToggle.LayoutOrder = 47
 cframeToggle.BorderSizePixel = 0
 Instance.new("UICorner", cframeToggle).CornerRadius = UDim.new(0, 6)
  
@@ -2085,7 +1933,7 @@ cframeSpeedLabel.TextColor3 = Color3.fromRGB(255, 165, 0)
 cframeSpeedLabel.Font = Enum.Font.GothamBold
 cframeSpeedLabel.TextSize = 16
 cframeSpeedLabel.Text = "CFrame Speed: " .. tostring(speed)
-cframeSpeedLabel.LayoutOrder = 49
+cframeSpeedLabel.LayoutOrder = 48
 cframeSpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
  
 -- Slider Frame
@@ -2164,7 +2012,7 @@ chatLogsToggle.TextColor3 = Color3.fromRGB(0, 0, 0)
 chatLogsToggle.Font = Enum.Font.Gotham
 chatLogsToggle.TextSize = 18
 chatLogsToggle.Text = "ChatLogs: OFF"
-chatLogsToggle.LayoutOrder = 51
+chatLogsToggle.LayoutOrder = 49
 chatLogsToggle.BorderSizePixel = 0
 Instance.new("UICorner", chatLogsToggle).CornerRadius = UDim.new(0, 6)
  
@@ -2181,7 +2029,7 @@ chatLogsToggle.MouseButton1Click:Connect(function()
     end
 end)
  
-createButtonRow(52, {
+createButtonRow(50, {
     {"Animation Pack", function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Animation%20Pack"))()
     end},
@@ -2205,7 +2053,7 @@ autoFarmSectionLabel.Font = Enum.Font.GothamBold
 autoFarmSectionLabel.TextSize = 20
 autoFarmSectionLabel.Text = "AutoFarm"
 autoFarmSectionLabel.TextXAlignment = Enum.TextXAlignment.Left
-autoFarmSectionLabel.LayoutOrder = 53
+autoFarmSectionLabel.LayoutOrder = 51
 autoFarmSectionLabel.BorderSizePixel = 0
 Instance.new("UICorner", autoFarmSectionLabel).CornerRadius = UDim.new(0, 6)
 
@@ -2219,7 +2067,7 @@ shoeFarmButton.TextColor3 = Color3.fromRGB(0, 0, 0)
 shoeFarmButton.Font = Enum.Font.Gotham
 shoeFarmButton.TextSize = 18
 shoeFarmButton.Text = shoeFarmToggle and "Shoe Farm: ON" or "Shoe Farm: OFF"
-shoeFarmButton.LayoutOrder = 54
+shoeFarmButton.LayoutOrder = 52
 shoeFarmButton.BorderSizePixel = 0
 Instance.new("UICorner", shoeFarmButton).CornerRadius = UDim.new(0, 6)
 
