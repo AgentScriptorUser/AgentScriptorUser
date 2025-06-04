@@ -1283,8 +1283,8 @@ local function createMobileFlyGui()
         btn.MouseButton1Up:Connect(function() keys[name:lower()] = false end)
     end
 
-    makeButton("Q", "â†‘", UDim2.new(0.8, 0, 0.7, 0))
-    makeButton("E", "â†“", UDim2.new(0.8, 0, 0.82, 0))
+    makeButton("Q", "⬆️‘", UDim2.new(0.8, 0, 0.7, 0))
+    makeButton("E", "⬇️“", UDim2.new(0.8, 0, 0.82, 0))
 end
 
 local function removeMobileFlyGui()
@@ -1590,8 +1590,8 @@ btn.MouseButton1Down:Connect(function() keys[name:lower()] = true end)
 btn.MouseButton1Up:Connect(function() keys[name:lower()] = false end)
 end
 
-makeButton("Q", "â†‘", UDim2.new(0.8, 0, 0.7, 0))
-makeButton("E", "â†“", UDim2.new(0.8, 0, 0.82, 0))
+makeButton("Q", "⬆️’", UDim2.new(0.8, 0, 0.7, 0))
+makeButton("E", "⬇️“", UDim2.new(0.8, 0, 0.82, 0))
 
 end
 
@@ -1785,7 +1785,6 @@ stopFly()
 end
 
 end)
-
 
 -- SuperHero Fly Speed Label
 local flySpeedLabel = Instance.new("TextLabel", scrollFrame)
@@ -2062,7 +2061,7 @@ Instance.new("UICorner", autoFarmSectionLabel).CornerRadius = UDim.new(0, 6)
 local shoeFarmToggle = getgenv().ShoeFarmEnabled or false
 
 local shoeFarmButton = Instance.new("TextButton", scrollFrame)
-shoeFarmButton.Size = UDim2.new(1, -20, 0, 30)
+shoeFarmButton.Size = UDim2.new(1, -20, 0, 40)
 shoeFarmButton.BackgroundColor3 = shoeFarmToggle and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(255, 165, 0)
 shoeFarmButton.TextColor3 = Color3.fromRGB(0, 0, 0)
 shoeFarmButton.Font = Enum.Font.Gotham
