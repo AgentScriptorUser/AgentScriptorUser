@@ -1114,6 +1114,143 @@ noFogToggle.MouseButton1Click:Connect(function()
     end
 end)
 
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local localPlayer = Players.LocalPlayer
+local shop = workspace.Ignored.Shop
+local chickenItem = shop:GetChildren()[43]
+
+local newChickenCFrame = CFrame.new(
+    300.77301, 49.8827477, -627.567017,
+    0.99999994, -0.000258984684, -8.62661327e-05,
+    0.000258947432, 0.999999881, -0.000431621302,
+    8.6377906e-05, 0.00043159895, 0.999999881
+)
+
+local buyCoroutine
+local isBuying = false
+local returnCFrame = nil
+local autoHealEnabled = false
+
+local function stopBuying()
+    if buyCoroutine and coroutine.status(buyCoroutine) ~= "dead" then
+        isBuying = false
+        buyCoroutine = nil
+        if returnCFrame and localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            localPlayer.Character.HumanoidRootPart.CFrame = returnCFrame
+            returnCFrame = nil
+        end
+    end
+end
+
+local function buyChickenLoop()
+    isBuying = true
+    if localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        returnCFrame = localPlayer.Character.HumanoidRootPart.CFrame
+    end
+
+    while isBuying do
+        if not localPlayer.Character or not localPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            wait(1)
+        else
+            -- Teleport to chicken location
+            localPlayer.Character.HumanoidRootPart.CFrame = newChickenCFrame * CFrame.new(0, 5, 0)
+            if chickenItem and chickenItem:FindFirstChild("ClickDetector") then
+                fireclickdetector(chickenItem.ClickDetector)
+            end
+
+            wait(0.4)
+
+            local chickenTool = localPlayer.Backpack:FindFirstChild("[Chicken]")
+            if chickenTool and localPlayer.Character and localPlayer.Character:FindFirstChild("Humanoid") then
+                localPlayer.Character.Humanoid:EquipTool(chickenTool)
+                if localPlayer.Character:FindFirstChild("[Chicken]") then
+                    localPlayer.Character["[Chicken]"]:Activate()
+                end
+            end
+
+            wait(0.5)
+        end
+    end
+end
+
+local function onHealthChanged(hp)
+    if not autoHealEnabled then
+        stopBuying()
+        return
+    end
+
+    local humanoid = localPlayer.Character and localPlayer.Character:FindFirstChild("Humanoid")
+    if not humanoid then return end
+
+    if hp < humanoid.MaxHealth then
+        if not isBuying then
+            buyCoroutine = coroutine.create(buyChickenLoop)
+            coroutine.resume(buyCoroutine)
+        end
+    else
+        stopBuying()
+    end
+end
+
+-- Explicit startHeal function
+local function startHeal()
+    autoHealEnabled = true
+    local humanoid = localPlayer.Character and localPlayer.Character:FindFirstChild("Humanoid")
+    if humanoid then
+        onHealthChanged(humanoid.Health)
+    end
+end
+
+-- Explicit stopHeal function
+local function stopHeal()
+    autoHealEnabled = false
+    stopBuying()
+end
+
+if localPlayer then
+    localPlayer.CharacterAdded:Connect(function(character)
+        local humanoid = character:WaitForChild("Humanoid")
+        humanoid.HealthChanged:Connect(onHealthChanged)
+        wait(0.5)
+        onHealthChanged(humanoid.Health)
+    end)
+
+    if localPlayer.Character then
+        local humanoid = localPlayer.Character:FindFirstChild("Humanoid")
+        if humanoid then
+            humanoid.HealthChanged:Connect(onHealthChanged)
+            wait(0.5)
+            onHealthChanged(humanoid.Health)
+        end
+    end
+end
+
+-- Auto Heal Toggle Button UI
+local autoHealToggle = Instance.new("TextButton", scrollFrame)
+autoHealToggle.Size = UDim2.new(1, -20, 0, 40)
+autoHealToggle.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+autoHealToggle.TextColor3 = Color3.fromRGB(0, 0, 0)
+autoHealToggle.Font = Enum.Font.Gotham
+autoHealToggle.TextSize = 18
+autoHealToggle.Text = "Auto Heal: OFF"
+autoHealToggle.LayoutOrder = 40
+autoHealToggle.BorderSizePixel = 0
+Instance.new("UICorner", autoHealToggle).CornerRadius = UDim.new(0, 6)
+
+autoHealToggle.MouseButton1Click:Connect(function()
+    if autoHealEnabled then
+        stopHeal()
+        autoHealToggle.Text = "Auto Heal: OFF"
+        autoHealToggle.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+    else
+        startHeal()
+        autoHealToggle.Text = "Auto Heal: ON"
+        autoHealToggle.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+    end
+end)
+
 -- Main Section Label
 local mainSectionLabel = Instance.new("TextLabel", scrollFrame)
 mainSectionLabel.Size = UDim2.new(1, -20, 0, 30)
