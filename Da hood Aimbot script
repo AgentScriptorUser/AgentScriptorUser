@@ -1,0 +1,220 @@
+--// Services
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+
+local LocalPlayer = Players.LocalPlayer
+local MainEvent = ReplicatedStorage:WaitForChild("MainEvent")
+
+--// GUI Setup
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "ResistanceFreedomAimbot"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = game.CoreGui
+
+local frame = Instance.new("Frame", screenGui)
+frame.Size = UDim2.new(0, 200, 0, 190)
+frame.Position = UDim2.new(0.02, 0, 0.3, 0)
+frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+frame.BorderSizePixel = 0
+frame.Active = true
+
+local function createLabel(parent, text, size, pos)
+	local label = Instance.new("TextLabel", parent)
+	label.Size = size
+	label.Position = pos
+	label.BackgroundTransparency = 1
+	label.Text = text
+	label.TextColor3 = Color3.new(1, 1, 1)
+	label.Font = Enum.Font.Gotham
+	label.TextSize = 14
+	label.TextXAlignment = Enum.TextXAlignment.Left
+	return label
+end
+
+local title = createLabel(frame, "ResistanceFreedom Aimbot", UDim2.new(1, 0, 0, 30), UDim2.new(0, 0, 0, 0))
+title.Font = Enum.Font.GothamBold
+title.TextSize = 18
+title.TextXAlignment = Enum.TextXAlignment.Center
+
+local targetBox = Instance.new("TextBox", frame)
+targetBox.PlaceholderText = "Enter target name"
+targetBox.Size = UDim2.new(1, -20, 0, 30)
+targetBox.Position = UDim2.new(0, 10, 0, 40)
+targetBox.Text = ""
+targetBox.TextColor3 = Color3.new(0, 0, 0)
+targetBox.Font = Enum.Font.Gotham
+targetBox.TextSize = 14
+targetBox.BackgroundColor3 = Color3.new(1, 1, 1)
+
+local shootButton = Instance.new("TextButton", frame)
+shootButton.Size = UDim2.new(1, -20, 0, 30)
+shootButton.Position = UDim2.new(0, 10, 0, 80)
+shootButton.Text = "Shoot Head"
+shootButton.TextColor3 = Color3.new(1, 1, 1)
+shootButton.Font = Enum.Font.GothamBold
+shootButton.TextSize = 16
+shootButton.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+
+local healthLabel = createLabel(frame, "Health: N/A", UDim2.new(1, -20, 0, 20), UDim2.new(0, 10, 0, 120))
+local distanceLabel = createLabel(frame, "Distance: N/A", UDim2.new(1, -20, 0, 20), UDim2.new(0, 10, 0, 165))
+
+local healthBarBG = Instance.new("Frame", frame)
+healthBarBG.Size = UDim2.new(1, -20, 0, 10)
+healthBarBG.Position = UDim2.new(0, 10, 0, 145)
+healthBarBG.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+
+local healthBarFill = Instance.new("Frame", healthBarBG)
+healthBarFill.Size = UDim2.new(0, 0, 1, 0)
+healthBarFill.BackgroundColor3 = Color3.new(0, 1, 0)
+
+--// Dragging GUI logic
+local dragging, dragInput, dragStart, startPos
+local function updateInput(input)
+	local delta = input.Position - dragStart
+	frame.Position = UDim2.new(
+		startPos.X.Scale,
+		startPos.X.Offset + delta.X,
+		startPos.Y.Scale,
+		startPos.Y.Offset + delta.Y
+	)
+end
+
+frame.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = true
+		dragStart = input.Position
+		startPos = frame.Position
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+			end
+		end)
+	end
+end)
+
+frame.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement then
+		dragInput = input
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+	if input == dragInput and dragging then
+		updateInput(input)
+	end
+end)
+
+--// Get player by partial name or display name
+local function getTargetPlayer(name)
+	name = name:lower()
+	for _, player in ipairs(Players:GetPlayers()) do
+		if player ~= LocalPlayer then
+			local lowerName = player.Name:lower()
+			local lowerDisplay = player.DisplayName:lower()
+			if lowerName:sub(1, #name) == name or lowerDisplay:sub(1, #name) == name then
+				return player
+			end
+		end
+	end
+	return nil
+end
+
+--// Orange tracer from center screen to target head
+local tracer = Drawing.new("Line")
+tracer.Visible = false
+tracer.Color = Color3.fromRGB(255, 165, 0)
+tracer.Thickness = 2
+
+RunService.RenderStepped:Connect(function()
+	local name = targetBox.Text
+	if name == "" then
+		tracer.Visible = false
+		return
+	end
+
+	local target = getTargetPlayer(name)
+	local cam = workspace.CurrentCamera
+
+	if target and target.Character then
+		local head = target.Character:FindFirstChild("Head")
+		if head then
+			local screenFrom = Vector2.new(cam.ViewportSize.X / 2, cam.ViewportSize.Y / 2)
+			local screenTo, onScreen = cam:WorldToViewportPoint(head.Position)
+			if onScreen then
+				tracer.From = screenFrom
+				tracer.To = Vector2.new(screenTo.X, screenTo.Y)
+				tracer.Visible = true
+				return
+			end
+		end
+	end
+
+	tracer.Visible = false
+end)
+
+--// Shoot at head within 250 studs
+local function shootHead(target, tool)
+	if not target or not target.Character then return end
+	local head = target.Character:FindFirstChild("Head")
+	local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+	local handle = tool and tool:FindFirstChild("Handle")
+	if not (head and hrp and handle) then return end
+
+	local dist = (hrp.Position - head.Position).Magnitude
+	if dist > 250 then
+		warn("Target too far: " .. math.floor(dist) .. " studs")
+		return
+	end
+
+	for i = 1, 25 do
+		MainEvent:FireServer("ShootGun", handle, hrp.Position, head.Position, head, Vector3.new(0, 0, -1))
+		task.wait(0.03)
+	end
+end
+
+--// Update health + distance info
+task.spawn(function()
+	while true do
+		local target = getTargetPlayer(targetBox.Text)
+		if target and target.Character then
+			local humanoid = target.Character:FindFirstChildOfClass("Humanoid")
+			if humanoid then
+				local hp = math.clamp(humanoid.Health, 0, humanoid.MaxHealth)
+				local ratio = hp / humanoid.MaxHealth
+				healthLabel.Text = "Health: " .. math.floor(hp)
+				healthBarFill.Size = UDim2.new(ratio, 0, 1, 0)
+
+				local myHRP = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+				local theirHRP = target.Character:FindFirstChild("HumanoidRootPart")
+				if myHRP and theirHRP then
+					local dist = (myHRP.Position - theirHRP.Position).Magnitude
+					distanceLabel.Text = "Distance: " .. math.floor(dist) .. " studs"
+				else
+					distanceLabel.Text = "Distance: N/A"
+				end
+			else
+				healthLabel.Text = "Health: N/A"
+				healthBarFill.Size = UDim2.new(0, 0, 1, 0)
+				distanceLabel.Text = "Distance: N/A"
+			end
+		else
+			healthLabel.Text = "Health: N/A"
+			healthBarFill.Size = UDim2.new(0, 0, 1, 0)
+			distanceLabel.Text = "Distance: N/A"
+		end
+		task.wait(0.1)
+	end
+end)
+
+--// Shoot head on button click
+shootButton.MouseButton1Click:Connect(function()
+	local target = getTargetPlayer(targetBox.Text)
+	local tool = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Tool")
+	if target and tool then
+		shootHead(target, tool)
+	else
+		warn("Missing target or tool")
+	end
+end)
