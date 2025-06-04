@@ -1,0 +1,30 @@
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+
+-- Handle character respawn
+player.CharacterAdded:Connect(function(char)
+	character = char
+	humanoid = character:WaitForChild("Humanoid")
+end)
+
+-- Setup Animation
+local rollAnim = Instance.new("Animation")
+rollAnim.AnimationId = "rbxassetid://18537367238"
+
+local isRolling = false
+
+local function roll()
+	if isRolling then return end
+	isRolling = true
+
+	local rollTrack = humanoid:LoadAnimation(rollAnim)
+	rollTrack:Play()
+
+	wait(rollTrack.Length)
+	isRolling = false
+end
+
+-- Execute roll immediately
+roll()
