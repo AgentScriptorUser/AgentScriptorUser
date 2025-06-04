@@ -1,0 +1,46 @@
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local backpack = player:WaitForChild("Backpack")
+local character = player.Character or player.CharacterAdded:Wait()
+
+-- First grip CFrame (upright)
+local firstGrip = CFrame.new(
+    0, 0, 0,
+    1, 0, 0,  -- Right
+    0, 1, 0,  -- Up
+    0, 0, -1  -- Look
+)
+
+-- Second grip CFrame (horizontal, forming cross shape)
+local secondGrip = CFrame.new(
+    0, 0, 0,
+    0, 0, -1,  -- X axis: backward
+    -1, 0, 0,  -- Y axis: left
+    0, 1, 0    -- Z axis: up
+)
+
+-- Counter to assign different grips
+local count = 0
+
+for _, tool in ipairs(backpack:GetChildren()) do
+    if tool:IsA("Tool") and tool.Name == "[SledgeHammer]" then
+        count += 1
+
+        -- Setup on equip to hide the stone part
+        tool.Equipped:Connect(function()
+            local stonePart = tool:FindFirstChild("Stone") or tool:FindFirstChild("Head") or tool:FindFirstChild("Part")
+            if stonePart and stonePart:IsA("BasePart") then
+                stonePart.Transparency = 1
+                stonePart.CanCollide = false
+            end
+        end)
+
+        tool.Parent = character
+
+        if count == 1 then
+            tool.Grip = firstGrip
+        elseif count == 2 then
+            tool.Grip = secondGrip
+        end
+    end
+end
