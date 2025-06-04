@@ -1,0 +1,58 @@
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local player = Players.LocalPlayer
+local mouse = player:GetMouse()
+local camera = workspace.CurrentCamera
+
+-- Tool Setup
+local tool = Instance.new("Tool")
+tool.Name = "ClickTeleport"
+tool.RequiresHandle = false
+tool.Parent = player:WaitForChild("Backpack")
+
+-- State to track if tool is equipped
+local equipped = false
+
+-- Function to teleport
+local function teleportTo(position)
+	local character = player.Character
+	if character and character:FindFirstChild("HumanoidRootPart") then
+		character.HumanoidRootPart.CFrame = CFrame.new(position + Vector3.new(0, 3, 0))
+	end
+end
+
+-- PC click
+local function onMouseClick()
+	if equipped then
+		local targetPos = mouse.Hit.Position
+		teleportTo(targetPos)
+	end
+end
+
+-- Mobile tap
+local function onTouchTap(touchPositions, processed)
+	if not equipped or processed or #touchPositions == 0 then return end
+
+	local touchPos = touchPositions[1]
+	local ray = camera:ViewportPointToRay(touchPos.X, touchPos.Y)
+
+	local params = RaycastParams.new()
+	params.FilterDescendantsInstances = {player.Character}
+	params.FilterType = Enum.RaycastFilterType.Blacklist
+
+	local result = workspace:Raycast(ray.Origin, ray.Direction * 1000, params)
+	if result then
+		teleportTo(result.Position)
+	end
+end
+
+-- Connections
+tool.Equipped:Connect(function()
+	equipped = true
+	mouse.Button1Down:Connect(onMouseClick)
+	UserInputService.TouchTap:Connect(onTouchTap)
+end)
+
+tool.Unequipped:Connect(function()
+	equipped = false
+end)
