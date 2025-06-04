@@ -1275,11 +1275,11 @@ mainSectionLabel.Font = Enum.Font.GothamBold
 mainSectionLabel.TextSize = 20
 mainSectionLabel.Text = "Main"
 mainSectionLabel.TextXAlignment = Enum.TextXAlignment.Left
-mainSectionLabel.LayoutOrder = 40
+mainSectionLabel.LayoutOrder = 41
 mainSectionLabel.BorderSizePixel = 0
 Instance.new("UICorner", mainSectionLabel).CornerRadius = UDim.new(0, 6)
  
--- Row 40: Main Buttons (Speed Boost, TrashTalk [X], ClickTeleport Tool)
+-- Row 41: Main Buttons (Speed Boost, TrashTalk [X], ClickTeleport Tool)
 createButtonRow(40, {
     {"Speed Boost", function()  
         local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")  
@@ -1384,7 +1384,7 @@ flyToggle.TextColor3 = Color3.fromRGB(0, 0, 0)
 flyToggle.Font = Enum.Font.Gotham
 flyToggle.TextSize = 18
 flyToggle.Text = "Fly: OFF"
-flyToggle.LayoutOrder = 41
+flyToggle.LayoutOrder = 42
 flyToggle.BorderSizePixel = 0
 Instance.new("UICorner", flyToggle).CornerRadius = UDim.new(0, 6)
 
@@ -1596,7 +1596,7 @@ flySpeedLabel.TextColor3 = Color3.fromRGB(255, 165, 0)  -- Orange color
 flySpeedLabel.Font = Enum.Font.GothamBold
 flySpeedLabel.TextSize = 16
 flySpeedLabel.Text = "Fly Speed: " .. tostring(speed)
-flySpeedLabel.LayoutOrder = 42
+flySpeedLabel.LayoutOrder = 43
 flySpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
  
 -- Slider Background Frame
@@ -1604,7 +1604,7 @@ local sliderFrame = Instance.new("Frame", scrollFrame)
 sliderFrame.Size = UDim2.new(1, -20, 0, 20)
 sliderFrame.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
 sliderFrame.BorderSizePixel = 0
-sliderFrame.LayoutOrder = 43
+sliderFrame.LayoutOrder = 44
 Instance.new("UICorner", sliderFrame).CornerRadius = UDim.new(0, 6)
  
 -- Slider Fill Frame
@@ -1692,7 +1692,7 @@ flyToggle.TextColor3 = Color3.fromRGB(0, 0, 0)
 flyToggle.Font = Enum.Font.Gotham
 flyToggle.TextSize = 18
 flyToggle.Text = "SuperHero Fly: OFF"
-flyToggle.LayoutOrder = 44
+flyToggle.LayoutOrder = 45
 flyToggle.BorderSizePixel = 0
 Instance.new("UICorner", flyToggle).CornerRadius = UDim.new(0, 6)
 
@@ -1946,7 +1946,7 @@ flySpeedLabel.TextColor3 = Color3.fromRGB(255, 165, 0)  -- Orange color
 flySpeedLabel.Font = Enum.Font.GothamBold
 flySpeedLabel.TextSize = 16
 flySpeedLabel.Text = "Fly Speed: " .. tostring(speed)
-flySpeedLabel.LayoutOrder = 45
+flySpeedLabel.LayoutOrder = 46
 flySpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
 
 -- Slider Background Frame
@@ -1954,7 +1954,7 @@ local sliderFrame = Instance.new("Frame", scrollFrame)
 sliderFrame.Size = UDim2.new(1, -20, 0, 20)
 sliderFrame.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
 sliderFrame.BorderSizePixel = 0
-sliderFrame.LayoutOrder = 46
+sliderFrame.LayoutOrder = 47
 Instance.new("UICorner", sliderFrame).CornerRadius = UDim.new(0, 6)
 
 -- Slider Fill Frame
@@ -2025,7 +2025,7 @@ cframeToggle.TextColor3 = Color3.fromRGB(0, 0, 0)
 cframeToggle.Font = Enum.Font.Gotham
 cframeToggle.TextSize = 18
 cframeToggle.Text = "CFrame: OFF"
-cframeToggle.LayoutOrder = 47
+cframeToggle.LayoutOrder = 48
 cframeToggle.BorderSizePixel = 0
 Instance.new("UICorner", cframeToggle).CornerRadius = UDim.new(0, 6)
  
@@ -2085,7 +2085,7 @@ cframeSpeedLabel.TextColor3 = Color3.fromRGB(255, 165, 0)
 cframeSpeedLabel.Font = Enum.Font.GothamBold
 cframeSpeedLabel.TextSize = 16
 cframeSpeedLabel.Text = "CFrame Speed: " .. tostring(speed)
-cframeSpeedLabel.LayoutOrder = 48
+cframeSpeedLabel.LayoutOrder = 49
 cframeSpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
  
 -- Slider Frame
@@ -2093,7 +2093,7 @@ local cframeSliderFrame = Instance.new("Frame", scrollFrame)
 cframeSliderFrame.Size = UDim2.new(1, -20, 0, 20)
 cframeSliderFrame.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
 cframeSliderFrame.BorderSizePixel = 0
-cframeSliderFrame.LayoutOrder = 49
+cframeSliderFrame.LayoutOrder = 50
 Instance.new("UICorner", cframeSliderFrame).CornerRadius = UDim.new(0, 6)
  
 -- Fill
@@ -2164,7 +2164,7 @@ chatLogsToggle.TextColor3 = Color3.fromRGB(0, 0, 0)
 chatLogsToggle.Font = Enum.Font.Gotham
 chatLogsToggle.TextSize = 18
 chatLogsToggle.Text = "ChatLogs: OFF"
-chatLogsToggle.LayoutOrder = 50
+chatLogsToggle.LayoutOrder = 51
 chatLogsToggle.BorderSizePixel = 0
 Instance.new("UICorner", chatLogsToggle).CornerRadius = UDim.new(0, 6)
  
@@ -2181,7 +2181,7 @@ chatLogsToggle.MouseButton1Click:Connect(function()
     end
 end)
  
-createButtonRow(51, {
+createButtonRow(52, {
     {"Animation Pack", function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Animation%20Pack"))()
     end},
@@ -2205,7 +2205,7 @@ autoFarmSectionLabel.Font = Enum.Font.GothamBold
 autoFarmSectionLabel.TextSize = 20
 autoFarmSectionLabel.Text = "AutoFarm"
 autoFarmSectionLabel.TextXAlignment = Enum.TextXAlignment.Left
-autoFarmSectionLabel.LayoutOrder = 52
+autoFarmSectionLabel.LayoutOrder = 53
 autoFarmSectionLabel.BorderSizePixel = 0
 Instance.new("UICorner", autoFarmSectionLabel).CornerRadius = UDim.new(0, 6)
 
@@ -2219,7 +2219,7 @@ shoeFarmButton.TextColor3 = Color3.fromRGB(0, 0, 0)
 shoeFarmButton.Font = Enum.Font.Gotham
 shoeFarmButton.TextSize = 18
 shoeFarmButton.Text = shoeFarmToggle and "Shoe Farm: ON" or "Shoe Farm: OFF"
-shoeFarmButton.LayoutOrder = 53
+shoeFarmButton.LayoutOrder = 54
 shoeFarmButton.BorderSizePixel = 0
 Instance.new("UICorner", shoeFarmButton).CornerRadius = UDim.new(0, 6)
 
