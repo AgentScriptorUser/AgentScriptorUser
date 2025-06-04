@@ -1,0 +1,55 @@
+-- LocalScript (place inside StarterPlayerScripts or StarterGui)
+
+-- Create GUI container
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "WalkOnwallsNotification"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+
+-- Outer frame (rounded orange box)
+local outerFrame = Instance.new("Frame")
+outerFrame.Name = "WalkOnwallsFrame"
+outerFrame.Size = UDim2.new(0, 240, 0, 60)
+outerFrame.Position = UDim2.new(0, 20, 0.5, -30) -- Left side
+outerFrame.BackgroundColor3 = Color3.fromRGB(255, 128, 0) -- orange color
+outerFrame.BackgroundTransparency = 0.2
+outerFrame.BorderSizePixel = 0
+outerFrame.AnchorPoint = Vector2.new(0, 0.5)
+outerFrame.Parent = screenGui
+
+-- Add corner rounding
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 6)
+corner.Parent = outerFrame
+
+-- First line of text: "WalkOnwalls"
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, -10, 0.5, 0)
+title.Position = UDim2.new(0, 5, 0, 5)
+title.BackgroundTransparency = 1
+title.Text = "WalkOnwalls"
+title.TextColor3 = Color3.new(0, 0, 0) -- black text for better contrast
+title.Font = Enum.Font.SourceSansBold
+title.TextScaled = true
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.TextWrapped = true
+title.Parent = outerFrame
+
+-- Second line of text: "Detected"
+local subtitle = Instance.new("TextLabel")
+subtitle.Size = UDim2.new(1, -10, 0.5, 0)
+subtitle.Position = UDim2.new(0, 5, 0.5, -5)
+subtitle.BackgroundTransparency = 1
+subtitle.Text = "Detected"
+subtitle.TextColor3 = Color3.new(0, 0, 0) -- black text for better contrast
+subtitle.Font = Enum.Font.SourceSans
+subtitle.TextScaled = true
+subtitle.TextXAlignment = Enum.TextXAlignment.Left
+subtitle.TextWrapped = true
+subtitle.Parent = outerFrame
+
+-- Fade out after a few seconds
+wait(3)
+outerFrame:TweenPosition(UDim2.new(0, 20, 0.5, -100), "Out", "Quad", 1, true)
+wait(1)
+screenGui:Destroy()
