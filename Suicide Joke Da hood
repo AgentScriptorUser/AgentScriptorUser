@@ -1,0 +1,129 @@
+--// SERVICES
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local LocalPlayer = Players.LocalPlayer
+
+--// SAY GOODBYE
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ChatService = game:GetService("TextChatService")
+local hasSaidGoodbye = false
+
+local function sayGoodbye()
+    if hasSaidGoodbye then return end
+    hasSaidGoodbye = true
+
+    -- 
+    if ChatService.ChatVersion == Enum.ChatVersion.TextChatService then
+        -- Use the new TextChatService to send a message
+        local textChannel = ChatService.TextChannels:FindFirstChild("RBXGeneral")
+        if textChannel then
+            textChannel:SendAsync("Goodbye...")
+        else
+            warn("TextChatService channel RBXGeneral not found!")
+        end
+    else
+        -- 
+        local chatEvents = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
+        if chatEvents then
+            local sayMessageRequest = chatEvents:FindFirstChild("SayMessageRequest")
+            if sayMessageRequest then
+                sayMessageRequest:FireServer("Goodbye...", "All")
+            else
+                warn("SayMessageRequest not found in DefaultChatSystemChatEvents!")
+            end
+        else
+            warn("DefaultChatSystemChatEvents not found in ReplicatedStorage!")
+        end
+    end
+end
+
+-- 
+sayGoodbye()
+
+--// PLAY SOUND
+local function playDeathSound()
+	local sound = Instance.new("Sound")
+	sound.SoundId = "rbxassetid://148590801"
+	sound.Volume = 1
+	sound.PlayOnRemove = true
+	sound.Parent = workspace
+	sound:Destroy()
+end
+
+--// BUY ITEM
+function Buy(ObjectName)
+	local item = workspace.Ignored.Shop[ObjectName]
+	local head = item and item:FindFirstChild("Head")
+	local clickDetector = item and (item:FindFirstChild("ClickDetector") or (head and head:FindFirstChildOfClass("ClickDetector")))
+
+	if head and clickDetector then
+		local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+		local hrp = character:WaitForChild("HumanoidRootPart")
+		local originalCFrame = hrp.CFrame
+
+		-- Move to shop
+		hrp.CFrame = head.CFrame + Vector3.new(0, 3, 0)
+		task.wait(0.5)
+
+		fireclickdetector(clickDetector)
+		fireclickdetector(clickDetector)
+		task.wait(0.3)
+
+		-- Return to original position
+		hrp.CFrame = originalCFrame
+	else
+		warn("Item not found or missing parts.")
+	end
+end
+
+--// MAIN EXECUTION
+Buy("[Revolver] - $1421")
+
+-- Wait for item to appear
+task.wait(1.5)
+
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local Backpack = LocalPlayer:WaitForChild("Backpack")
+local Humanoid = Character:WaitForChild("Humanoid")
+local HRP = Character:WaitForChild("HumanoidRootPart")
+local Head = Character:WaitForChild("Head")
+
+-- Equip revolver if in backpack
+local revolver
+repeat
+	revolver = Backpack:FindFirstChild("[Revolver]")
+	task.wait(0.1)
+until revolver
+
+Humanoid:EquipTool(revolver)
+task.wait(0.2)
+
+local Tool = Character:FindFirstChild("[Revolver]") or Character:FindFirstChildOfClass("Tool")
+if not Tool or not Tool:FindFirstChild("Handle") then
+	warn("Tool not equipped properly.")
+	return
+end
+
+-- 1. Say goodbye
+sayGoodbye()
+
+-- 2. Shoot self
+task.wait(0.3)
+ReplicatedStorage.MainEvent:FireServer(
+	"ShootGun",
+	Tool.Handle,
+	HRP.Position,
+	HRP.Position,
+	Head,
+	Vector3.new(0, 0, -1)
+)
+
+-- 3. Play death sound
+task.delay(0.1, playDeathSound)
+
+-- 4. Kill if still alive
+task.delay(0.4, function()
+	if Humanoid and Humanoid.Health > 0 then
+		Humanoid.Health = 0
+	end
+end)
