@@ -1,0 +1,172 @@
+--// Services
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+
+local LocalPlayer = Players.LocalPlayer
+local MainEvent = ReplicatedStorage:WaitForChild("MainEvent")
+
+--// GUI Setup
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "ResistanceFreedomKillAura"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = game.CoreGui
+
+local frame = Instance.new("Frame", screenGui)
+frame.Size = UDim2.new(0, 200, 0, 160)
+frame.Position = UDim2.new(0.02, 0, 0.3, 0)
+frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+frame.BorderSizePixel = 0
+frame.Active = true
+
+local function createLabel(parent, text, size, pos)
+	local label = Instance.new("TextLabel", parent)
+	label.Size = size
+	label.Position = pos
+	label.BackgroundTransparency = 1
+	label.Text = text
+	label.TextColor3 = Color3.new(1, 1, 1)
+	label.Font = Enum.Font.Gotham
+	label.TextSize = 14
+	label.TextXAlignment = Enum.TextXAlignment.Left
+	return label
+end
+
+local title = createLabel(frame, "ResistanceFreedom KillAura", UDim2.new(1, 0, 0, 30), UDim2.new(0, 0, 0, 0))
+title.Font = Enum.Font.GothamBold
+title.TextSize = 18
+title.TextXAlignment = Enum.TextXAlignment.Center
+
+local shootButton = Instance.new("TextButton", frame)
+shootButton.Size = UDim2.new(1, -20, 0, 30)
+shootButton.Position = UDim2.new(0, 10, 0, 40)
+shootButton.Text = "Start Kill Aura"
+shootButton.TextColor3 = Color3.new(1, 1, 1)
+shootButton.Font = Enum.Font.GothamBold
+shootButton.TextSize = 16
+shootButton.BackgroundColor3 = Color3.fromRGB(80, 80, 255)
+
+local healthLabel = createLabel(frame, "Nearest Enemy Health: N/A", UDim2.new(1, -20, 0, 20), UDim2.new(0, 10, 0, 80))
+local distanceLabel = createLabel(frame, "Nearest Enemy Distance: N/A", UDim2.new(1, -20, 0, 20), UDim2.new(0, 10, 0, 100))
+
+local healthBarBG = Instance.new("Frame", frame)
+healthBarBG.Size = UDim2.new(1, -20, 0, 10)
+healthBarBG.Position = UDim2.new(0, 10, 0, 125)
+healthBarBG.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+
+local healthBarFill = Instance.new("Frame", healthBarBG)
+healthBarFill.Size = UDim2.new(0, 0, 1, 0)
+healthBarFill.BackgroundColor3 = Color3.new(0, 1, 0)
+
+--// Dragging GUI logic (mobile-friendly)
+local dragging, dragInput, dragStart, startPos
+local function updateInput(input)
+	local delta = input.Position - dragStart
+	frame.Position = UDim2.new(
+		startPos.X.Scale,
+		startPos.X.Offset + delta.X,
+		startPos.Y.Scale,
+		startPos.Y.Offset + delta.Y
+	)
+end
+
+frame.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = true
+		dragStart = input.Position
+		startPos = frame.Position
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+			end
+		end)
+	end
+end)
+
+frame.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement then
+		dragInput = input
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+	if input == dragInput and dragging then
+		updateInput(input)
+	end
+end)
+
+--// Get enemy players in range
+local function getEnemiesInRange(range)
+	local enemies = {}
+	if not (LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")) then
+		return enemies
+	end
+
+	local hrp = LocalPlayer.Character.HumanoidRootPart
+	for _, player in ipairs(Players:GetPlayers()) do
+		if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+			local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+			local distance = (hrp.Position - player.Character.HumanoidRootPart.Position).Magnitude
+			if humanoid and humanoid.Health > 0 and distance <= range then
+				table.insert(enemies, {player = player, distance = distance, humanoid = humanoid})
+			end
+		end
+	end
+	return enemies
+end
+
+--// Shoot enemy's head
+local function shootHead(target, tool)
+	if not target or not target.Character then return end
+	local head = target.Character:FindFirstChild("Head")
+	local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+	local handle = tool and tool:FindFirstChild("Handle")
+	if not (head and hrp and handle) then return end
+
+	local dist = (hrp.Position - head.Position).Magnitude
+	if dist > 250 then return end
+
+	for i = 1, 5 do
+		MainEvent:FireServer("ShootGun", handle, hrp.Position, head.Position, head, Vector3.new(0, 0, -1))
+		task.wait(0.02)
+	end
+end
+
+--// Kill Aura toggle
+local killAuraActive = false
+shootButton.MouseButton1Click:Connect(function()
+	killAuraActive = not killAuraActive
+	shootButton.Text = killAuraActive and "Stop Kill Aura" or "Start Kill Aura"
+end)
+
+--// Aura loop
+task.spawn(function()
+	while true do
+		if killAuraActive then
+			local tool = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Tool")
+			if tool then
+				local enemies = getEnemiesInRange(250)
+				if #enemies > 0 then
+					table.sort(enemies, function(a, b) return a.distance < b.distance end)
+					local nearest = enemies[1]
+					local hp = math.clamp(nearest.humanoid.Health, 0, nearest.humanoid.MaxHealth)
+					local ratio = hp / nearest.humanoid.MaxHealth
+
+					healthLabel.Text = "Nearest Enemy Health: " .. math.floor(hp)
+					distanceLabel.Text = "Nearest Enemy Distance: " .. math.floor(nearest.distance) .. " studs"
+					healthBarFill.Size = UDim2.new(ratio, 0, 1, 0)
+
+					shootHead(nearest.player, tool)
+				else
+					healthLabel.Text = "Nearest Enemy Health: N/A"
+					distanceLabel.Text = "Nearest Enemy Distance: N/A"
+					healthBarFill.Size = UDim2.new(0, 0, 1, 0)
+				end
+			end
+			task.wait(0.1)
+		else
+			task.wait(0.3)
+		end
+	end
+end)
