@@ -1357,64 +1357,38 @@ end;
 task.spawn(C_34);
 -- StarterGui.Strawberry.MainFrame.ScrollingFrame.Kick.LocalScript
 local function C_39()
-    local script = G2L["39"]
-    script.Parent.MouseButton1Click:Connect(function()
-        local name = script.Parent.Parent.Parent.Username.Text
-        local player = game.Players:FindFirstChild(name)
-        
-        local function kickWithMessage(targetPlayer, msg)
-            if targetPlayer and targetPlayer.Character and targetPlayer:FindFirstChild("PlayerGui") then
-                -- Create a message GUI
-                local messageGui = Instance.new("ScreenGui")
-                messageGui.Name = "KickMessageGui"
-                messageGui.ResetOnSpawn = false
-                messageGui.Parent = targetPlayer.PlayerGui
-                
-                local textLabel = Instance.new("TextLabel")
-                textLabel.Size = UDim2.new(1, 0, 1, 0)
-                textLabel.BackgroundColor3 = Color3.new(0, 0, 0)
-                textLabel.BackgroundTransparency = 0.5
-                textLabel.TextColor3 = Color3.new(1, 0, 0)
-                textLabel.TextScaled = true
-                textLabel.Font = Enum.Font.SourceSansBold
-                textLabel.Text = msg or "StrawberryCMD GOT Leaked By AgentScriptor"
-                textLabel.Parent = messageGui
-                
-                wait(2)
-                targetPlayer:Kick(msg or "StrawberryCMD GOT Leaked By AgentScriptor")
-            else
-                targetPlayer:Kick(msg or "StrawberryCMD GOT Leaked By AgentScriptor")
-            end
-        end
-        
-        local function delete(targetPlayer)
-            kickWithMessage(targetPlayer, "StrawberryCMD GOT Leaked By AgentScriptor")
-        end
-        
-        if name ~= "all" and name ~= "others" and name ~= "me" then
-            if player then
-                delete(player)
-            end
-        elseif name == "all" then
-            for _, v in pairs(game.Players:GetPlayers()) do
-                delete(v)
-            end
-        elseif name == "others" then
-            local localPlayer = game.Players.LocalPlayer
-            for _, v in pairs(game.Players:GetPlayers()) do
-                if v ~= localPlayer then
-                    delete(v)
-                end
-            end
-        elseif name == "me" then
-            local localPlayer = game.Players.LocalPlayer
-            if localPlayer then
-                delete(localPlayer)
-            end
-        end
-    end)
-end
-task.spawn(C_39)
+local script = G2L["39"];
+script.Parent.MouseButton1Click:Connect(function()
+local name = script.Parent.Parent.Parent.Username.Text
+local player = game.Players:FindFirstChild(name)
+
+if name ~= "all" and name ~= "others" and name ~= "me" then  
+		if player then  
+			delete(player)  
+		end  
+	elseif name == "all" then  
+		for _, v in pairs(game.Players:GetPlayers()) do  
+			if v then  
+				delete(v)  
+			end  
+		end  
+	elseif name == "others" then  
+		local localPlayer = game.Players.LocalPlayer  
+		for _, v in pairs(game.Players:GetPlayers()) do  
+			if v ~= localPlayer then  
+				delete(v)  
+			end  
+		end  
+	elseif name == "me" then  
+		local localPlayer = game.Players.LocalPlayer  
+		if localPlayer then  
+			delete(game.Players.LocalPlayer)  
+		end  
+	end  
+end)
+
+end;
+task.spawn(C_39);
 -- StarterGui.Strawberry.MainFrame.ScrollingFrame.Delete Tool.LocalScript
 local function C_3e()
 local script = G2L["3e"];
