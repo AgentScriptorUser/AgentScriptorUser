@@ -1234,3 +1234,67 @@ localPlayer.CharacterAdded:Connect(onCharacterRespawn)
 if localPlayer.Character then
     onCharacterRespawn(localPlayer.Character)
 end
+
+-- Anti Bag Toggle
+local antiBagEnabled = false
+local antiBagConnection
+
+local function enableAntiBag()
+    if game.PlaceId ~= 2788229376 then return end
+    local LP = game.Players.LocalPlayer
+
+    -- Remove any existing socks
+    for i, v in ipairs(LP.Character:GetDescendants()) do
+        if v.Name == "Christmas_Sock" then
+            v:Destroy()
+        end
+    end
+
+    -- Monitor future socks
+    antiBagConnection = LP.Character.ChildAdded:Connect(function()
+        task.wait(0.5)
+        for i, v in ipairs(LP.Character:GetDescendants()) do
+            if v.Name == "Christmas_Sock" then
+                v:Destroy()
+            end
+        end
+    end)
+end
+
+local function disableAntiBag()
+    if antiBagConnection then
+        antiBagConnection:Disconnect()
+        antiBagConnection = nil
+    end
+end
+
+local antiBagToggle = Instance.new("TextButton", scrollFrame)
+antiBagToggle.Size = UDim2.new(1, -20, 0, 40)
+antiBagToggle.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+antiBagToggle.TextColor3 = Color3.fromRGB(0, 0, 0)
+antiBagToggle.Font = Enum.Font.Gotham
+antiBagToggle.TextSize = 18
+antiBagToggle.Text = "Anti Bag: OFF"
+antiBagToggle.LayoutOrder = 41
+antiBagToggle.BorderSizePixel = 0
+Instance.new("UICorner", antiBagToggle).CornerRadius = UDim.new(0, 6)
+
+antiBagToggle.MouseButton1Click:Connect(function()
+    antiBagEnabled = not antiBagEnabled
+    antiBagToggle.Text = "Anti Bag: " .. (antiBagEnabled and "ON" or "OFF")
+    antiBagToggle.BackgroundColor3 = antiBagEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(255, 165, 0)
+
+    if antiBagEnabled then
+        enableAntiBag()
+    else
+        disableAntiBag()
+    end
+end)
+
+-- Auto re-enable after respawn
+game.Players.LocalPlayer.CharacterAdded:Connect(function(char)
+    if antiBagEnabled then
+        task.wait(1)
+        enableAntiBag()
+    end
+end)
