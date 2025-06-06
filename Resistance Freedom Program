@@ -1298,3 +1298,167 @@ game.Players.LocalPlayer.CharacterAdded:Connect(function(char)
         enableAntiBag()
     end
 end)
+
+-- Silent Animation V1 Toggle
+local silentAnimV1Enabled = false
+local silentAnimV1Connections = {}
+
+local function enableSilentAnimation(character)
+    local humanoid = character:WaitForChild("Humanoid")
+
+    -- Block all animation plays
+    table.insert(silentAnimV1Connections, humanoid.AnimationPlayed:Connect(function(track)
+        track:Stop()
+    end))
+
+    -- Remove Animate script if it appears
+    local function removeAnimate()
+        local animate = character:FindFirstChild("Animate")
+        if animate then
+            animate:Destroy()
+        end
+    end
+
+    removeAnimate()
+
+    table.insert(silentAnimV1Connections, character.ChildAdded:Connect(function(child)
+        if child.Name == "Animate" then
+            task.wait()
+            child:Destroy()
+        end
+    end))
+end
+
+local function disableSilentAnimation()
+    for _, conn in ipairs(silentAnimV1Connections) do
+        if conn and conn.Disconnect then
+            conn:Disconnect()
+        end
+    end
+    silentAnimV1Connections = {}
+end
+
+local silentAnimV1Toggle = Instance.new("TextButton", scrollFrame)
+silentAnimV1Toggle.Size = UDim2.new(1, -20, 0, 40)
+silentAnimV1Toggle.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+silentAnimV1Toggle.TextColor3 = Color3.fromRGB(0, 0, 0)
+silentAnimV1Toggle.Font = Enum.Font.Gotham
+silentAnimV1Toggle.TextSize = 18
+silentAnimV1Toggle.Text = "Silent Animation V1: OFF"
+silentAnimV1Toggle.LayoutOrder = 42
+silentAnimV1Toggle.BorderSizePixel = 0
+Instance.new("UICorner", silentAnimV1Toggle).CornerRadius = UDim.new(0, 6)
+
+silentAnimV1Toggle.MouseButton1Click:Connect(function()
+    silentAnimV1Enabled = not silentAnimV1Enabled
+    silentAnimV1Toggle.Text = "Silent Animation V1: " .. (silentAnimV1Enabled and "ON" or "OFF")
+    silentAnimV1Toggle.BackgroundColor3 = silentAnimV1Enabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(255, 165, 0)
+
+    if silentAnimV1Enabled then
+        if localPlayer.Character then
+            enableSilentAnimation(localPlayer.Character)
+        end
+    else
+        disableSilentAnimation()
+    end
+end)
+
+-- Ensure toggle effect applies on respawn
+localPlayer.CharacterAdded:Connect(function(char)
+    if silentAnimV1Enabled then
+        enableSilentAnimation(char)
+    end
+end)
+
+-- Activate if already spawned
+if localPlayer.Character and silentAnimV1Enabled then
+    enableSilentAnimation(localPlayer.Character)
+end
+
+-- Silent Animation V2 Toggle
+local silentAnimV2Enabled = false
+local silentAnimV2Connections = {}
+
+local function stopToolAnimationsV2(character)
+    -- Stop animations started by tools, without touching Animate script
+    local function onToolAdded(tool)
+        if tool:IsA("Tool") then
+            -- Tool's AnimationController animations
+            local animController = tool:FindFirstChildOfClass("AnimationController")
+            if animController then
+                table.insert(silentAnimV2Connections, animController.AnimationPlayed:Connect(function(track)
+                    track:Stop()
+                end))
+            end
+
+            -- Also stop animations played via Humanoid.Animator while tool equipped
+            local humanoid = character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                local animator = humanoid:FindFirstChildOfClass("Animator")
+                if animator then
+                    table.insert(silentAnimV2Connections, animator.AnimationPlayed:Connect(function(track)
+                        track:Stop()
+                    end))
+                end
+            end
+        end
+    end
+
+    -- Connect existing tools
+    for _, tool in pairs(character:GetChildren()) do
+        onToolAdded(tool)
+    end
+
+    -- Connect tools added later
+    table.insert(silentAnimV2Connections, character.ChildAdded:Connect(onToolAdded))
+end
+
+local function enableSilentAnimV2(character)
+    stopToolAnimationsV2(character)
+end
+
+local function disableSilentAnimV2()
+    for _, conn in ipairs(silentAnimV2Connections) do
+        if conn and conn.Disconnect then
+            conn:Disconnect()
+        end
+    end
+    silentAnimV2Connections = {}
+end
+
+local silentAnimV2Toggle = Instance.new("TextButton", scrollFrame)
+silentAnimV2Toggle.Size = UDim2.new(1, -20, 0, 40)
+silentAnimV2Toggle.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+silentAnimV2Toggle.TextColor3 = Color3.fromRGB(0, 0, 0)
+silentAnimV2Toggle.Font = Enum.Font.Gotham
+silentAnimV2Toggle.TextSize = 18
+silentAnimV2Toggle.Text = "Silent Animation V2: OFF"
+silentAnimV2Toggle.LayoutOrder = 43
+silentAnimV2Toggle.BorderSizePixel = 0
+Instance.new("UICorner", silentAnimV2Toggle).CornerRadius = UDim.new(0, 6)
+
+silentAnimV2Toggle.MouseButton1Click:Connect(function()
+    silentAnimV2Enabled = not silentAnimV2Enabled
+    silentAnimV2Toggle.Text = "Silent Animation V2: " .. (silentAnimV2Enabled and "ON" or "OFF")
+    silentAnimV2Toggle.BackgroundColor3 = silentAnimV2Enabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(255, 165, 0)
+
+    if silentAnimV2Enabled then
+        if localPlayer.Character then
+            enableSilentAnimV2(localPlayer.Character)
+        end
+    else
+        disableSilentAnimV2()
+    end
+end)
+
+-- Ensure V2 toggle applies on respawn
+localPlayer.CharacterAdded:Connect(function(char)
+    if silentAnimV2Enabled then
+        enableSilentAnimV2(char)
+    end
+end)
+
+-- Activate V2 if already spawned
+if localPlayer.Character and silentAnimV2Enabled then
+    enableSilentAnimV2(localPlayer.Character)
+end
