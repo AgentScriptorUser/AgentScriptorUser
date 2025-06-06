@@ -1181,3 +1181,56 @@ noJumpCooldownToggle.MouseButton1Click:Connect(function()
         print("NoJumpCoolDown Disabled")
     end
 end)
+
+local respawnWhereDiedEnabled = false
+local lastPosition = nil
+
+local function savePosition(char)
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if hrp then
+        lastPosition = hrp.Position
+    end
+end
+
+local function onCharacterRespawn(char)
+    local hrp = char:WaitForChild("HumanoidRootPart", 10)
+    if hrp and lastPosition and respawnWhereDiedEnabled then
+        task.wait(0.2)
+        hrp.CFrame = CFrame.new(lastPosition + Vector3.new(0, 5, 0))
+    end
+
+    while char.Parent and respawnWhereDiedEnabled do
+        savePosition(char)
+        task.wait(1)
+    end
+end
+
+-- Toggle UI Button
+local respawnToggle = Instance.new("TextButton", scrollFrame)
+respawnToggle.Size = UDim2.new(1, -20, 0, 40)
+respawnToggle.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+respawnToggle.TextColor3 = Color3.fromRGB(0, 0, 0)
+respawnToggle.Font = Enum.Font.Gotham
+respawnToggle.TextSize = 18
+respawnToggle.Text = "Respawn Where Died: OFF"
+respawnToggle.LayoutOrder = 40
+respawnToggle.BorderSizePixel = 0
+Instance.new("UICorner", respawnToggle).CornerRadius = UDim.new(0, 6)
+
+respawnToggle.MouseButton1Click:Connect(function()
+    respawnWhereDiedEnabled = not respawnWhereDiedEnabled
+    respawnToggle.Text = "Respawn Where Died: " .. (respawnWhereDiedEnabled and "ON" or "OFF")
+    respawnToggle.BackgroundColor3 = respawnWhereDiedEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(255, 165, 0)
+
+    if respawnWhereDiedEnabled and localPlayer.Character then
+        onCharacterRespawn(localPlayer.Character)
+    end
+end)
+
+-- Hook into character respawning
+localPlayer.CharacterAdded:Connect(onCharacterRespawn)
+
+-- Initialize if character already exists
+if localPlayer.Character then
+    onCharacterRespawn(localPlayer.Character)
+end
