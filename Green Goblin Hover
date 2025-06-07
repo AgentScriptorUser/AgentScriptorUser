@@ -1,0 +1,214 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local rootPart = character:WaitForChild("HumanoidRootPart")
+
+-- Cleanup old glider if exists
+local oldGlider = workspace:FindFirstChild("GoblinGlider")
+if oldGlider then oldGlider:Destroy() end
+
+-- Create glider model container
+local glider = Instance.new("Model")
+glider.Name = "GoblinGlider"
+glider.Parent = workspace
+
+-- Helper: create parts with standard settings
+local function createPart(name, size, cframe, color, material, anchored, canCollide, transparency, parent)
+local part = Instance.new("Part")
+part.Name = name
+part.Size = size
+part.CFrame = cframe
+part.BrickColor = BrickColor.new(color)
+part.Material = material
+part.Anchored = anchored
+part.CanCollide = canCollide
+part.Transparency = transparency or 0
+part.Parent = parent
+part.CastShadow = false
+return part
+end
+
+local function weldParts(part0, part1)
+local weld = Instance.new("WeldConstraint")
+weld.Part0 = part0
+weld.Part1 = part1
+weld.Parent = part0
+return weld
+end
+
+-- Core body: Dark, angular, with neon veins
+local coreSize = Vector3.new(4, 0.6, 6)
+local coreCFrame = rootPart.CFrame * CFrame.new(0, -3, 0)
+local core = createPart("Core", coreSize, coreCFrame, "Dark green", Enum.Material.Metal, false, false, 0, glider)
+weldParts(core, rootPart)
+
+-- Inner rotating orb as energy core (neon lime green)
+local orb = createPart("EnergyOrb", Vector3.new(1.5, 1.5, 1.5), core.CFrame * CFrame.new(0, 0.2, 0), "Lime green", Enum.Material.Neon, false, false, 0.2, glider)
+weldParts(orb, core)
+
+-- Orb rotation tween
+local orbRotationSpeed = 60 -- degrees per second
+
+-- Razor sharp wing blades (3 segments per wing)
+local wingBlades = {}
+local function createWingBlades(side)
+for i = 0, 2 do
+local bladeLength = 3 + i * 0.5
+local offsetX = side * (3 + i * 1.2)
+local offsetZ = i * 1.5 - 1.5
+local angleZ = math.rad(side * -20)
+local blade = createPart("BladeSegment", Vector3.new(0.2, 0.6, bladeLength), core.CFrame * CFrame.new(offsetX, 0, offsetZ) * CFrame.Angles(0, 0, angleZ), "Dark green", Enum.Material.SmoothPlastic, false, false, 0, glider)
+
+-- Add glowing edge neon part for each blade  
+    local edgeGlow = createPart("EdgeGlow", Vector3.new(0.1, 0.7, bladeLength * 0.9), blade.CFrame * CFrame.new(0, 0.2, 0), "Lime green", Enum.Material.Neon, false, false, 0.4, glider)  
+    weldParts(edgeGlow, blade)  
+    weldParts(blade, core)  
+      
+    table.insert(wingBlades, blade)  
+end
+
+end
+createWingBlades(-1) -- left wing
+createWingBlades(1)  -- right wing
+
+-- Angled rear stabilizers (wider and more aggressive)
+for _, xOffset in ipairs({-2.5, 2.5}) do
+local stabCFrame = core.CFrame * CFrame.new(xOffset, 1, 2.5) * CFrame.Angles(math.rad(-60), 0, 0)
+local stabilizer = createPart("Stabilizer", Vector3.new(0.3, 2, 2.5), stabCFrame, "Black", Enum.Material.Metal, false, false, 0, glider)
+
+-- Neon fins on stabilizers edges  
+local neonFin = createPart("NeonFin", Vector3.new(0.1, 2.2, 2.7), stabilizer.CFrame * CFrame.new(0, 0, -0.1), "Lime green", Enum.Material.Neon, false, false, 0.5, glider)  
+
+weldParts(neonFin, stabilizer)  
+weldParts(stabilizer, core)
+
+end
+
+-- Glowing energy veins on core body - thin neon parts in an "X" pattern
+local veins = {}
+local veinPositions = {
+{Vector3.new(-1.5, 0.05, -1.5), Vector3.new(1.5, 0.05, 1.5)},
+{Vector3.new(-1.5, 0.05, 1.5), Vector3.new(1.5, 0.05, -1.5)},
+}
+
+for _, pair in ipairs(veinPositions) do
+local startPos, endPos = pair[1], pair[2]
+local veinLength = (endPos - startPos).Magnitude
+local midPoint = (startPos + endPos) / 2
+local direction = (endPos - startPos).Unit
+local angle = math.atan2(direction.Z, direction.X)
+
+local vein = createPart("EnergyVein", Vector3.new(0.15, 0.15, veinLength), core.CFrame * CFrame.new(midPoint) * CFrame.Angles(0, -angle, 0), "Lime green", Enum.Material.Neon, false, false, 0.2, glider)  
+weldParts(vein, core)  
+table.insert(veins, vein)
+
+end
+
+-- Trail with brighter, flickering neon glow
+local attachFront = Instance.new("Attachment", core)
+attachFront.Position = Vector3.new(0, 0, 3)
+local attachBack = Instance.new("Attachment", core)
+attachBack.Position = Vector3.new(0, 0, -3)
+
+local trail = Instance.new("Trail", core)
+trail.Attachment0 = attachFront
+trail.Attachment1 = attachBack
+trail.Color = ColorSequence.new{
+ColorSequenceKeypoint.new(0, Color3.fromRGB(50, 255, 50)),
+ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 100, 0)),
+}
+trail.LightEmission = 1
+trail.Transparency = NumberSequence.new{
+NumberSequenceKeypoint.new(0, 0.05),
+NumberSequenceKeypoint.new(0.5, 0.1),
+NumberSequenceKeypoint.new(1, 0.3),
+}
+trail.Lifetime = 1.2
+
+-- Particle exhaust with flicker and random spread for more energy
+local exhaust = Instance.new("ParticleEmitter", core)
+exhaust.Color = ColorSequence.new(Color3.fromRGB(50, 255, 50))
+exhaust.Texture = "rbxassetid://26356442"
+exhaust.Size = NumberSequence.new{
+NumberSequenceKeypoint.new(0, 2),
+NumberSequenceKeypoint.new(1, 0),
+}
+exhaust.Lifetime = NumberRange.new(0.3, 0.6)
+exhaust.Rate = 120
+exhaust.Speed = NumberRange.new(8, 12)
+exhaust.VelocitySpread = 80
+exhaust.Rotation = NumberRange.new(0, 360)
+exhaust.RotSpeed = NumberRange.new(-180, 180)
+
+-- Sparks particle bursts on wing tips for raw energy effect
+for _, blade in ipairs(wingBlades) do
+local sparkEmitter = Instance.new("ParticleEmitter", blade)
+sparkEmitter.Color = ColorSequence.new(Color3.fromRGB(80, 255, 80))
+sparkEmitter.Texture = "rbxassetid://248625108" -- spark texture
+sparkEmitter.Size = NumberSequence.new(0.5)
+sparkEmitter.Lifetime = NumberRange.new(0.1, 0.3)
+sparkEmitter.Rate = 15
+sparkEmitter.Speed = NumberRange.new(2, 5)
+sparkEmitter.VelocitySpread = 30
+sparkEmitter.Rotation = NumberRange.new(0, 360)
+sparkEmitter.RotSpeed = NumberRange.new(-90, 90)
+sparkEmitter.Enabled = true
+end
+
+-- Hover position follow with slight bobbing effect and smooth tilt rotation
+local hoverPos = Instance.new("BodyPosition", core)
+hoverPos.MaxForce = Vector3.new(1e6, 1e6, 1e6)
+hoverPos.P = 10000
+hoverPos.D = 1000
+
+local bodyGyro = Instance.new("BodyGyro", core)
+bodyGyro.MaxTorque = Vector3.new(1e5, 1e5, 1e5)
+bodyGyro.P = 5000
+bodyGyro.D = 1000
+
+local bobAmplitude = 0.5 -- increased amplitude for more pronounced bob
+local bobSpeed = 3
+local timeElapsed = 0
+
+-- Pulse control for orb and veins glow intensity
+local pulseTime = 0
+RunService.Heartbeat:Connect(function(dt)
+timeElapsed = timeElapsed + dt
+pulseTime = pulseTime + dt * 3 -- pulse speed
+
+-- Rotate orb  
+orb.CFrame = orb.CFrame * CFrame.Angles(0, math.rad(orbRotationSpeed * dt), 0)  
+
+-- Bob position with sine wave  
+if core and rootPart then  
+    local targetPos = rootPart.Position - Vector3.new(0, 3, 0) + Vector3.new(0, math.sin(timeElapsed * bobSpeed) * bobAmplitude, 0)  
+    hoverPos.Position = targetPos  
+
+    -- Add subtle rotation tilt based on bob  
+    local tiltAngle = math.sin(timeElapsed * bobSpeed * 2) * math.rad(5)  
+    bodyGyro.CFrame = CFrame.Angles(tiltAngle, rootPart.Orientation.Y * math.pi / 180, 0)  
+end  
+
+-- Pulsing glow intensity  
+local pulseIntensity = (math.sin(pulseTime) * 0.5 + 0.5) * 0.6 + 0.4  
+local neonColor = Color3.fromRGB(50, 255, 50) * pulseIntensity  
+
+core.BrickColor = BrickColor.new(Color3.fromRGB(10, 80, 10)) -- very dark green base  
+orb.BrickColor = BrickColor.new(neonColor)  
+
+for _, vein in pairs(veins) do  
+    vein.BrickColor = BrickColor.new(neonColor)  
+    vein.Transparency = 0.2 + 0.3 * (1 - pulseIntensity)  
+end  
+
+-- Trail brightness pulse to match core  
+trail.Transparency = NumberSequence.new{  
+    NumberSequenceKeypoint.new(0, 0.3 - pulseIntensity * 0.25),  
+    NumberSequenceKeypoint.new(0.5, 0.4 - pulseIntensity * 0.3),  
+    NumberSequenceKeypoint.new(1, 0.6 - pulseIntensity * 0.4),  
+}
+
+end)
+
