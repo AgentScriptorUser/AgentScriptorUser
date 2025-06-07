@@ -1,0 +1,13 @@
+-- Headless script that runs on execution
+
+local player = game.Players.LocalPlayer
+local head = player.Character and player.Character:FindFirstChild("Head")
+
+if head then
+    head.Transparency = 1
+    for _, child in pairs(head:GetChildren()) do
+        if child:IsA("Decal") then
+            child:Destroy()
+        end
+    end
+end
