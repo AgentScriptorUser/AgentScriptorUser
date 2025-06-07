@@ -1,0 +1,24 @@
+local plr = game.Players.LocalPlayer
+local Character = plr.Character or plr.CharacterAdded:Wait()
+
+-- Stop current animations
+local function StopAnim()
+	for _, track in pairs(Character.Humanoid:GetPlayingAnimationTracks()) do
+		track:Stop()
+	end
+end
+
+local Animate = Character:WaitForChild("Animate")
+Animate.Disabled = true
+StopAnim()
+
+Animate.idle.Animation1.AnimationId = "http://www.roblox.com/asset/?id=3489171152"
+Animate.idle.Animation2.AnimationId = "http://www.roblox.com/asset/?id=3489171152"
+Animate.walk.WalkAnim.AnimationId = "http://www.roblox.com/asset/?id=3489174223"
+Animate.run.RunAnim.AnimationId = "http://www.roblox.com/asset/?id=3489173414"
+Animate.jump.JumpAnim.AnimationId = "http://www.roblox.com/asset/?id=616161997"
+Animate.climb.ClimbAnim.AnimationId = "http://www.roblox.com/asset/?id=616156119"
+Animate.fall.FallAnim.AnimationId = "http://www.roblox.com/asset/?id=616157476"
+
+Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+Animate.Disabled = false
