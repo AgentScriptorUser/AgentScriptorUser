@@ -188,7 +188,7 @@ createButtonRow(5, {
         loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Da%20hood%20ip%20log%20script"))()
     end},
     {"Call of duty Zombie", function()
-        loadstring(game:HttpGet("https://pastefy.ga/n42Ougzx/raw", true))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Call%20of%20duty%20Zombie", true))()
     end}
 })
 
