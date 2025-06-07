@@ -524,9 +524,21 @@ Instance.new("UICorner", visualSectionLabel).CornerRadius = UDim.new(0, 6)
 -- Visual buttons row
 createButtonRow(21, {
     {
-        "ESP Players",  -- renamed button
+        "ESP Players",
         function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Da%20hood%20esp"))()
+        end
+    },
+    {
+        "Korblox Right",
+        function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Right%20Korblox", true))()
+        end
+    },
+    {
+        "Korblox Left",
+        function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Korblox%20Left"))()
         end
     }
 })
