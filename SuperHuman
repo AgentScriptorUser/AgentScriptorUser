@@ -1,0 +1,36 @@
+
+-- Da Hood Speed Script (Velocity Method)
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local char = player.Character or player.CharacterAdded:Wait()
+local hrp = char:WaitForChild("HumanoidRootPart")
+local hum = char:WaitForChild("Humanoid")
+
+local speed = 20 -- Change this for faster/slower speed (suggest 4-6)
+
+-- Update movement
+RunService.RenderStepped:Connect(function()
+if hum.MoveDirection.Magnitude > 0 then
+hrp.Velocity = hum.MoveDirection * (speed * 10)
+end
+end)
+
+-- Da Hood JumpPower Script
+local Players = game:GetService("Players")
+
+local player = Players.LocalPlayer
+local function onCharacterAdded(char)
+    local hum = char:WaitForChild("Humanoid")
+
+    -- Set your custom JumpPower here
+    hum.JumpPower = 200 -- Default is 50. Increase for higher jumps.
+end
+
+-- Connect for current and future characters
+if player.Character then
+    onCharacterAdded(player.Character)
+end
+
+player.CharacterAdded:Connect(onCharacterAdded)
