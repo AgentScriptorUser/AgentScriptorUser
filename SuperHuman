@@ -1,20 +1,38 @@
 
--- Da Hood Speed Script (Velocity Method)
+-- Permanent Da Hood Speed Script (Velocity Method)
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
 local player = Players.LocalPlayer
-local char = player.Character or player.CharacterAdded:Wait()
-local hrp = char:WaitForChild("HumanoidRootPart")
-local hum = char:WaitForChild("Humanoid")
+local speed = 20 -- Change this to adjust speed (recommended: 4-6)
 
-local speed = 20 -- Change this for faster/slower speed (suggest 4-6)
+local function applySpeed(char)
+    local hrp = char:WaitForChild("HumanoidRootPart")
+    local hum = char:WaitForChild("Humanoid")
 
--- Update movement
-RunService.RenderStepped:Connect(function()
-if hum.MoveDirection.Magnitude > 0 then
-hrp.Velocity = hum.MoveDirection * (speed * 10)
+    -- Disconnect old connection if exists
+    if _G.speedConnection then
+        _G.speedConnection:Disconnect()
+    end
+
+    -- Constant velocity update
+    _G.speedConnection = RunService.RenderStepped:Connect(function()
+        if hum.MoveDirection.Magnitude > 0 then
+            hrp.Velocity = hum.MoveDirection * (speed * 10)
+        end
+    end)
 end
+
+-- Initial apply
+if player.Character then
+    applySpeed(player.Character)
+end
+
+-- Re-apply on respawn
+player.CharacterAdded:Connect(function(char)
+    char:WaitForChild("HumanoidRootPart")
+    char:WaitForChild("Humanoid")
+    applySpeed(char)
 end)
 
 -- Da Hood High Jump on Jump Button Press
