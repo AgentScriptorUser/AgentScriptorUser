@@ -542,7 +542,23 @@ createButtonRow(21, {
         end
     }
 })
- 
+
+-- Visual buttons row 22
+createButtonRow(22, {
+    {
+        "Headless",
+        function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Headless"))()
+        end
+    },
+    {
+        "GreenGoblin Hover",
+        function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Green%20Goblin%20Hover"))()
+        end
+    }
+})
+
 -- Esp Tracers Toggle Button (formerly Tracers Toggle)
  
 local Players = game:GetService("Players")
@@ -642,7 +658,7 @@ espToggle.TextColor3 = Color3.fromRGB(0, 0, 0)
 espToggle.Font = Enum.Font.Gotham
 espToggle.TextSize = 18
 espToggle.Text = "Esp Tracers: OFF"  -- renamed toggle text
-espToggle.LayoutOrder = 22
+espToggle.LayoutOrder = 23
 espToggle.BorderSizePixel = 0
 Instance.new("UICorner", espToggle).CornerRadius = UDim.new(0, 6)
  
