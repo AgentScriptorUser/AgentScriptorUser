@@ -17,20 +17,27 @@ hrp.Velocity = hum.MoveDirection * (speed * 10)
 end
 end)
 
--- Da Hood JumpPower Script
+-- Da Hood High Jump on Jump Button Press
 local Players = game:GetService("Players")
 
 local player = Players.LocalPlayer
-local function onCharacterAdded(char)
-    local hum = char:WaitForChild("Humanoid")
 
-    -- Set your custom JumpPower here
-    hum.JumpPower = 200 -- Default is 50. Increase for higher jumps.
+local function setupJumpBoost(character)
+    local hum = character:WaitForChild("Humanoid")
+    local hrp = character:WaitForChild("HumanoidRootPart")
+    
+    hum.StateChanged:Connect(function(oldState, newState)
+        if newState == Enum.HumanoidStateType.Jumping then
+            -- Small delay to override default jump
+            task.wait(0.05)
+            hrp.Velocity = Vector3.new(hrp.Velocity.X, 200, hrp.Velocity.Z) -- adjust 200 for jump height
+        end
+    end)
 end
 
--- Connect for current and future characters
+-- Setup for current and future characters
 if player.Character then
-    onCharacterAdded(player.Character)
+    setupJumpBoost(player.Character)
 end
 
-player.CharacterAdded:Connect(onCharacterAdded)
+player.CharacterAdded:Connect(setupJumpBoost)
