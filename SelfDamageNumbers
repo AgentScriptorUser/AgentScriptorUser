@@ -1,0 +1,58 @@
+local Players = game:GetService("Players")
+local localPlayer = Players.LocalPlayer
+
+local function showDamageNumber(character, amount, isHealing)
+	if not character or not character:FindFirstChild("Head") then return end
+	if character ~= localPlayer.Character then return end
+
+	local head = character.Head
+
+	local gui = Instance.new("BillboardGui")
+	gui.Adornee = head
+	gui.Size = UDim2.new(0, 100, 0, 40)
+	gui.StudsOffset = Vector3.new(0, 2, 0)
+	gui.AlwaysOnTop = true
+	gui.Parent = game.Workspace
+
+	local label = Instance.new("TextLabel")
+	label.Size = UDim2.new(1, 0, 1, 0)
+	label.BackgroundTransparency = 1
+	label.TextScaled = true
+	label.Text = (isHealing and "+" or "-") .. tostring(math.floor(amount))
+	label.TextColor3 = isHealing and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+	label.Font = Enum.Font.GothamBold
+	label.Parent = gui
+
+	local tweenService = game:GetService("TweenService")
+	local info = TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+	local tween = tweenService:Create(gui, info, {StudsOffset = Vector3.new(0, 4, 0)})
+	local fadeTween = tweenService:Create(label, info, {TextTransparency = 1})
+
+	tween:Play()
+	fadeTween:Play()
+
+	game.Debris:AddItem(gui, 1.2)
+end
+
+local function trackHealth(character)
+	local humanoid = character:WaitForChild("Humanoid")
+	local lastHealth = humanoid.Health
+
+	humanoid.HealthChanged:Connect(function(newHealth)
+		local diff = newHealth - lastHealth
+		if diff ~= 0 then
+			showDamageNumber(character, math.abs(diff), diff > 0)
+		end
+		lastHealth = newHealth
+	end)
+end
+
+localPlayer.CharacterAdded:Connect(function(char)
+	wait(1)
+	trackHealth(char)
+end)
+
+-- If character already loaded
+if localPlayer.Character then
+	trackHealth(localPlayer.Character)
+end
