@@ -194,7 +194,7 @@ createButtonRow(5, {
 
 createButtonRow(6, {
     {"Ball", function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Neckgrab"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Ball%20script"))()
     end}
 })
 
