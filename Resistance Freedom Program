@@ -173,7 +173,7 @@ createButtonRow(4, {
         loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Da%20Strike%20web%20swing%20sound"))()
     end},
     {"WalkOnWalls", function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/WalkOnWalls%20Notification"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Da%20hood%20walkonwalls"))()
     end},
     {"Invisible", function()
         loadstring(game:HttpGet("https://pastebin.com/raw/3Rnd9rHf"))()
