@@ -392,7 +392,7 @@ aimSectionLabel.LayoutOrder = 13
 aimSectionLabel.BorderSizePixel = 0
 Instance.new("UICorner", aimSectionLabel).CornerRadius = UDim.new(0, 6)
 
--- Aim/Hitbox Buttons Row: Kill Aura and Aimbot
+-- Aim/Hitbox Buttons Row: Kill Aura , Aimbot and Camlock
 createButtonRow(14, {
     {
         "Kill Aura",
@@ -404,6 +404,12 @@ createButtonRow(14, {
         "Aimbot",
         function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Da%20hood%20Aimbot%20script"))()
+        end
+    },
+    {
+        "Camlock",
+        function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Camlock%20script"))()
         end
     }
 })
