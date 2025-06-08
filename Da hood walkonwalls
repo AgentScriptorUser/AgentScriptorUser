@@ -1,0 +1,56 @@
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local rootPart = character:WaitForChild("HumanoidRootPart")
+local animate = character:WaitForChild("Animate")
+local RunService = game:GetService("RunService")
+
+local climbing = false
+local climbSpeed = 20 -- studs per second
+
+local rayParams = RaycastParams.new()
+rayParams.FilterDescendantsInstances = {character}
+rayParams.FilterType = Enum.RaycastFilterType.Blacklist
+
+-- Custom climbing animation
+animate.climb.ClimbAnim.AnimationId = "http://www.roblox.com/asset/?id=782843869"
+local climbAnim = humanoid:LoadAnimation(animate.climb.ClimbAnim)
+
+local function isWallInFront()
+	local direction = rootPart.CFrame.LookVector * 2
+	local raycastResult = workspace:Raycast(rootPart.Position, direction, rayParams)
+	if raycastResult then
+		local normal = raycastResult.Normal
+		if math.abs(normal.Y) < 0.5 then
+			return true
+		end
+	end
+	return false
+end
+
+local function startClimb()
+	climbing = true
+	if not climbAnim.IsPlaying then
+		climbAnim:Play()
+	end
+end
+
+local function stopClimb()
+	climbing = false
+	climbAnim:Stop()
+	rootPart.AssemblyLinearVelocity = Vector3.zero -- stop movement
+end
+
+RunService.RenderStepped:Connect(function(dt)
+	if isWallInFront() then
+		if not climbing then
+			startClimb()
+		end
+		-- Apply upward velocity
+		rootPart.AssemblyLinearVelocity = Vector3.new(0, climbSpeed, 0)
+	else
+		if climbing then
+			stopClimb()
+		end
+	end
+end)
