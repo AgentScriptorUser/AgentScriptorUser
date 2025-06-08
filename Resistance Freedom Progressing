@@ -192,6 +192,12 @@ createButtonRow(5, {
     end}
 })
 
+createButtonRow(6, {
+    {"Ball", function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Neckgrab"))()
+    end}
+})
+
 -- Teleport Section Label
 local teleportSectionLabel = Instance.new("TextLabel", scrollFrame)
 teleportSectionLabel.Size = UDim2.new(1, -20, 0, 30)
@@ -201,12 +207,12 @@ teleportSectionLabel.Font = Enum.Font.GothamBold
 teleportSectionLabel.TextSize = 20
 teleportSectionLabel.Text = "Teleport"
 teleportSectionLabel.TextXAlignment = Enum.TextXAlignment.Left
-teleportSectionLabel.LayoutOrder = 5
+teleportSectionLabel.LayoutOrder = 7
 teleportSectionLabel.BorderSizePixel = 0
 Instance.new("UICorner", teleportSectionLabel).CornerRadius = UDim.new(0, 6)
 
 -- Row 6: Bank, Hood Fitness, Uphill GunShop
-createButtonRow(6, {
+createButtonRow(8, {
     {"Bank", function()
         local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
         if hrp then 
@@ -228,7 +234,7 @@ createButtonRow(6, {
 })
 
 -- Row 7: Police Station, Hair Salon, Taco Bell
-createButtonRow(7, {
+createButtonRow(9, {
     {"Police Station", function()
         local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
         if hrp then 
@@ -250,7 +256,7 @@ createButtonRow(7, {
 })
 
 -- Row 8: Basketball, DrumGun Area, Da Theater
-createButtonRow(8, {
+createButtonRow(10, {
     {"Basketball", function()
         local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
         if hrp then 
@@ -272,7 +278,7 @@ createButtonRow(8, {
 })
 
 -- Row 9: Da Box, Food Shop, Church
-createButtonRow(9, {
+createButtonRow(11, {
     {"Da Box", function()
         local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
         if hrp then 
@@ -294,7 +300,7 @@ createButtonRow(9, {
 })
 
 -- Row 10: Da Arcade, Fire department (updated), Da High School
-createButtonRow(10, {
+createButtonRow(12, {
     {"Da Arcade", function()
         local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
         if hrp then 
@@ -316,7 +322,7 @@ createButtonRow(10, {
 })
 
 -- Row 11: Hood Kicks, Da Military, Playground (Updated CFrame)
-createButtonRow(11, {
+createButtonRow(13, {
     {"Hood Kicks", function()
         local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
         if hrp then 
@@ -343,7 +349,7 @@ createButtonRow(11, {
 })
 
 -- Row 12: DownHill GunShop, Gas Station, Barba
-createButtonRow(12, {
+createButtonRow(14, {
     {"DownHill GunShop", function()
         local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
         if hrp then
