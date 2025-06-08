@@ -1,0 +1,80 @@
+-- [[ Auto Ball Mode by ChatGPT + Melon ]] --
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Camera = workspace.CurrentCamera
+
+local player = Players.LocalPlayer
+local function waitForCharacter()
+    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        return player.Character
+    end
+    return player.CharacterAdded:Wait()
+end
+
+local SPEED_MULTIPLIER = 30
+local JUMP_POWER = 60
+local JUMP_GAP = 0.3
+
+local function EnableBallMode(character)
+	local humanoid = character:WaitForChild("Humanoid")
+	local root = character:WaitForChild("HumanoidRootPart")
+
+	-- Make character parts non-collidable and visible
+	for _, part in ipairs(character:GetDescendants()) do
+		if part:IsA("BasePart") then
+			part.CanCollide = false
+			part.Transparency = 0
+		end
+	end
+
+	-- Turn HumanoidRootPart into a ball
+	root.Shape = Enum.PartType.Ball
+	root.Material = Enum.Material.SmoothPlastic
+	root.Size = Vector3.new(5, 5, 5)
+	root.Transparency = 0.75
+
+	-- Set up raycast params for jumping
+	local rayParams = RaycastParams.new()
+	rayParams.FilterType = Enum.RaycastFilterType.Blacklist
+	rayParams.FilterDescendantsInstances = {character}
+
+	-- Loop to control rotation
+	local connection
+	connection = RunService.RenderStepped:Connect(function(dt)
+		root.CanCollide = true
+		humanoid.PlatformStand = true
+
+		local moveDir = humanoid.MoveDirection
+		if moveDir.Magnitude > 0 then
+			local worldDir = Camera.CFrame:VectorToWorldSpace(moveDir).Unit
+			root.RotVelocity += Vector3.new(worldDir.X, 0, worldDir.Z) * dt * SPEED_MULTIPLIER
+		end
+	end)
+
+	-- Jump on ground check
+	UserInputService.JumpRequest:Connect(function()
+		local result = workspace:Raycast(
+			root.Position,
+			Vector3.new(0, -((root.Size.Y / 2) + JUMP_GAP), 0),
+			rayParams
+		)
+		if result then
+			root.Velocity += Vector3.new(0, JUMP_POWER, 0)
+		end
+	end)
+
+	-- Camera follows the ball
+	Camera.CameraSubject = root
+
+	humanoid.Died:Connect(function()
+		if connection then connection:Disconnect() end
+	end)
+end
+
+-- Auto-run when character loads
+coroutine.wrap(function()
+	local character = waitForCharacter()
+	EnableBallMode(character)
+end)()
