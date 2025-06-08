@@ -803,6 +803,221 @@ moneyESPButton.MouseButton1Click:Connect(function()
 	end
 end)
 
+-- Worth R$ Players V1 Toggle
+local worthREnabled = false
+local worthScriptConnection = nil
+
+local worthRToggle = Instance.new("TextButton", scrollFrame)
+worthRToggle.Size = UDim2.new(1, -20, 0, 40)
+worthRToggle.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+worthRToggle.TextColor3 = Color3.fromRGB(0, 0, 0)
+worthRToggle.Font = Enum.Font.Gotham
+worthRToggle.TextSize = 18
+worthRToggle.Text = "Worth R$ Players V1: OFF"
+worthRToggle.LayoutOrder = 25
+worthRToggle.BorderSizePixel = 0
+Instance.new("UICorner", worthRToggle).CornerRadius = UDim.new(0, 6)
+
+worthRToggle.MouseButton1Click:Connect(function()
+	worthREnabled = not worthREnabled
+	worthRToggle.Text = "Worth R$ Players V1: " .. (worthREnabled and "ON" or "OFF")
+	worthRToggle.BackgroundColor3 = worthREnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(255, 165, 0)
+
+	if worthREnabled then
+		-- Run the Worth R$ script
+		task.spawn(function()
+			pcall(function()
+				loadstring([[
+					local Players = game:GetService("Players")
+					local MarketplaceService = game:GetService("MarketplaceService")
+
+					local PriceCache = {}
+
+					local function getAssetPrice(assetId)
+						if not assetId or assetId == 0 then return 0 end
+						if PriceCache[assetId] then return PriceCache[assetId] end
+
+						local success, info = pcall(function()
+							return MarketplaceService:GetProductInfo(assetId, Enum.InfoType.Asset)
+						end)
+
+						local price = 0
+						if success and info and info.PriceInRobux then
+							price = info.PriceInRobux
+						end
+
+						PriceCache[assetId] = price
+						return price
+					end
+
+					local function extractIdFromUrl(url)
+						local id = tonumber(string.match(url or "", "%d+"))
+						return id or 0
+					end
+
+					local function getAccessoryAssetId(accessory)
+						if not accessory:IsA("Accessory") then return nil end
+						local handle = accessory:FindFirstChild("Handle")
+						if not handle then return nil end
+
+						local assetId = accessory:FindFirstChild("AssetId")
+						if assetId and tonumber(assetId.Value) then
+							return tonumber(assetId.Value)
+						end
+
+						local mesh = handle:FindFirstChildWhichIsA("SpecialMesh") or handle:FindFirstChildWhichIsA("Mesh")
+						if mesh and mesh.MeshId and mesh.MeshId ~= "" then
+							return extractIdFromUrl(mesh.MeshId)
+						end
+						if handle:IsA("MeshPart") and handle.MeshId and handle.MeshId ~= "" then
+							return extractIdFromUrl(handle.MeshId)
+						end
+						if mesh and mesh.TextureId and mesh.TextureId ~= "" then
+							return extractIdFromUrl(mesh.TextureId)
+						end
+						if handle.TextureID and handle.TextureID ~= "" then
+							return extractIdFromUrl(handle.TextureID)
+						end
+
+						return nil
+					end
+
+					local function calculatePlayerWearablesWorth(player)
+						local character = player.Character
+						if not character then return 0 end
+
+						local humanoid = character:FindFirstChildOfClass("Humanoid")
+						if not humanoid then return 0 end
+
+						local description = humanoid:GetAppliedDescription()
+						local assetIds = {}
+
+						if description then
+							local descAssets = {
+								description.Shirt,
+								description.Pants,
+								description.Face,
+								description.Head,
+								description.Torso,
+								description.LeftArm,
+								description.RightArm,
+								description.LeftLeg,
+								description.RightLeg,
+								description.BackAccessory,
+								description.FaceAccessory,
+								description.FrontAccessory,
+								description.HairAccessory,
+								description.HatAccessory,
+								description.NeckAccessory,
+								description.ShouldersAccessory,
+								description.WaistAccessory,
+							}
+
+							for _, id in ipairs(descAssets) do
+								if id and id ~= 0 then
+									table.insert(assetIds, id)
+								end
+							end
+						end
+
+						local shirt = character:FindFirstChildOfClass("Shirt")
+						local pants = character:FindFirstChildOfClass("Pants")
+						if shirt and shirt.ShirtTemplate then
+							local id = extractIdFromUrl(shirt.ShirtTemplate)
+							if id > 0 then table.insert(assetIds, id) end
+						end
+						if pants and pants.PantsTemplate then
+							local id = extractIdFromUrl(pants.PantsTemplate)
+							if id > 0 then table.insert(assetIds, id) end
+						end
+
+						for _, child in ipairs(character:GetChildren()) do
+							if child:IsA("Accessory") then
+								local id = getAccessoryAssetId(child)
+								if id and id > 0 then
+									table.insert(assetIds, id)
+								end
+							end
+						end
+
+						local uniqueIds = {}
+						for _, id in ipairs(assetIds) do
+							uniqueIds[id] = true
+						end
+
+						local totalRobux = 0
+						for assetId in pairs(uniqueIds) do
+							totalRobux += getAssetPrice(assetId)
+						end
+
+						return totalRobux
+					end
+
+					local function createWorthDisplay(character, worth)
+						local head = character:FindFirstChild("Head")
+						if not head then return end
+
+						local existing = head:FindFirstChild("WorthDisplay")
+						if existing then existing:Destroy() end
+
+						local billboard = Instance.new("BillboardGui")
+						billboard.Name = "WorthDisplay"
+						billboard.Size = UDim2.new(0, 200, 0, 50)
+						billboard.StudsOffset = Vector3.new(0, 2.5, 0)
+						billboard.AlwaysOnTop = true
+						billboard.Parent = head
+
+						local textLabel = Instance.new("TextLabel")
+						textLabel.Name = "WorthText"
+						textLabel.Size = UDim2.new(1, 0, 1, 0)
+						textLabel.BackgroundTransparency = 1
+						textLabel.TextColor3 = Color3.fromRGB(255, 255, 0)
+						textLabel.TextStrokeTransparency = 0.5
+						textLabel.TextScaled = true
+						textLabel.Font = Enum.Font.SourceSansBold
+						textLabel.Text = "💰 " .. worth .. " R$"
+						textLabel.Parent = billboard
+					end
+
+					local function updatePlayerWorth(player)
+						local worth = calculatePlayerWearablesWorth(player)
+						if player.Character then
+							createWorthDisplay(player.Character, worth)
+						end
+					end
+
+					local function setupCharacterWorthDisplay(player)
+						player.CharacterAdded:Connect(function()
+							task.wait(2)
+							updatePlayerWorth(player)
+						end)
+
+						if player.Character then
+							task.wait(2)
+							updatePlayerWorth(player)
+						end
+					end
+
+					for _, player in ipairs(Players:GetPlayers()) do
+						setupCharacterWorthDisplay(player)
+					end
+
+					Players.PlayerAdded:Connect(setupCharacterWorthDisplay)
+				]])()
+			end)
+		end)
+	else
+		-- Remove all worth displays
+		for _, player in ipairs(game:GetService("Players"):GetPlayers()) do
+			local char = player.Character
+			if char and char:FindFirstChild("Head") then
+				local existing = char.Head:FindFirstChild("WorthDisplay")
+				if existing then existing:Destroy() end
+			end
+		end
+	end
+end)
+
 -- Toggles Section Label
 local togglesSectionLabel = Instance.new("TextLabel", scrollFrame)
 togglesSectionLabel.Size = UDim2.new(1, -20, 0, 30)
