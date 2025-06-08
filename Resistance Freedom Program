@@ -192,12 +192,6 @@ createButtonRow(5, {
     end}
 })
 
-createButtonRow(6, {
-    {"Crawl", function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/0Ben1/fe/main/obf_vZDX8j5ggfAf58QhdJ59BVEmF6nmZgq4Mcjt2l8wn16CiStIW2P6EkNc605qv9K4.lua.txt"))()
-    end}
-})
-
 -- Teleport Section Label
 local teleportSectionLabel = Instance.new("TextLabel", scrollFrame)
 teleportSectionLabel.Size = UDim2.new(1, -20, 0, 30)
@@ -394,12 +388,12 @@ aimSectionLabel.Font = Enum.Font.GothamBold
 aimSectionLabel.TextSize = 20
 aimSectionLabel.Text = "Aim/Hitbox"
 aimSectionLabel.TextXAlignment = Enum.TextXAlignment.Left
-aimSectionLabel.LayoutOrder = 15
+aimSectionLabel.LayoutOrder = 14
 aimSectionLabel.BorderSizePixel = 0
 Instance.new("UICorner", aimSectionLabel).CornerRadius = UDim.new(0, 6)
 
 -- Aim/Hitbox Buttons Row: Kill Aura and Aimbot
-createButtonRow(14, {
+createButtonRow(15, {
     {
         "Kill Aura",
         function()
@@ -428,7 +422,7 @@ hitboxToggle.TextColor3 = Color3.fromRGB(0, 0, 0)
 hitboxToggle.Font = Enum.Font.Gotham
 hitboxToggle.TextSize = 18
 hitboxToggle.Text = "Hitbox Expander: OFF"
-hitboxToggle.LayoutOrder = 15
+hitboxToggle.LayoutOrder = 16
 hitboxToggle.BorderSizePixel = 0
 Instance.new("UICorner", hitboxToggle).CornerRadius = UDim.new(0, 6)
 
