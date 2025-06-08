@@ -1,0 +1,153 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+local Mouse = LocalPlayer:GetMouse()
+
+-- Tool setup
+local tool = Instance.new("Tool")
+tool.Name = "CamLock"
+tool.RequiresHandle = false
+tool.CanBeDropped = false
+tool.Parent = LocalPlayer:WaitForChild("PlayerGui") -- Stored here to persist
+
+-- State
+local TargetPlayer = nil
+local Box = nil
+local Corners = {}
+local CamLocked = false
+local ToolEquipped = false
+
+local boxSize = Vector3.new(10, 9, 10)
+local cornerOffsets = {
+	Vector3.new(-5,  4.5, -5),
+	Vector3.new( 5,  4.5, -5),
+	Vector3.new(-5, -4.5, -5),
+	Vector3.new( 5, -4.5, -5),
+	Vector3.new(-5,  4.5,  5),
+	Vector3.new( 5,  4.5,  5),
+	Vector3.new(-5, -4.5,  5),
+	Vector3.new( 5, -4.5,  5),
+}
+
+-- Create visual box
+local function create3DBox(targetChar)
+	if Box then Box:Destroy() end
+	for _, c in pairs(Corners) do c:Destroy() end
+	Corners = {}
+
+	local head = targetChar:FindFirstChild("Head")
+	if not head then return end
+
+	local box = Instance.new("Part")
+	box.Size = boxSize
+	box.Anchored = true
+	box.CanCollide = false
+	box.CanQuery = false
+	box.CanTouch = false
+	box.CastShadow = false
+	box.Transparency = 0.4
+	box.Material = Enum.Material.ForceField
+	box.Color = Color3.fromHSV(tick() % 1, 1, 1)
+	box.Name = "CamLockBox"
+	box.Parent = workspace
+	Box = box
+
+	for _, offset in ipairs(cornerOffsets) do
+		local corner = Instance.new("Part")
+		corner.Size = Vector3.new(0.35, 0.35, 0.35)
+		corner.Anchored = true
+		corner.CanCollide = false
+		corner.CanQuery = false
+		corner.CanTouch = false
+		corner.Material = Enum.Material.Neon
+		corner.Color = box.Color
+		corner.Position = (box.CFrame * CFrame.new(offset)).Position
+		corner.Parent = workspace
+
+		local light = Instance.new("PointLight", corner)
+		light.Range = 6
+		light.Brightness = 2
+
+		table.insert(Corners, corner)
+	end
+end
+
+-- Update visual box
+local function updateBox()
+	if not (Box and TargetPlayer and TargetPlayer.Character and TargetPlayer.Character:FindFirstChild("Head")) then
+		return
+	end
+
+	local head = TargetPlayer.Character.Head
+	local color = Color3.fromHSV(tick() * 0.25 % 1, 1, 1)
+	Box.CFrame = head.CFrame
+	Box.Color = color
+
+	for i, offset in ipairs(cornerOffsets) do
+		local corner = Corners[i]
+		if corner then
+			corner.Position = (Box.CFrame * CFrame.new(offset)).Position
+			corner.Color = color
+		end
+	end
+end
+
+-- Tool activation
+tool.Activated:Connect(function()
+	if not ToolEquipped then return end
+
+	if CamLocked then
+		-- Unlock
+		CamLocked = false
+		TargetPlayer = nil
+		if Box then Box:Destroy(); Box = nil end
+		for _, c in pairs(Corners) do c:Destroy() end
+		Corners = {}
+	else
+		-- Lock onto any clicked player body part
+		local targetPart = Mouse.Target
+		if not targetPart then return end
+
+		local model = targetPart:FindFirstAncestorWhichIsA("Model")
+		if model and model:FindFirstChild("Humanoid") and model:FindFirstChild("Head") then
+			local player = Players:GetPlayerFromCharacter(model)
+			if player and player ~= LocalPlayer then
+				TargetPlayer = player
+				CamLocked = true
+				create3DBox(model)
+			end
+		end
+	end
+end)
+
+-- Camera lock behavior
+RunService.RenderStepped:Connect(function()
+	if CamLocked and TargetPlayer and TargetPlayer.Character and TargetPlayer.Character:FindFirstChild("Head") then
+		local head = TargetPlayer.Character.Head
+		Camera.CFrame = CFrame.new(Camera.CFrame.Position, head.Position)
+		updateBox()
+	end
+end)
+
+-- Track tool equip
+tool.Equipped:Connect(function()
+	ToolEquipped = true
+end)
+tool.Unequipped:Connect(function()
+	ToolEquipped = false
+end)
+
+-- Re-insert tool after reset
+local function onCharacterAdded()
+	wait(1)
+	local backpack = LocalPlayer:FindFirstChild("Backpack")
+	if tool and tool.Parent ~= backpack then
+		tool.Parent = backpack
+	end
+end
+
+LocalPlayer.CharacterAdded:Connect(onCharacterAdded)
+if LocalPlayer.Character then
+	onCharacterAdded()
+end
