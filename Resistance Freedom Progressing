@@ -704,7 +704,99 @@ for _, player in pairs(Players:GetPlayers()) do
         end
     end)
 end
- 
+
+-- Money ESP Toggle System
+local moneyESPEnabled = false
+local moneyESPConnections = {}
+local processedMoneyDrops = {}
+local moneyESPThread = nil
+
+local function createMoneyESP(part, amountText)
+	if part:FindFirstChild("MoneyESP") then return end
+
+	local esp = Instance.new("BillboardGui")
+	esp.Name = "MoneyESP"
+	esp.Adornee = part
+	esp.Size = UDim2.new(0, 100, 0, 40)
+	esp.StudsOffset = Vector3.new(0, 2, 0)
+	esp.AlwaysOnTop = true
+
+	local label = Instance.new("TextLabel")
+	label.Size = UDim2.new(1, 0, 1, 0)
+	label.BackgroundTransparency = 1
+	label.Text = amountText or "$???"
+	label.TextColor3 = Color3.fromRGB(0, 255, 0)
+	label.TextStrokeTransparency = 0.2
+	label.TextStrokeColor3 = Color3.new(0, 0, 0)
+	label.TextScaled = true
+	label.Font = Enum.Font.GothamBold
+	label.Parent = esp
+
+	esp.Parent = part
+end
+
+local function scanMoneyESP()
+	for _, obj in ipairs(workspace:GetDescendants()) do
+		if obj:IsA("Part") and obj.Name == "MoneyDrop" and not processedMoneyDrops[obj] then
+			local gui = obj:FindFirstChild("BillboardGui")
+			if gui and gui:FindFirstChildOfClass("TextLabel") then
+				local label = gui:FindFirstChildOfClass("TextLabel")
+				createMoneyESP(obj, label.Text)
+			else
+				createMoneyESP(obj, "$???")
+			end
+			processedMoneyDrops[obj] = true
+		end
+	end
+end
+
+local function enableMoneyESP()
+	processedMoneyDrops = {}
+	moneyESPThread = task.spawn(function()
+		while moneyESPEnabled do
+			pcall(scanMoneyESP)
+			task.wait(2)
+		end
+	end)
+end
+
+local function disableMoneyESP()
+	moneyESPEnabled = false
+	if moneyESPThread then
+		task.cancel(moneyESPThread)
+	end
+	for _, obj in ipairs(workspace:GetDescendants()) do
+		if obj:IsA("BillboardGui") and obj.Name == "MoneyESP" then
+			obj:Destroy()
+		end
+	end
+	processedMoneyDrops = {}
+end
+
+-- GUI Button
+local moneyESPButton = Instance.new("TextButton", scrollFrame)
+moneyESPButton.Size = UDim2.new(1, -20, 0, 40)
+moneyESPButton.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+moneyESPButton.TextColor3 = Color3.fromRGB(0, 0, 0)
+moneyESPButton.Font = Enum.Font.Gotham
+moneyESPButton.TextSize = 18
+moneyESPButton.Text = "Money ESP: OFF"
+moneyESPButton.LayoutOrder = 24
+moneyESPButton.BorderSizePixel = 0
+Instance.new("UICorner", moneyESPButton).CornerRadius = UDim.new(0, 6)
+
+moneyESPButton.MouseButton1Click:Connect(function()
+	moneyESPEnabled = not moneyESPEnabled
+	moneyESPButton.Text = "Money ESP: " .. (moneyESPEnabled and "ON" or "OFF")
+	moneyESPButton.BackgroundColor3 = moneyESPEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(255, 165, 0)
+
+	if moneyESPEnabled then
+		enableMoneyESP()
+	else
+		disableMoneyESP()
+	end
+end)
+
 -- Toggles Section Label
 local togglesSectionLabel = Instance.new("TextLabel", scrollFrame)
 togglesSectionLabel.Size = UDim2.new(1, -20, 0, 30)
