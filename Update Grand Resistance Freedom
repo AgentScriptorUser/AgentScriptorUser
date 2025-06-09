@@ -2430,3 +2430,69 @@ flyButton.MouseButton1Click:Connect(function()
         stopFly()
     end
 end)
+
+local flySpeed = 10 -- Default Fly Speed
+
+-- Create Fly Speed Frame
+local speedFrame = Instance.new("Frame", scrollFrame)
+speedFrame.Size = UDim2.new(1, -20, 0, 60)
+speedFrame.BackgroundColor3 = Color3.fromRGB(240, 240, 240)
+speedFrame.BorderSizePixel = 0
+speedFrame.LayoutOrder = 53
+Instance.new("UICorner", speedFrame).CornerRadius = UDim.new(0, 6)
+
+-- Label
+local speedLabel = Instance.new("TextLabel", speedFrame)
+speedLabel.Size = UDim2.new(1, 0, 0, 20)
+speedLabel.Position = UDim2.new(0, 0, 0, 0)
+speedLabel.BackgroundTransparency = 1
+speedLabel.Text = "Fly Speed: " .. flySpeed
+speedLabel.TextColor3 = Color3.new(0,0,0)
+speedLabel.Font = Enum.Font.Gotham
+speedLabel.TextSize = 14
+
+-- Slider Background
+local sliderBack = Instance.new("Frame", speedFrame)
+sliderBack.Size = UDim2.new(1, -20, 0, 8)
+sliderBack.Position = UDim2.new(0, 10, 0, 30)
+sliderBack.BackgroundColor3 = Color3.fromRGB(200,200,200)
+sliderBack.BorderSizePixel = 0
+Instance.new("UICorner", sliderBack).CornerRadius = UDim.new(0, 4)
+
+-- Slider Handle (Draggable)
+local slider = Instance.new("Frame", sliderBack)
+slider.Size = UDim2.new(0, 10, 1, 0)
+slider.Position = UDim2.new(0, 0, 0, 0)
+slider.BackgroundColor3 = Color3.fromRGB(255,165,0)
+Instance.new("UICorner", slider).CornerRadius = UDim.new(1, 0)
+
+local dragging = false
+local UserInputService = game:GetService("UserInputService")
+
+slider.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+    end
+end)
+
+slider.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local mouseX = input.Position.X
+        local sliderPos = sliderBack.AbsolutePosition.X
+        local sliderWidth = sliderBack.AbsoluteSize.X
+        local percent = math.clamp((mouseX - sliderPos) / sliderWidth, 0, 1)
+
+        slider.Position = UDim2.new(percent, -5, 0, 0) -- center handle
+        flySpeed = math.floor(1 + (100 - 1) * percent) -- min 1, max 100
+        speedLabel.Text = "Fly Speed: " .. flySpeed
+    end
+end)
+
+-- Replace this in your Fly loop:
+local move = moveDir.Magnitude > 0 and moveDir.Unit * flySpeed or Vector3.zero
