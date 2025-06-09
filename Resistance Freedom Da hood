@@ -2224,7 +2224,6 @@ local plr = game.Players.LocalPlayer
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
--- Variables for the fly system
 local flyEnabled = false
 local flying = false
 local flyLoopRunning = false
@@ -2233,7 +2232,6 @@ local pos, gyro, Core, Weld
 local keys = {q = false, e = false}
 local mobileFlyGui = nil
 
--- Create Core + Weld
 local function createCoreAndWeld()
     if workspace:FindFirstChild("Core") then workspace.Core:Destroy() end
 
@@ -2258,20 +2256,19 @@ local function createCoreAndWeld()
     Weld.Parent = Core
 end
 
--- Mobile GUI
 local function createMobileFlyGui()
-    if mobileFlyGui then
-        print("MobileFlyGui already exists, skipping creation.")
-        return
+    -- Always create new GUI; remove old one if exists
+    if plr.PlayerGui:FindFirstChild("MobileFly") then
+        plr.PlayerGui.MobileFly:Destroy()
     end
-    print("Creating MobileFlyGui")
+
     mobileFlyGui = Instance.new("ScreenGui")
     mobileFlyGui.Name = "MobileFly"
     mobileFlyGui.ResetOnSpawn = false
     mobileFlyGui.Parent = plr:WaitForChild("PlayerGui")
 
     local function makeButton(name, text, pos)
-        local btn = Instance.new("TextButton")
+        local btn = Instance.new("TextButton", mobileFlyGui)
         btn.Name = name
         btn.Text = text
         btn.Size = UDim2.new(0, 100, 0, 100)
@@ -2280,8 +2277,6 @@ local function createMobileFlyGui()
         btn.TextColor3 = Color3.new(0, 0, 0)
         btn.TextScaled = true
         btn.AutoButtonColor = false
-        btn.Parent = mobileFlyGui
-
         btn.MouseButton1Down:Connect(function() keys[name:lower()] = true end)
         btn.MouseButton1Up:Connect(function() keys[name:lower()] = false end)
         btn.MouseLeave:Connect(function() keys[name:lower()] = false end)
@@ -2292,12 +2287,8 @@ local function createMobileFlyGui()
 end
 
 local function removeMobileFlyGui()
-    if mobileFlyGui then
-        print("Removing MobileFlyGui")
-        mobileFlyGui:Destroy()
-        mobileFlyGui = nil
-    else
-        print("No MobileFlyGui to remove")
+    if plr.PlayerGui:FindFirstChild("MobileFly") then
+        plr.PlayerGui.MobileFly:Destroy()
     end
     keys.q = false
     keys.e = false
@@ -2322,37 +2313,6 @@ local function canMoveTo(position)
     return true
 end
 
-local function stopFly()
-    flying = false
-    flyLoopRunning = false
-
-    if pos then pos:Destroy() pos = nil end
-    if gyro then gyro:Destroy() gyro = nil end
-    if Weld then Weld:Destroy() Weld = nil end
-    if Core then Core:Destroy() Core = nil end
-
-    removeMobileFlyGui()
-
-    local character = plr.Character
-    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-    if humanoid then
-        humanoid.PlatformStand = false
-        humanoid:SetStateEnabled(Enum.HumanoidStateType.PlatformStanding, false)
-        humanoid:ChangeState(Enum.HumanoidStateType.Running)
-        humanoid.WalkSpeed = 16
-    end
-
-    local root = character and character:FindFirstChild("HumanoidRootPart")
-    if root then
-        root.Velocity = Vector3.zero
-        root.AssemblyLinearVelocity = Vector3.zero
-        root.CFrame = root.CFrame + Vector3.new(0, 2, 0)
-    end
-
-    keys.q = false
-    keys.e = false
-end
-
 local function startFly()
     if flyLoopRunning then return end
     flying = true
@@ -2361,18 +2321,15 @@ local function startFly()
     local character = plr.Character
     if not character then return end
 
-    createCoreAndWeld()
-
     pos = Instance.new("BodyPosition")
-    pos.Name = "FlyPosition"
     pos.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
     pos.Position = character.HumanoidRootPart.Position
-    pos.Parent = Core
+    pos.Parent = workspace.Core
 
     gyro = Instance.new("BodyGyro")
     gyro.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
     gyro.CFrame = character.HumanoidRootPart.CFrame
-    gyro.Parent = Core
+    gyro.Parent = workspace.Core
 
     task.spawn(function()
         while flying and pos and gyro and plr.Character do
@@ -2404,9 +2361,41 @@ local function startFly()
     end)
 end
 
+function stopFly()
+    flying = false
+    flyLoopRunning = false
+
+    if pos then pos:Destroy() pos = nil end
+    if gyro then gyro:Destroy() gyro = nil end
+    if Weld then Weld:Destroy() Weld = nil end
+    if Core then Core:Destroy() Core = nil end
+
+    removeMobileFlyGui()
+
+    local character = plr.Character
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        humanoid.PlatformStand = false
+        humanoid:SetStateEnabled(Enum.HumanoidStateType.PlatformStanding, false)
+        humanoid:ChangeState(Enum.HumanoidStateType.Running)
+        humanoid.WalkSpeed = 16
+    end
+
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+    if root then
+        root.Velocity = Vector3.zero
+        root.AssemblyLinearVelocity = Vector3.zero
+        root.CFrame = root.CFrame + Vector3.new(0, 2, 0)
+    end
+
+    keys.q = false
+    keys.e = false
+end
+
 local function onCharacterAdded(char)
     stopFly()
     char:WaitForChild("LowerTorso", 5)
+    createCoreAndWeld()
     if flyEnabled then
         startFly()
         createMobileFlyGui()
@@ -2416,8 +2405,7 @@ end
 plr.CharacterAdded:Connect(onCharacterAdded)
 if plr.Character then onCharacterAdded(plr.Character) end
 
--- ========== Fly Toggle Button ==========
-
+-- ======= Fly Toggle Button =======
 local flyButton = Instance.new("TextButton", scrollFrame)
 flyButton.Size = UDim2.new(1, -20, 0, 40)
 flyButton.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
@@ -2425,7 +2413,7 @@ flyButton.TextColor3 = Color3.fromRGB(0, 0, 0)
 flyButton.Font = Enum.Font.Gotham
 flyButton.TextSize = 18
 flyButton.Text = "Fly: OFF"
-flyButton.LayoutOrder = 53 -- Adjust order as needed
+flyButton.LayoutOrder = 1003
 flyButton.BorderSizePixel = 0
 Instance.new("UICorner", flyButton).CornerRadius = UDim.new(0, 6)
 
@@ -2435,8 +2423,9 @@ flyButton.MouseButton1Click:Connect(function()
     flyButton.BackgroundColor3 = flyEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(255, 165, 0)
 
     if flyEnabled then
+        createCoreAndWeld()
         startFly()
-        createMobileFlyGui()
+        createMobileFlyGui() -- recreate the buttons freshly
     else
         stopFly()
     end
