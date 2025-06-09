@@ -394,12 +394,12 @@ aimSectionLabel.Font = Enum.Font.GothamBold
 aimSectionLabel.TextSize = 20
 aimSectionLabel.Text = "Aim/Hitbox"
 aimSectionLabel.TextXAlignment = Enum.TextXAlignment.Left
-aimSectionLabel.LayoutOrder = 13
+aimSectionLabel.LayoutOrder = 15
 aimSectionLabel.BorderSizePixel = 0
 Instance.new("UICorner", aimSectionLabel).CornerRadius = UDim.new(0, 6)
 
 -- Aim/Hitbox Buttons Row: Kill Aura , Aimbot and Camlock
-createButtonRow(14, {
+createButtonRow(16, {
     {
         "Kill Aura",
         function()
@@ -434,7 +434,7 @@ hitboxToggle.TextColor3 = Color3.fromRGB(0, 0, 0)
 hitboxToggle.Font = Enum.Font.Gotham
 hitboxToggle.TextSize = 18
 hitboxToggle.Text = "Hitbox Expander: OFF"
-hitboxToggle.LayoutOrder = 15
+hitboxToggle.LayoutOrder = 17
 hitboxToggle.BorderSizePixel = 0
 Instance.new("UICorner", hitboxToggle).CornerRadius = UDim.new(0, 6)
 
