@@ -2081,3 +2081,932 @@ noFogButton.MouseButton1Click:Connect(function()
 		if fogEndConn then fogEndConn:Disconnect() end
 	end
 end)
+
+-- Main Section Label
+local mainSectionLabel = Instance.new("TextLabel", scrollFrame)
+mainSectionLabel.Size = UDim2.new(1, -20, 0, 30)
+mainSectionLabel.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+mainSectionLabel.TextColor3 = Color3.fromRGB(0, 0, 0)
+mainSectionLabel.Font = Enum.Font.GothamBold
+mainSectionLabel.TextSize = 20
+mainSectionLabel.Text = "Main"
+mainSectionLabel.TextXAlignment = Enum.TextXAlignment.Left
+mainSectionLabel.LayoutOrder = 50
+mainSectionLabel.BorderSizePixel = 0
+Instance.new("UICorner", mainSectionLabel).CornerRadius = UDim.new(0, 6)
+ 
+-- Row 40: Main Buttons (Speed Boost, TrashTalk [X], ClickTeleport Tool)
+createButtonRow(51, {
+    {"Speed Boost", function()  
+        local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")  
+        if humanoid then  
+            humanoid.WalkSpeed = 50  
+            wait(5)  
+            humanoid.WalkSpeed = 16 -- Reset to default  
+        end  
+    end},
+
+    {"TrashTalk [X]", function()
+        local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local ChatService = game:GetService("TextChatService")
+        local UserInputService = game:GetService("UserInputService")
+
+        local isRunning = false
+
+        local function sendMessage(message)
+            if ChatService.ChatVersion == Enum.ChatVersion.TextChatService then
+                local textChannel = ChatService.TextChannels:FindFirstChild("RBXGeneral")
+                if textChannel then
+                    textChannel:SendAsync(message)
+                else
+                    warn("TextChatService channel RBXGeneral not found!")
+                end
+            else
+                local chatEvents = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
+                if chatEvents then
+                    local sayMessageRequest = chatEvents:FindFirstChild("SayMessageRequest")
+                    if sayMessageRequest then
+                        sayMessageRequest:FireServer(message, "All")
+                    else
+                        warn("SayMessageRequest not found in DefaultChatSystemChatEvents!")
+                    end
+                else
+                    warn("DefaultChatSystemChatEvents not found in ReplicatedStorage!")
+                end
+            end
+        end
+
+        local function sayGoodbye()
+            if isRunning then return end
+            isRunning = true
+
+            sendMessage("Easy Sonn")
+            wait(1.5)
+            sendMessage("Mad Already? LOL")
+            wait(1.5)
+            sendMessage("Skill issue Son")
+            wait(1.5)
+            sendMessage("Is that even a Aim???")
+            wait(1.5)
+            sendMessage("Lolll what are you aiming at???")
+            wait(1.5)
+            sendMessage("Keep yapping Barbie Ahh")
+            wait(1.5)
+            sendMessage("Quit the game lil bro")
+            wait(1.5)
+            sendMessage("XDD")
+            wait(1.5)
+            sendMessage("How did u fail to get me XD")
+            wait(1.5)
+            sendMessage("even my grandma has Better AIM then you")
+            wait(1.5)
+            sendMessage("Go play Brookhaven or adopt me something lol")
+
+            isRunning = false
+        end
+
+        sayGoodbye()
+
+        UserInputService.InputBegan:Connect(function(input, gameProcessed)
+            if not gameProcessed and input.KeyCode == Enum.KeyCode.X then
+                sayGoodbye()
+            end
+        end)
+    end},
+
+    {"ClickTeleport Tool", function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/ClickTeleport%20Tool"))()
+    end}
+})
+ 
+-- Fly Toggle Button Setup
+local plr = game.Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
+local flyEnabled = false
+local flying = false
+local flyLoopRunning = false
+local speed = 10
+local pos, gyro, torso, Core, Weld
+local keys = {q = false, e = false}
+local mobileFlyGui = nil
+
+-- UI Button (Assuming 'scrollFrame' exists)
+local flyToggle = Instance.new("TextButton", scrollFrame)
+flyToggle.Size = UDim2.new(1, -20, 0, 40)
+flyToggle.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+flyToggle.TextColor3 = Color3.fromRGB(0, 0, 0)
+flyToggle.Font = Enum.Font.Gotham
+flyToggle.TextSize = 18
+flyToggle.Text = "Fly: OFF"
+flyToggle.LayoutOrder = 52
+flyToggle.BorderSizePixel = 0
+Instance.new("UICorner", flyToggle).CornerRadius = UDim.new(0, 6)
+
+-- Create Core + Weld
+local function createCoreAndWeld()
+    if workspace:FindFirstChild("Core") then workspace.Core:Destroy() end
+
+    Core = Instance.new("Part")
+    Core.Name = "Core"
+    Core.Size = Vector3.new(0.05, 0.05, 0.05)
+    Core.Anchored = false
+    Core.CanCollide = false
+    Core.Transparency = 1
+    Core.Parent = workspace
+
+    local character = plr.Character
+    if not character then return end
+
+    local lowerTorso = character:WaitForChild("LowerTorso", 5)
+    if not lowerTorso then Core:Destroy() return end
+
+    Weld = Instance.new("Weld")
+    Weld.Part0 = Core
+    Weld.Part1 = lowerTorso
+    Weld.C0 = CFrame.new(0, 0, 0)
+    Weld.Parent = Core
+
+    torso = Core
+end
+
+-- Mobile GUI
+local function createMobileFlyGui()
+    if mobileFlyGui then return end
+    mobileFlyGui = Instance.new("ScreenGui", plr:WaitForChild("PlayerGui"))
+    mobileFlyGui.Name = "MobileFly"
+    mobileFlyGui.ResetOnSpawn = false
+
+    local function makeButton(name, text, pos)
+        local btn = Instance.new("TextButton", mobileFlyGui)
+        btn.Name = name
+        btn.Text = text
+        btn.Size = UDim2.new(0, 100, 0, 100)
+        btn.Position = pos
+        btn.BackgroundColor3 = Color3.fromRGB(200, 200, 255)
+        btn.TextColor3 = Color3.new(0, 0, 0)
+        btn.TextScaled = true
+        btn.MouseButton1Down:Connect(function() keys[name:lower()] = true end)
+        btn.MouseButton1Up:Connect(function() keys[name:lower()] = false end)
+    end
+
+    makeButton("Q", "⬆️, UDim2.new(0.8, 0, 0.7, 0))
+    makeButton("E", "⬇️, UDim2.new(0.8, 0, 0.82, 0))
+end
+
+local function removeMobileFlyGui()
+    if mobileFlyGui then
+        mobileFlyGui:Destroy()
+        mobileFlyGui = nil
+    end
+    keys.q = false
+    keys.e = false
+end
+
+-- Movement Collision Check
+local function canMoveTo(position)
+    local character = plr.Character
+    local rootPart = character and character:FindFirstChild("HumanoidRootPart")
+    if not rootPart then return false end
+
+    local rayParams = RaycastParams.new()
+    rayParams.FilterDescendantsInstances = {character}
+    rayParams.FilterType = Enum.RaycastFilterType.Blacklist
+    rayParams.IgnoreWater = true
+
+    local direction = position - rootPart.Position
+    local raycast = workspace:Raycast(rootPart.Position, direction, rayParams)
+    if raycast then
+        local hitDist = (raycast.Position - rootPart.Position).Magnitude
+        return hitDist >= direction.Magnitude - 0.5
+    end
+    return true
+end
+
+-- Start Fly
+local function startFly()
+    if flyLoopRunning or not torso then return end
+    flying = true
+    flyLoopRunning = true
+
+    pos = Instance.new("BodyPosition", torso)
+    pos.Name = "FlyPosition"
+    pos.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+    pos.Position = torso.Position
+
+    gyro = Instance.new("BodyGyro", torso)
+    gyro.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+    gyro.CFrame = torso.CFrame
+
+    task.spawn(function()
+        while flying and torso and pos and gyro do
+            task.wait()
+
+            local character = plr.Character
+            local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+            local root = character and character:FindFirstChild("HumanoidRootPart")
+            if humanoid then humanoid.PlatformStand = true end
+
+            local cam = workspace.CurrentCamera
+            local camLook = cam.CFrame.LookVector
+            local moveDir = humanoid and humanoid.MoveDirection or Vector3.zero
+            local vertical = (keys.q and speed or 0) - (keys.e and speed or 0)
+
+            local move = moveDir.Magnitude > 0 and moveDir.Unit * speed or Vector3.zero
+            move = Vector3.new(move.X, vertical, move.Z)
+
+            local targetPos = pos.Position + move
+            if canMoveTo(targetPos) then
+                pos.Position = targetPos
+            end
+
+            local forward = Vector3.new(camLook.X, 0, camLook.Z)
+            if forward.Magnitude > 0 then
+                gyro.CFrame = CFrame.new(Vector3.zero, forward.Unit)
+            end
+        end
+
+        stopFly()
+    end)
+end
+
+-- *** NEW stopFly function replacing the old one ***
+local function stopFly()
+    flying = false
+    flyLoopRunning = false
+
+    if pos then pos:Destroy() pos = nil end
+    if gyro then gyro:Destroy() gyro = nil end
+    if Weld then Weld:Destroy() Weld = nil end
+    if Core then Core:Destroy() Core = nil end
+
+    removeMobileFlyGui()
+
+    local character = plr.Character
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+
+    -- Reset platform stand and velocity
+    if humanoid then
+        humanoid.PlatformStand = false
+        humanoid:SetStateEnabled(Enum.HumanoidStateType.PlatformStanding, false)
+        humanoid:ChangeState(Enum.HumanoidStateType.Running)
+        humanoid.WalkSpeed = 16
+        print("Ã¢Å“â€¦ PlatformStand OFF")
+    else
+        warn("Ã¢Å¡ Ã¯Â¸Â Humanoid not found")
+    end
+
+    if root then
+        root.Velocity = Vector3.zero
+        root.AssemblyLinearVelocity = Vector3.zero
+    else
+        warn("Ã¢Å¡ Ã¯Â¸Â Root not found")
+    end
+
+    -- Safety backup: Teleport character up slightly to shake them out of physics lock
+    if root then
+        root.CFrame = root.CFrame + Vector3.new(0, 2, 0)
+    end
+
+    keys.q = false
+    keys.e = false
+end
+
+-- On Respawn
+local function onCharacterAdded(char)
+    stopFly()
+    char:WaitForChild("LowerTorso", 5)
+    createCoreAndWeld()
+
+    if flyEnabled then
+        startFly()
+        createMobileFlyGui()
+    end
+end
+
+plr.CharacterAdded:Connect(onCharacterAdded)
+if plr.Character then onCharacterAdded(plr.Character) end
+
+-- Button Toggle
+flyToggle.MouseButton1Click:Connect(function()
+    flyEnabled = not flyEnabled
+    flyToggle.Text = "Fly: " .. (flyEnabled and "ON" or "OFF")
+    flyToggle.BackgroundColor3 = flyEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(255, 165, 0)
+
+    if flyEnabled then
+        createCoreAndWeld()
+        startFly()
+        createMobileFlyGui()
+    else
+        stopFly()
+    end
+end)
+
+-- Fly Speed Label
+local flySpeedLabel = Instance.new("TextLabel", scrollFrame)
+flySpeedLabel.Size = UDim2.new(1, -20, 0, 20)
+flySpeedLabel.BackgroundTransparency = 1
+flySpeedLabel.TextColor3 = Color3.fromRGB(255, 165, 0)  -- Orange color
+flySpeedLabel.Font = Enum.Font.GothamBold
+flySpeedLabel.TextSize = 16
+flySpeedLabel.Text = "Fly Speed: " .. tostring(speed)
+flySpeedLabel.LayoutOrder = 53
+flySpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
+ 
+-- Slider Background Frame
+local sliderFrame = Instance.new("Frame", scrollFrame)
+sliderFrame.Size = UDim2.new(1, -20, 0, 20)
+sliderFrame.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
+sliderFrame.BorderSizePixel = 0
+sliderFrame.LayoutOrder = 54
+Instance.new("UICorner", sliderFrame).CornerRadius = UDim.new(0, 6)
+ 
+-- Slider Fill Frame
+local fillFrame = Instance.new("Frame", sliderFrame)
+fillFrame.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+fillFrame.Size = UDim2.new((speed - 1) / 99, 0, 1, 0)  -- Initial fill size based on speed
+fillFrame.BorderSizePixel = 0
+fillFrame.ZIndex = 2
+Instance.new("UICorner", fillFrame).CornerRadius = UDim.new(0, 6)
+ 
+-- Slider Handle
+local handle = Instance.new("Frame", sliderFrame)
+handle.Size = UDim2.new(0, 12, 1.2, 0)
+handle.AnchorPoint = Vector2.new(0.5, 0.5)
+handle.Position = UDim2.new((speed - 1) / 99, 0, 0.5, 0)
+handle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+handle.BorderSizePixel = 0
+handle.ZIndex = 3
+Instance.new("UICorner", handle).CornerRadius = UDim.new(1, 0)
+ 
+-- Dragging logic
+local dragging = false
+local UserInputService = game:GetService("UserInputService")
+ 
+local function updateSlider(inputX)
+    local sliderAbsPos = sliderFrame.AbsolutePosition.X
+    local sliderWidth = sliderFrame.AbsoluteSize.X
+    local relativeX = math.clamp(inputX - sliderAbsPos, 0, sliderWidth)
+    local percent = relativeX / sliderWidth
+ 
+    -- Map percent to speed (1 to 100)
+    speed = math.floor(1 + percent * 99)
+    flySpeedLabel.Text = "Fly Speed: " .. tostring(speed)
+ 
+    fillFrame.Size = UDim2.new(percent, 0, 1, 0)
+    handle.Position = UDim2.new(percent, 0, 0.5, 0)
+end
+ 
+-- Input events for dragging
+sliderFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or
+       input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        updateSlider(input.Position.X)
+    end
+end)
+ 
+sliderFrame.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or
+       input.UserInputType == Enum.UserInputType.Touch then
+        dragging = false
+    end
+end)
+ 
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or
+                     input.UserInputType == Enum.UserInputType.Touch) then
+        updateSlider(input.Position.X)
+    end
+end)
+ 
+-- SuperHero Fly Script
+local plr = game.Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
+local AnimationIdIdle = "rbxassetid://3541114300"
+local AnimationIdFly = "rbxassetid://3541044388"
+
+local flyEnabled = false
+local flying = false
+local flyLoopRunning = false
+local speed = 10
+local pos, gyro, torso, Core, Weld
+local keys = {q = false, e = false}
+local mobileFlyGui = nil
+
+local flyAnimTrack, idleAnimTrack
+
+-- UI Button (Assuming 'scrollFrame' exists)
+local flyToggle = Instance.new("TextButton", scrollFrame)
+flyToggle.Size = UDim2.new(1, -20, 0, 40)
+flyToggle.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+flyToggle.TextColor3 = Color3.fromRGB(0, 0, 0)
+flyToggle.Font = Enum.Font.Gotham
+flyToggle.TextSize = 18
+flyToggle.Text = "SuperHero Fly: OFF"
+flyToggle.LayoutOrder = 55
+flyToggle.BorderSizePixel = 0
+Instance.new("UICorner", flyToggle).CornerRadius = UDim.new(0, 6)
+
+local function createCoreAndWeld()
+if workspace:FindFirstChild("Core") then workspace.Core:Destroy() end
+
+Core = Instance.new("Part")
+Core.Name = "Core"
+Core.Size = Vector3.new(0.05, 0.05, 0.05)
+Core.Anchored = false
+Core.CanCollide = false
+Core.Transparency = 1
+Core.Parent = workspace
+
+local character = plr.Character
+if not character then return end
+
+local lowerTorso = character:WaitForChild("LowerTorso", 5)
+if not lowerTorso then Core:Destroy() return end
+
+Weld = Instance.new("Weld")
+Weld.Part0 = Core
+Weld.Part1 = lowerTorso
+Weld.C0 = CFrame.new(0, 0, 0)
+Weld.Parent = Core
+
+torso = Core
+
+end
+
+local function createMobileFlyGui()
+if mobileFlyGui then return end
+mobileFlyGui = Instance.new("ScreenGui", plr:WaitForChild("PlayerGui"))
+mobileFlyGui.Name = "MobileFly"
+mobileFlyGui.ResetOnSpawn = false
+
+local function makeButton(name, text, pos)
+local btn = Instance.new("TextButton", mobileFlyGui)
+btn.Name = name
+btn.Text = text
+btn.Size = UDim2.new(0, 100, 0, 100)
+btn.Position = pos
+btn.BackgroundColor3 = Color3.fromRGB(200, 200, 255)
+btn.TextColor3 = Color3.new(0, 0, 0)
+btn.TextScaled = true
+btn.MouseButton1Down:Connect(function() keys[name:lower()] = true end)
+btn.MouseButton1Up:Connect(function() keys[name:lower()] = false end)
+end
+
+makeButton("Q", "⬆️, UDim2.new(0.8, 0, 0.7, 0))
+makeButton("E", "⬇️, UDim2.new(0.8, 0, 0.82, 0))
+
+end
+
+local function removeMobileFlyGui()
+if mobileFlyGui then
+mobileFlyGui:Destroy()
+mobileFlyGui = nil
+end
+keys.q = false
+keys.e = false
+end
+
+local function canMoveTo(position)
+local character = plr.Character
+local rootPart = character and character:FindFirstChild("HumanoidRootPart")
+if not rootPart then return false end
+
+local rayParams = RaycastParams.new()
+rayParams.FilterDescendantsInstances = {character}
+rayParams.FilterType = Enum.RaycastFilterType.Blacklist
+rayParams.IgnoreWater = true
+
+local direction = position - rootPart.Position
+local raycast = workspace:Raycast(rootPart.Position, direction, rayParams)
+if raycast then
+local hitDist = (raycast.Position - rootPart.Position).Magnitude
+return hitDist >= direction.Magnitude - 0.5
+end
+return true
+
+end
+
+local function loadAnimations()
+local character = plr.Character
+if not character then return end
+local humanoid = character:FindFirstChildOfClass("Humanoid")
+if not humanoid then return end
+
+local idleAnim = Instance.new("Animation")
+idleAnim.Name = "FlyIdleAnimation"
+idleAnim.AnimationId = AnimationIdIdle
+
+local flyAnim = Instance.new("Animation")
+flyAnim.Name = "FlyAnimation"
+flyAnim.AnimationId = AnimationIdFly
+
+idleAnimTrack = humanoid:LoadAnimation(idleAnim)
+flyAnimTrack = humanoid:LoadAnimation(flyAnim)
+
+idleAnimTrack.Looped = true
+flyAnimTrack.Looped = true
+
+end
+
+local function startFly()
+if flyLoopRunning or not torso then return end
+flying = true
+flyLoopRunning = true
+
+loadAnimations()
+
+if idleAnimTrack then idleAnimTrack:Play() end
+
+pos = Instance.new("BodyPosition", torso)
+pos.Name = "FlyPosition"
+pos.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+pos.Position = torso.Position
+
+gyro = Instance.new("BodyGyro", torso)
+gyro.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+gyro.CFrame = torso.CFrame
+
+task.spawn(function()
+while flying and torso and pos and gyro do
+task.wait()
+
+local character = plr.Character    
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")    
+    local root = character and character:FindFirstChild("HumanoidRootPart")    
+    if humanoid then humanoid.PlatformStand = true end    
+
+    local cam = workspace.CurrentCamera    
+    local camLook = cam.CFrame.LookVector    
+    local moveDir = humanoid and humanoid.MoveDirection or Vector3.zero    
+    local vertical = (keys.q and speed or 0) - (keys.e and speed or 0)    
+
+    local move = moveDir.Magnitude > 0 and moveDir.Unit * speed or Vector3.zero    
+    move = Vector3.new(move.X, vertical, move.Z)    
+
+    local targetPos = pos.Position + move    
+    if canMoveTo(targetPos) then    
+        pos.Position = targetPos    
+    end    
+
+    local forward = Vector3.new(camLook.X, 0, camLook.Z)    
+    if forward.Magnitude > 0 then    
+        gyro.CFrame = CFrame.new(Vector3.zero, forward.Unit)    
+    end    
+
+    local movingHorizontally = moveDir.Magnitude > 0    
+    local movingVertically = vertical ~= 0    
+
+    if movingHorizontally or movingVertically then    
+        if flyAnimTrack and not flyAnimTrack.IsPlaying then    
+            flyAnimTrack:Play()    
+        end    
+        if idleAnimTrack and idleAnimTrack.IsPlaying then    
+            idleAnimTrack:Stop()    
+        end    
+    else    
+        if idleAnimTrack and not idleAnimTrack.IsPlaying then    
+            idleAnimTrack:Play()    
+        end    
+        if flyAnimTrack and flyAnimTrack.IsPlaying then    
+            flyAnimTrack:Stop()    
+        end    
+    end    
+end    
+
+stopFly()
+
+end)
+
+end
+
+local function stopFly()
+flying = false
+flyLoopRunning = false
+
+if pos then pos:Destroy() pos = nil end
+if gyro then gyro:Destroy() gyro = nil end
+if Weld then Weld:Destroy() Weld = nil end
+if Core then Core:Destroy() Core = nil end
+
+removeMobileFlyGui()
+
+local character = plr.Character
+local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+local root = character and character:FindFirstChild("HumanoidRootPart")
+
+if humanoid then
+humanoid.PlatformStand = false
+humanoid:SetStateEnabled(Enum.HumanoidStateType.PlatformStanding, false)
+humanoid:ChangeState(Enum.HumanoidStateType.Running)
+humanoid.WalkSpeed = 16
+if idleAnimTrack and idleAnimTrack.IsPlaying then idleAnimTrack:Stop() end
+if flyAnimTrack and flyAnimTrack.IsPlaying then flyAnimTrack:Stop() end
+else
+warn("Ã¢Å¡ Ã¯Â¸Â Humanoid not found")
+end
+
+if root then
+root.Velocity = Vector3.zero
+root.AssemblyLinearVelocity = Vector3.zero
+root.CFrame = root.CFrame + Vector3.new(0, 2, 0)
+else
+warn("Ã¢Å¡ Ã¯Â¸Â Root not found")
+end
+
+keys.q = false
+keys.e = false
+
+end
+
+local function onCharacterAdded(char)
+stopFly()
+char:WaitForChild("LowerTorso", 5)
+createCoreAndWeld()
+
+if flyEnabled then
+startFly()
+createMobileFlyGui()
+end
+
+end
+
+plr.CharacterAdded:Connect(onCharacterAdded)
+if plr.Character then onCharacterAdded(plr.Character) end
+
+flyToggle.MouseButton1Click:Connect(function()
+flyEnabled = not flyEnabled
+flyToggle.Text = "SuperHero Fly: " .. (flyEnabled and "ON" or "OFF")
+flyToggle.BackgroundColor3 = flyEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(255, 165, 0)
+
+if flyEnabled then
+createCoreAndWeld()
+startFly()
+createMobileFlyGui()
+else
+stopFly()
+end
+
+end)
+
+-- SuperHero Fly Speed Label
+local flySpeedLabel = Instance.new("TextLabel", scrollFrame)
+flySpeedLabel.Size = UDim2.new(1, -20, 0, 20)
+flySpeedLabel.BackgroundTransparency = 1
+flySpeedLabel.TextColor3 = Color3.fromRGB(255, 165, 0)  -- Orange color
+flySpeedLabel.Font = Enum.Font.GothamBold
+flySpeedLabel.TextSize = 16
+flySpeedLabel.Text = "Fly Speed: " .. tostring(speed)
+flySpeedLabel.LayoutOrder = 56
+flySpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+-- Slider Background Frame
+local sliderFrame = Instance.new("Frame", scrollFrame)
+sliderFrame.Size = UDim2.new(1, -20, 0, 20)
+sliderFrame.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
+sliderFrame.BorderSizePixel = 0
+sliderFrame.LayoutOrder = 57
+Instance.new("UICorner", sliderFrame).CornerRadius = UDim.new(0, 6)
+
+-- Slider Fill Frame
+local fillFrame = Instance.new("Frame", sliderFrame)
+fillFrame.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+fillFrame.Size = UDim2.new((speed - 1) / 99, 0, 1, 0)  -- Initial fill size based on speed
+fillFrame.BorderSizePixel = 0
+fillFrame.ZIndex = 2
+Instance.new("UICorner", fillFrame).CornerRadius = UDim.new(0, 6)
+
+-- Slider Handle
+local handle = Instance.new("Frame", sliderFrame)
+handle.Size = UDim2.new(0, 12, 1.2, 0)
+handle.AnchorPoint = Vector2.new(0.5, 0.5)
+handle.Position = UDim2.new((speed - 1) / 99, 0, 0.5, 0)
+handle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+handle.BorderSizePixel = 0
+handle.ZIndex = 3
+Instance.new("UICorner", handle).CornerRadius = UDim.new(1, 0)
+
+-- Dragging logic
+local dragging = false
+local UserInputService = game:GetService("UserInputService")
+
+local function updateSlider(inputX)
+    local sliderAbsPos = sliderFrame.AbsolutePosition.X
+    local sliderWidth = sliderFrame.AbsoluteSize.X
+    local relativeX = math.clamp(inputX - sliderAbsPos, 0, sliderWidth)
+    local percent = relativeX / sliderWidth
+
+    -- Map percent to speed (1 to 100)
+    speed = math.floor(1 + percent * 99)
+    flySpeedLabel.Text = "Fly Speed: " .. tostring(speed)
+
+    fillFrame.Size = UDim2.new(percent, 0, 1, 0)
+    handle.Position = UDim2.new(percent, 0, 0.5, 0)
+end
+
+sliderFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or
+       input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        updateSlider(input.Position.X)
+    end
+end)
+
+sliderFrame.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or
+       input.UserInputType == Enum.UserInputType.Touch then
+        dragging = false
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or
+                     input.UserInputType == Enum.UserInputType.Touch) then
+        updateSlider(input.Position.X)
+    end
+end)
+
+-- CFrame Toggle Button
+local cframeEnabled = false
+ 
+local cframeToggle = Instance.new("TextButton", scrollFrame)
+cframeToggle.Size = UDim2.new(1, -20, 0, 40)
+cframeToggle.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+cframeToggle.TextColor3 = Color3.fromRGB(0, 0, 0)
+cframeToggle.Font = Enum.Font.Gotham
+cframeToggle.TextSize = 18
+cframeToggle.Text = "CFrame: OFF"
+cframeToggle.LayoutOrder = 58
+cframeToggle.BorderSizePixel = 0
+Instance.new("UICorner", cframeToggle).CornerRadius = UDim.new(0, 6)
+ 
+local RunService = game:GetService("RunService")
+local player = game.Players.LocalPlayer
+local speed = 50
+local connection
+ 
+function startCFrame()
+    if cframeEnabled then return end
+    cframeEnabled = true
+ 
+    connection = RunService.RenderStepped:Connect(function()
+        local char = player.Character
+        if not char or not char:FindFirstChild("HumanoidRootPart") or not char:FindFirstChild("Humanoid") then return end
+ 
+        local moveDirection = char.Humanoid.MoveDirection
+        if moveDirection.Magnitude > 0 then
+            -- Move player in the move direction, frame-rate independent
+            local deltaTime = RunService.RenderStepped:Wait()
+            char.HumanoidRootPart.CFrame += moveDirection * speed * deltaTime
+        end
+    end)
+ 
+    print("CFrame movement ENABLED")
+end
+ 
+function stopCFrame()
+    if not cframeEnabled then return end
+    cframeEnabled = false
+ 
+    if connection then
+        connection:Disconnect()
+        connection = nil
+    end
+ 
+    print("CFrame movement DISABLED")
+end
+ 
+cframeToggle.MouseButton1Click:Connect(function()
+    if cframeEnabled then
+        stopCFrame()
+        cframeToggle.Text = "CFrame: OFF"
+        cframeToggle.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+    else
+        startCFrame()
+        cframeToggle.Text = "CFrame: ON"
+        cframeToggle.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+    end
+end)
+ 
+-- CFrame Speed Label
+local cframeSpeedLabel = Instance.new("TextLabel", scrollFrame)
+cframeSpeedLabel.Size = UDim2.new(1, -20, 0, 20)
+cframeSpeedLabel.BackgroundTransparency = 1
+cframeSpeedLabel.TextColor3 = Color3.fromRGB(255, 165, 0)
+cframeSpeedLabel.Font = Enum.Font.GothamBold
+cframeSpeedLabel.TextSize = 16
+cframeSpeedLabel.Text = "CFrame Speed: " .. tostring(speed)
+cframeSpeedLabel.LayoutOrder = 59
+cframeSpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
+ 
+-- Slider Frame
+local cframeSliderFrame = Instance.new("Frame", scrollFrame)
+cframeSliderFrame.Size = UDim2.new(1, -20, 0, 20)
+cframeSliderFrame.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
+cframeSliderFrame.BorderSizePixel = 0
+cframeSliderFrame.LayoutOrder = 60
+Instance.new("UICorner", cframeSliderFrame).CornerRadius = UDim.new(0, 6)
+ 
+-- Fill
+local cframeFillFrame = Instance.new("Frame", cframeSliderFrame)
+cframeFillFrame.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+cframeFillFrame.Size = UDim2.new((speed - 1) / 99, 0, 1, 0)
+cframeFillFrame.BorderSizePixel = 0
+cframeFillFrame.ZIndex = 2
+Instance.new("UICorner", cframeFillFrame).CornerRadius = UDim.new(0, 6)
+ 
+-- Handle
+local cframeHandle = Instance.new("Frame", cframeSliderFrame)
+cframeHandle.Size = UDim2.new(0, 12, 1.2, 0)
+cframeHandle.AnchorPoint = Vector2.new(0.5, 0.5)
+cframeHandle.Position = UDim2.new((speed - 1) / 99, 0, 0.5, 0)
+cframeHandle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+cframeHandle.BorderSizePixel = 0
+cframeHandle.ZIndex = 3
+Instance.new("UICorner", cframeHandle).CornerRadius = UDim.new(1, 0)
+ 
+-- Drag logic
+local cframeDragging = false
+ 
+local function updateCFrameSlider(inputX)
+    local sliderAbsPos = cframeSliderFrame.AbsolutePosition.X
+    local sliderWidth = cframeSliderFrame.AbsoluteSize.X
+    local relativeX = math.clamp(inputX - sliderAbsPos, 0, sliderWidth)
+    local percent = relativeX / sliderWidth
+ 
+    -- Clamp and convert percent to speed (1Ã¢â‚¬â€œ100)
+    speed = math.clamp(math.floor(1 + percent * 99), 1, 100)
+    cframeSpeedLabel.Text = "CFrame Speed: " .. tostring(speed)
+ 
+    cframeFillFrame.Size = UDim2.new((speed - 1) / 99, 0, 1, 0)
+    cframeHandle.Position = UDim2.new((speed - 1) / 99, 0, 0.5, 0)
+end
+ 
+-- Input events
+cframeSliderFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or
+       input.UserInputType == Enum.UserInputType.Touch then
+        cframeDragging = true
+        updateCFrameSlider(input.Position.X)
+    end
+end)
+ 
+cframeSliderFrame.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or
+       input.UserInputType == Enum.UserInputType.Touch then
+        cframeDragging = false
+    end
+end)
+ 
+UserInputService.InputChanged:Connect(function(input)
+    if cframeDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or
+                           input.UserInputType == Enum.UserInputType.Touch) then
+        updateCFrameSlider(input.Position.X)
+    end
+end)
+ 
+-- ChatLogs Toggle Button
+local chatLogsEnabled = false
+ 
+local chatLogsToggle = Instance.new("TextButton", scrollFrame)
+chatLogsToggle.Size = UDim2.new(1, -20, 0, 40)
+chatLogsToggle.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+chatLogsToggle.TextColor3 = Color3.fromRGB(0, 0, 0)
+chatLogsToggle.Font = Enum.Font.Gotham
+chatLogsToggle.TextSize = 18
+chatLogsToggle.Text = "ChatLogs: OFF"
+chatLogsToggle.LayoutOrder = 61
+chatLogsToggle.BorderSizePixel = 0
+Instance.new("UICorner", chatLogsToggle).CornerRadius = UDim.new(0, 6)
+ 
+chatLogsToggle.MouseButton1Click:Connect(function()
+    chatLogsEnabled = not chatLogsEnabled
+    game:GetService("TextChatService").ChatWindowConfiguration.Enabled = chatLogsEnabled
+ 
+    if chatLogsEnabled then
+        chatLogsToggle.Text = "ChatLogs: ON"
+        chatLogsToggle.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+    else
+        chatLogsToggle.Text = "ChatLogs: OFF"
+        chatLogsToggle.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+    end
+end)
+ 
+createButtonRow(62, {
+    {"Animation Pack", function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Animation%20Pack"))()
+    end},
+    {"ForceReset", function()
+        local player = game.Players.LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+        local humanoid = character:FindFirstChild("Humanoid")
+        if humanoid then
+            humanoid.Health = 0
+        end
+    end}
+})
