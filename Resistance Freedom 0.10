@@ -1825,3 +1825,50 @@ end)
 if damageNumbersAllEnabled then
 	enableDamageNumbersAll()
 end
+
+-- Auto Stomp Toggle
+local autoStompEnabled = false
+local stompConnection = nil
+
+local autoStompButton = Instance.new("TextButton", scrollFrame)
+autoStompButton.Size = UDim2.new(1, -20, 0, 40)
+autoStompButton.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+autoStompButton.TextColor3 = Color3.fromRGB(0, 0, 0)
+autoStompButton.Font = Enum.Font.Gotham
+autoStompButton.TextSize = 18
+autoStompButton.Text = "Auto Stomp: OFF"
+autoStompButton.LayoutOrder = 46
+autoStompButton.BorderSizePixel = 0
+Instance.new("UICorner", autoStompButton).CornerRadius = UDim.new(0, 6)
+
+local MainEvent = nil
+if game.PlaceId == 2788229376 then
+    MainEvent = game:GetService('ReplicatedStorage'):FindFirstChild("MainEvent")
+end
+
+if not MainEvent then
+    warn("MainEvent not found! Auto Stomp will not work.")
+end
+
+local RunService = game:GetService("RunService")
+
+autoStompButton.MouseButton1Click:Connect(function()
+	autoStompEnabled = not autoStompEnabled
+	autoStompButton.Text = "Auto Stomp: " .. (autoStompEnabled and "ON" or "OFF")
+	autoStompButton.BackgroundColor3 = autoStompEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(255, 165, 0)
+
+	if autoStompEnabled then
+        if MainEvent then
+            -- Connect the RenderStepped event to fire "Stomp" repeatedly
+            stompConnection = RunService.RenderStepped:Connect(function()
+                MainEvent:FireServer("Stomp")
+            end)
+        end
+	else
+        -- Disconnect the RenderStepped event when toggled off
+        if stompConnection then
+            stompConnection:Disconnect()
+            stompConnection = nil
+        end
+	end
+end)
