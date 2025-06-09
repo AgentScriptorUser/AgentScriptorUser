@@ -2432,11 +2432,13 @@ flyButton.MouseButton1Click:Connect(function()
     end
 end)
 
+local speed = 10 -- Default Fly Speed (range 1-100)
+
 -- Fly Speed Label
 local flySpeedLabel = Instance.new("TextLabel", scrollFrame)
 flySpeedLabel.Size = UDim2.new(1, -20, 0, 20)
 flySpeedLabel.BackgroundTransparency = 1
-flySpeedLabel.TextColor3 = Color3.fromRGB(255, 165, 0) -- Orange
+flySpeedLabel.TextColor3 = Color3.fromRGB(255, 165, 0)  -- Orange
 flySpeedLabel.Font = Enum.Font.GothamBold
 flySpeedLabel.TextSize = 16
 flySpeedLabel.Text = "Fly Speed: " .. tostring(speed)
@@ -2454,7 +2456,7 @@ Instance.new("UICorner", sliderFrame).CornerRadius = UDim.new(0, 6)
 -- Slider Fill Frame
 local fillFrame = Instance.new("Frame", sliderFrame)
 fillFrame.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
-fillFrame.Size = UDim2.new((speed - 1) / 99, 0, 1, 0)
+fillFrame.Size = UDim2.new((speed - 1) / 99, 0, 1, 0)  -- Initial fill size
 fillFrame.BorderSizePixel = 0
 fillFrame.ZIndex = 2
 Instance.new("UICorner", fillFrame).CornerRadius = UDim.new(0, 6)
@@ -2469,8 +2471,9 @@ handle.BorderSizePixel = 0
 handle.ZIndex = 3
 Instance.new("UICorner", handle).CornerRadius = UDim.new(1, 0)
 
--- Dragging Logic
+-- Dragging logic
 local dragging = false
+local UserInputService = game:GetService("UserInputService")
 
 local function updateSlider(inputX)
     local sliderAbsPos = sliderFrame.AbsolutePosition.X
@@ -2478,7 +2481,7 @@ local function updateSlider(inputX)
     local relativeX = math.clamp(inputX - sliderAbsPos, 0, sliderWidth)
     local percent = relativeX / sliderWidth
 
-    -- Update speed (1-100)
+    -- Map percent to speed (1 to 100)
     speed = math.floor(1 + percent * 99)
     flySpeedLabel.Text = "Fly Speed: " .. tostring(speed)
 
@@ -2486,14 +2489,15 @@ local function updateSlider(inputX)
     handle.Position = UDim2.new(percent, 0, 0.5, 0)
 end
 
-handle.InputBegan:Connect(function(input)
+sliderFrame.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or
        input.UserInputType == Enum.UserInputType.Touch then
         dragging = true
+        updateSlider(input.Position.X)
     end
 end)
 
-handle.InputEnded:Connect(function(input)
+sliderFrame.InputEnded:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or
        input.UserInputType == Enum.UserInputType.Touch then
         dragging = false
