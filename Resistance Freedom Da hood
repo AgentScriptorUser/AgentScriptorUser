@@ -2413,7 +2413,7 @@ flyButton.TextColor3 = Color3.fromRGB(0, 0, 0)
 flyButton.Font = Enum.Font.Gotham
 flyButton.TextSize = 18
 flyButton.Text = "Fly: OFF"
-flyButton.LayoutOrder = 1003
+flyButton.LayoutOrder = 52
 flyButton.BorderSizePixel = 0
 Instance.new("UICorner", flyButton).CornerRadius = UDim.new(0, 6)
 
@@ -2428,5 +2428,83 @@ flyButton.MouseButton1Click:Connect(function()
         createMobileFlyGui() -- recreate the buttons freshly
     else
         stopFly()
+    end
+end)
+
+-- Fly Speed Label
+local flySpeedLabel = Instance.new("TextLabel", scrollFrame)
+flySpeedLabel.Size = UDim2.new(1, -20, 0, 20)
+flySpeedLabel.BackgroundTransparency = 1
+flySpeedLabel.TextColor3 = Color3.fromRGB(255, 165, 0)  -- Orange color
+flySpeedLabel.Font = Enum.Font.GothamBold
+flySpeedLabel.TextSize = 16
+flySpeedLabel.Text = "Fly Speed: " .. tostring(speed)
+flySpeedLabel.LayoutOrder = 53
+flySpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
+ 
+-- Slider Background Frame
+local sliderFrame = Instance.new("Frame", scrollFrame)
+sliderFrame.Size = UDim2.new(1, -20, 0, 20)
+sliderFrame.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
+sliderFrame.BorderSizePixel = 0
+sliderFrame.LayoutOrder = 54
+Instance.new("UICorner", sliderFrame).CornerRadius = UDim.new(0, 6)
+ 
+-- Slider Fill Frame
+local fillFrame = Instance.new("Frame", sliderFrame)
+fillFrame.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+fillFrame.Size = UDim2.new((speed - 1) / 99, 0, 1, 0)  -- Initial fill size based on speed
+fillFrame.BorderSizePixel = 0
+fillFrame.ZIndex = 2
+Instance.new("UICorner", fillFrame).CornerRadius = UDim.new(0, 6)
+ 
+-- Slider Handle
+local handle = Instance.new("Frame", sliderFrame)
+handle.Size = UDim2.new(0, 12, 1.2, 0)
+handle.AnchorPoint = Vector2.new(0.5, 0.5)
+handle.Position = UDim2.new((speed - 1) / 99, 0, 0.5, 0)
+handle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+handle.BorderSizePixel = 0
+handle.ZIndex = 3
+Instance.new("UICorner", handle).CornerRadius = UDim.new(1, 0)
+ 
+-- Dragging logic
+local dragging = false
+local UserInputService = game:GetService("UserInputService")
+ 
+local function updateSlider(inputX)
+    local sliderAbsPos = sliderFrame.AbsolutePosition.X
+    local sliderWidth = sliderFrame.AbsoluteSize.X
+    local relativeX = math.clamp(inputX - sliderAbsPos, 0, sliderWidth)
+    local percent = relativeX / sliderWidth
+ 
+    -- Map percent to speed (1 to 100)
+    speed = math.floor(1 + percent * 99)
+    flySpeedLabel.Text = "Fly Speed: " .. tostring(speed)
+ 
+    fillFrame.Size = UDim2.new(percent, 0, 1, 0)
+    handle.Position = UDim2.new(percent, 0, 0.5, 0)
+end
+ 
+-- Input events for dragging
+sliderFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or
+       input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        updateSlider(input.Position.X)
+    end
+end)
+ 
+sliderFrame.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or
+       input.UserInputType == Enum.UserInputType.Touch then
+        dragging = false
+    end
+end)
+ 
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or
+                     input.UserInputType == Enum.UserInputType.Touch) then
+        updateSlider(input.Position.X)
     end
 end)
