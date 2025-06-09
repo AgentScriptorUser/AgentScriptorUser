@@ -2225,12 +2225,11 @@ local plr = game.Players.LocalPlayer
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
--- Variables for the fly system
 local flyEnabled = false
 local flying = false
 local flyLoopRunning = false
 local speed = 10
-local pos, gyro, Core, Weld
+local pos, gyro, torso, Core, Weld
 local keys = {q = false, e = false}
 local mobileFlyGui = nil
 
@@ -2257,6 +2256,8 @@ local function createCoreAndWeld()
     Weld.Part1 = lowerTorso
     Weld.C0 = CFrame.new(0, 0, 0)
     Weld.Parent = Core
+
+    torso = Core
 end
 
 -- Mobile GUI
@@ -2278,7 +2279,6 @@ local function createMobileFlyGui()
         btn.AutoButtonColor = false
         btn.MouseButton1Down:Connect(function() keys[name:lower()] = true end)
         btn.MouseButton1Up:Connect(function() keys[name:lower()] = false end)
-        btn.MouseLeave:Connect(function() keys[name:lower()] = false end)
     end
 
     makeButton("Q", "⬆️", UDim2.new(0.8, 0, 0.7, 0))
@@ -2314,55 +2314,52 @@ local function canMoveTo(position)
 end
 
 local function startFly()
-    if flyLoopRunning then return end
+    if flyLoopRunning or not torso then return end
     flying = true
     flyLoopRunning = true
 
-    local character = plr.Character
-    if not character then return end
-
-    pos = Instance.new("BodyPosition")
+    pos = Instance.new("BodyPosition", torso)
     pos.Name = "FlyPosition"
     pos.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-    pos.Position = character.HumanoidRootPart.Position
-    pos.Parent = workspace.Core or nil
+    pos.Position = torso.Position
 
-    gyro = Instance.new("BodyGyro")
+    gyro = Instance.new("BodyGyro", torso)
     gyro.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
-    gyro.CFrame = character.HumanoidRootPart.CFrame
-    gyro.Parent = workspace.Core or nil
+    gyro.CFrame = torso.CFrame
 
     task.spawn(function()
-        while flying and pos and gyro and plr.Character do
+        while flying and torso and pos and gyro do
             task.wait()
 
-            local humanoid = plr.Character:FindFirstChildOfClass("Humanoid")
-            if humanoid then humanoid.PlatformStand = true end
+            local character = plr.Character    
+            local humanoid = character and character:FindFirstChildOfClass("Humanoid")    
+            local root = character and character:FindFirstChild("HumanoidRootPart")    
+            if humanoid then humanoid.PlatformStand = true end    
 
-            local cam = workspace.CurrentCamera
-            local camLook = cam.CFrame.LookVector
-            local moveDir = humanoid and humanoid.MoveDirection or Vector3.zero
-            local vertical = (keys.q and speed or 0) - (keys.e and speed or 0)
+            local cam = workspace.CurrentCamera    
+            local camLook = cam.CFrame.LookVector    
+            local moveDir = humanoid and humanoid.MoveDirection or Vector3.zero    
+            local vertical = (keys.q and speed or 0) - (keys.e and speed or 0)    
 
-            local move = moveDir.Magnitude > 0 and moveDir.Unit * speed or Vector3.zero
-            move = Vector3.new(move.X, vertical, move.Z)
+            local move = moveDir.Magnitude > 0 and moveDir.Unit * speed or Vector3.zero    
+            move = Vector3.new(move.X, vertical, move.Z)    
 
-            local targetPos = pos.Position + move
-            if canMoveTo(targetPos) then
-                pos.Position = targetPos
-            end
+            local targetPos = pos.Position + move    
+            if canMoveTo(targetPos) then    
+                pos.Position = targetPos    
+            end    
 
-            local forward = Vector3.new(camLook.X, 0, camLook.Z)
-            if forward.Magnitude > 0 then
-                gyro.CFrame = CFrame.new(Vector3.zero, forward.Unit)
-            end
-        end
+            local forward = Vector3.new(camLook.X, 0, camLook.Z)    
+            if forward.Magnitude > 0 then    
+                gyro.CFrame = CFrame.new(Vector3.zero, forward.Unit)    
+            end    
+        end    
 
         stopFly()
     end)
 end
 
-function stopFly()
+local function stopFly()
     flying = false
     flyLoopRunning = false
 
@@ -2375,6 +2372,8 @@ function stopFly()
 
     local character = plr.Character
     local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+
     if humanoid then
         humanoid.PlatformStand = false
         humanoid:SetStateEnabled(Enum.HumanoidStateType.PlatformStanding, false)
@@ -2382,7 +2381,6 @@ function stopFly()
         humanoid.WalkSpeed = 16
     end
 
-    local root = character and character:FindFirstChild("HumanoidRootPart")
     if root then
         root.Velocity = Vector3.zero
         root.AssemblyLinearVelocity = Vector3.zero
@@ -2393,29 +2391,15 @@ function stopFly()
     keys.e = false
 end
 
-local function onCharacterAdded(char)
-    stopFly()
-    char:WaitForChild("LowerTorso", 5)
-    createCoreAndWeld()
-    if flyEnabled then
-        startFly()
-        createMobileFlyGui()
-    end
-end
-
-plr.CharacterAdded:Connect(onCharacterAdded)
-if plr.Character then onCharacterAdded(plr.Character) end
-
--- ========== Fly Toggle Button ==========
-
-local flyButton = Instance.new("TextButton", scrollFrame)
+-- Fly toggle button setup
+local flyButton = Instance.new("TextButton", scrollFrame) -- Adjust scrollFrame to your container
 flyButton.Size = UDim2.new(1, -20, 0, 40)
 flyButton.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
 flyButton.TextColor3 = Color3.fromRGB(0, 0, 0)
 flyButton.Font = Enum.Font.Gotham
 flyButton.TextSize = 18
 flyButton.Text = "Fly: OFF"
-flyButton.LayoutOrder = 52 -- Adjust order as needed
+flyButton.LayoutOrder = 1003
 flyButton.BorderSizePixel = 0
 Instance.new("UICorner", flyButton).CornerRadius = UDim.new(0, 6)
 
@@ -2425,9 +2409,29 @@ flyButton.MouseButton1Click:Connect(function()
     flyButton.BackgroundColor3 = flyEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(255, 165, 0)
 
     if flyEnabled then
+        createCoreAndWeld()
         startFly()
         createMobileFlyGui()
     else
         stopFly()
     end
 end)
+
+-- Auto re-enable fly on character respawn if flyEnabled is true
+plr.CharacterAdded:Connect(function(char)
+    if flyEnabled then
+        task.wait(1) -- Small delay to ensure character loads
+        createCoreAndWeld()
+        startFly()
+        createMobileFlyGui()
+    else
+        stopFly()
+    end
+end)
+
+-- Initial setup if player already has a character
+if plr.Character and flyEnabled then
+    createCoreAndWeld()
+    startFly()
+    createMobileFlyGui()
+end
