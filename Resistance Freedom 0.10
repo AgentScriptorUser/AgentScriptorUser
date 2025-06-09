@@ -2023,3 +2023,61 @@ autoArmorButton.MouseButton1Click:Connect(function()
 		end
 	end
 end)
+
+-- NO FOG TOGGLE
+local noFogEnabled = false
+local fogStartConn, fogEndConn = nil, nil
+local lighting = game:GetService("Lighting")
+
+local noFogButton = Instance.new("TextButton", scrollFrame)
+noFogButton.Size = UDim2.new(1, -20, 0, 40)
+noFogButton.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+noFogButton.TextColor3 = Color3.fromRGB(0, 0, 0)
+noFogButton.Font = Enum.Font.Gotham
+noFogButton.TextSize = 18
+noFogButton.Text = "No Fog: OFF"
+noFogButton.LayoutOrder = 49
+noFogButton.BorderSizePixel = 0
+Instance.new("UICorner", noFogButton).CornerRadius = UDim.new(0, 6)
+
+-- Store original values to restore later
+local original = {
+	FogStart = lighting.FogStart,
+	FogEnd = lighting.FogEnd,
+	Brightness = lighting.Brightness,
+	OutdoorAmbient = lighting.OutdoorAmbient,
+	Ambient = lighting.Ambient
+}
+
+noFogButton.MouseButton1Click:Connect(function()
+	noFogEnabled = not noFogEnabled
+	noFogButton.Text = "No Fog: " .. (noFogEnabled and "ON" or "OFF")
+	noFogButton.BackgroundColor3 = noFogEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(255, 165, 0)
+
+	if noFogEnabled then
+		lighting.FogStart = 1000000
+		lighting.FogEnd = 1000000
+		lighting.Brightness = 5
+		lighting.OutdoorAmbient = Color3.new(1, 1, 1)
+		lighting.Ambient = Color3.new(1, 1, 1)
+
+		-- Lock fog settings
+		fogStartConn = lighting:GetPropertyChangedSignal("FogStart"):Connect(function()
+			lighting.FogStart = 1000000
+		end)
+		fogEndConn = lighting:GetPropertyChangedSignal("FogEnd"):Connect(function()
+			lighting.FogEnd = 1000000
+		end)
+	else
+		-- Restore original lighting
+		lighting.FogStart = original.FogStart
+		lighting.FogEnd = original.FogEnd
+		lighting.Brightness = original.Brightness
+		lighting.OutdoorAmbient = original.OutdoorAmbient
+		lighting.Ambient = original.Ambient
+
+		-- Disconnect signals
+		if fogStartConn then fogStartConn:Disconnect() end
+		if fogEndConn then fogEndConn:Disconnect() end
+	end
+end)
