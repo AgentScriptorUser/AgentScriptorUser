@@ -1884,7 +1884,7 @@ autoReloadButton.TextColor3 = Color3.fromRGB(0, 0, 0)
 autoReloadButton.Font = Enum.Font.Gotham
 autoReloadButton.TextSize = 18
 autoReloadButton.Text = "Auto Reload: OFF"
-autoReloadButton.LayoutOrder = 1001
+autoReloadButton.LayoutOrder = 47
 autoReloadButton.BorderSizePixel = 0
 Instance.new("UICorner", autoReloadButton).CornerRadius = UDim.new(0, 6)
 
@@ -1929,5 +1929,97 @@ autoReloadButton.MouseButton1Click:Connect(function()
 	else
 		-- Stop the reload task
 		autoReloadEnabled = false
+	end
+end)
+
+-- AUTO ARMOR Toggle Button
+local autoArmorEnabled = false
+local armorMonitorConnection = nil
+
+local autoArmorButton = Instance.new("TextButton", scrollFrame)
+autoArmorButton.Size = UDim2.new(1, -20, 0, 40)
+autoArmorButton.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+autoArmorButton.TextColor3 = Color3.fromRGB(0, 0, 0)
+autoArmorButton.Font = Enum.Font.Gotham
+autoArmorButton.TextSize = 18
+autoArmorButton.Text = "Auto Armor: OFF"
+autoArmorButton.LayoutOrder = 48
+autoArmorButton.BorderSizePixel = 0
+Instance.new("UICorner", autoArmorButton).CornerRadius = UDim.new(0, 6)
+
+-- Auto Armor Logic
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local localPlayer = Players.LocalPlayer
+local armorShop = workspace.Ignored.Shop["[High-Medium Armor] - $2513"]
+local shopCFrame = CFrame.new(-934.025024, -28.149826, 570.549683)
+
+local function teleport(cframe)
+    local hrp = localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if hrp then
+        hrp.CFrame = cframe
+    end
+end
+
+local function isArmorMissing()
+    local character = localPlayer.Character
+    if not character then return true end
+
+    local bodyEffects = character:FindFirstChild("BodyEffects")
+    if not bodyEffects then return true end
+
+    local armorValue = bodyEffects:FindFirstChild("Armor")
+    if not armorValue then return true end
+
+    return armorValue.Value < 90
+end
+
+local function startArmorMonitor()
+    if armorMonitorConnection then
+        armorMonitorConnection:Disconnect()
+    end
+
+    localPlayer.Character:WaitForChild("HumanoidRootPart")
+    local lastCheck = tick()
+
+    armorMonitorConnection = RunService.Heartbeat:Connect(function()
+        if tick() - lastCheck >= 1 then
+            lastCheck = tick()
+
+            if isArmorMissing() then
+                local hrp = localPlayer.Character:FindFirstChild("HumanoidRootPart")
+                if not hrp then return end
+
+                local originalCFrame = hrp.CFrame
+                teleport(shopCFrame)
+                wait(0.25)
+                if armorShop:FindFirstChild("ClickDetector") then
+                    fireclickdetector(armorShop.ClickDetector)
+                end
+                wait(0.25)
+                teleport(originalCFrame)
+            end
+        end
+    end)
+end
+
+autoArmorButton.MouseButton1Click:Connect(function()
+	autoArmorEnabled = not autoArmorEnabled
+	autoArmorButton.Text = "Auto Armor: " .. (autoArmorEnabled and "ON" or "OFF")
+	autoArmorButton.BackgroundColor3 = autoArmorEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(255, 165, 0)
+
+	if autoArmorEnabled then
+		startArmorMonitor()
+		localPlayer.CharacterAdded:Connect(function()
+			wait(0.5)
+			if autoArmorEnabled then
+				startArmorMonitor()
+			end
+		end)
+	else
+		if armorMonitorConnection then
+			armorMonitorConnection:Disconnect()
+			armorMonitorConnection = nil
+		end
 	end
 end)
