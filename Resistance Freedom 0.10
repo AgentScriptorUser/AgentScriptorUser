@@ -2081,3 +2081,93 @@ noFogButton.MouseButton1Click:Connect(function()
 		if fogEndConn then fogEndConn:Disconnect() end
 	end
 end)
+
+-- Main Section Label
+local mainSectionLabel = Instance.new("TextLabel", scrollFrame)
+mainSectionLabel.Size = UDim2.new(1, -20, 0, 30)
+mainSectionLabel.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+mainSectionLabel.TextColor3 = Color3.fromRGB(0, 0, 0)
+mainSectionLabel.Font = Enum.Font.GothamBold
+mainSectionLabel.TextSize = 20
+mainSectionLabel.Text = "Main"
+mainSectionLabel.TextXAlignment = Enum.TextXAlignment.Left
+mainSectionLabel.LayoutOrder = 50
+mainSectionLabel.BorderSizePixel = 0
+Instance.new("UICorner", mainSectionLabel).CornerRadius = UDim.new(0, 6)
+
+-- Main Section Buttons
+createButtonRow(51, {
+    {"Speed Boost", function()
+        -- Replace this URL with your actual Speed Boost script link
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/SpeedBoost"))()
+    end},
+    {"TrashTalk [X]", function()
+        -- TrashTalk [X] local script
+        local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local ChatService = game:GetService("TextChatService")
+        local UserInputService = game:GetService("UserInputService")
+
+        local isRunning = false
+
+        local function sendMessage(message)
+            if ChatService.ChatVersion == Enum.ChatVersion.TextChatService then
+                local textChannel = ChatService.TextChannels:FindFirstChild("RBXGeneral")
+                if textChannel then
+                    textChannel:SendAsync(message)
+                else
+                    warn("TextChatService channel RBXGeneral not found!")
+                end
+            else
+                local chatEvents = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
+                if chatEvents then
+                    local sayMessageRequest = chatEvents:FindFirstChild("SayMessageRequest")
+                    if sayMessageRequest then
+                        sayMessageRequest:FireServer(message, "All")
+                    else
+                        warn("SayMessageRequest not found in DefaultChatSystemChatEvents!")
+                    end
+                else
+                    warn("DefaultChatSystemChatEvents not found in ReplicatedStorage!")
+                end
+            end
+        end
+
+        local function sayGoodbye()
+            if isRunning then return end
+            isRunning = true
+
+            local messages = {
+                "Easy Sonn",
+                "Mad Already? LOL",
+                "Skill issue Son",
+                "Is that even a Aim???",
+                "Lolll what are you aiming at???",
+                "Keep yapping Barbie Ahh",
+                "Quit the game lil bro",
+                "XDD",
+                "How did u fail to get me XD",
+                "even my grandma has Better AIM then you",
+                "Go play Brookhaven or adopt me something lol"
+            }
+
+            for _, msg in ipairs(messages) do
+                sendMessage(msg)
+                wait(1.5)
+            end
+
+            isRunning = false
+        end
+
+        sayGoodbye()
+
+        UserInputService.InputBegan:Connect(function(input, gameProcessed)
+            if not gameProcessed and input.KeyCode == Enum.KeyCode.X then
+                sayGoodbye()
+            end
+        end)
+    end},
+    {"ClickTeleport Tool", function()
+        -- Correct Click Teleport Tool script link
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/ClickTeleport%20Tool"))()
+    end}
+})
