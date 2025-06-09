@@ -2082,6 +2082,7 @@ noFogButton.MouseButton1Click:Connect(function()
 	end
 end)
 
+
 -- Main Section Label
 local mainSectionLabel = Instance.new("TextLabel", scrollFrame)
 mainSectionLabel.Size = UDim2.new(1, -20, 0, 30)
@@ -2428,65 +2429,5 @@ flyButton.MouseButton1Click:Connect(function()
         createMobileFlyGui() -- recreate the buttons freshly
     else
         stopFly()
-    end
-end)
-
--- ======= Fly Speed Slider =======
-local sliderFrame = Instance.new("Frame", scrollFrame)
-sliderFrame.Size = UDim2.new(1, -20, 0, 50)
-sliderFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-sliderFrame.LayoutOrder = 53
-sliderFrame.BorderSizePixel = 0
-Instance.new("UICorner", sliderFrame).CornerRadius = UDim.new(0, 6)
-
-local sliderBar = Instance.new("Frame", sliderFrame)
-sliderBar.Size = UDim2.new(0.9, 0, 0.3, 0)
-sliderBar.Position = UDim2.new(0.05, 0, 0.5, -5)
-sliderBar.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-sliderBar.BorderSizePixel = 0
-Instance.new("UICorner", sliderBar).CornerRadius = UDim.new(0, 4)
-
-local sliderButton = Instance.new("TextButton", sliderBar)
-sliderButton.Size = UDim2.new(0, 20, 1, 0)
-sliderButton.Position = UDim2.new(0, 0, 0, 0)
-sliderButton.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
-sliderButton.Text = ""
-sliderButton.AutoButtonColor = false
-sliderButton.BorderSizePixel = 0
-Instance.new("UICorner", sliderButton).CornerRadius = UDim.new(1, 0)
-
-local sliderLabel = Instance.new("TextLabel", sliderFrame)
-sliderLabel.Size = UDim2.new(1, -10, 0, 20)
-sliderLabel.Position = UDim2.new(0, 5, 0, 5)
-sliderLabel.BackgroundTransparency = 1
-sliderLabel.Text = "Fly Speed: " .. speed
-sliderLabel.TextColor3 = Color3.new(1, 1, 1)
-sliderLabel.Font = Enum.Font.Gotham
-sliderLabel.TextSize = 14
-sliderLabel.TextXAlignment = Enum.TextXAlignment.Left
-
-local dragging = false
-
-sliderButton.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = true
-    end
-end)
-
-UserInputService.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = false
-    end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-        local rel = input.Position.X - sliderBar.AbsolutePosition.X
-        local percent = math.clamp(rel / sliderBar.AbsoluteSize.X, 0, 1)
-        sliderButton.Position = UDim2.new(percent, -10, 0, 0)
-        
-        -- Update fly speed based on slider position (speed range: 5 to 100)
-        speed = math.floor(5 + (percent * 95))
-        sliderLabel.Text = "Fly Speed: " .. speed
     end
 end)
