@@ -1872,3 +1872,62 @@ autoStompButton.MouseButton1Click:Connect(function()
         end
 	end
 end)
+
+-- Auto Reload Toggle with Functionality
+local autoReloadEnabled = false
+local reloadConnection
+
+local autoReloadButton = Instance.new("TextButton", scrollFrame)
+autoReloadButton.Size = UDim2.new(1, -20, 0, 40)
+autoReloadButton.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+autoReloadButton.TextColor3 = Color3.fromRGB(0, 0, 0)
+autoReloadButton.Font = Enum.Font.Gotham
+autoReloadButton.TextSize = 18
+autoReloadButton.Text = "Auto Reload: OFF"
+autoReloadButton.LayoutOrder = 1001
+autoReloadButton.BorderSizePixel = 0
+Instance.new("UICorner", autoReloadButton).CornerRadius = UDim.new(0, 6)
+
+local Players = game:GetService("Players")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+local player = Players.LocalPlayer
+local reloadThreshold = 1
+
+-- Function to simulate pressing "R"
+local function pressR()
+	VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.R, false, game)
+	task.wait(0.1)
+	VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.R, false, game)
+end
+
+-- Check if the tool is a gun with ammo
+local function isGun(tool)
+	if not tool:IsA("Tool") then return false end
+	return tool:FindFirstChild("Ammo") or tool:FindFirstChild("Clip") or tool:FindFirstChild("AmmoGui")
+end
+
+-- Toggle Function
+autoReloadButton.MouseButton1Click:Connect(function()
+	autoReloadEnabled = not autoReloadEnabled
+	autoReloadButton.Text = "Auto Reload: " .. (autoReloadEnabled and "ON" or "OFF")
+	autoReloadButton.BackgroundColor3 = autoReloadEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(255, 165, 0)
+
+	if autoReloadEnabled then
+		reloadConnection = task.spawn(function()
+			while autoReloadEnabled do
+				local character = player.Character or player.CharacterAdded:Wait()
+				local tool = character:FindFirstChildOfClass("Tool")
+				if tool and isGun(tool) then
+					local ammo = tool:FindFirstChild("Ammo") or tool:FindFirstChild("Clip")
+					if ammo and tonumber(ammo.Value) <= reloadThreshold then
+						pressR()
+					end
+				end
+				task.wait(0.3)
+			end
+		end)
+	else
+		-- Stop the reload task
+		autoReloadEnabled = false
+	end
+end)
