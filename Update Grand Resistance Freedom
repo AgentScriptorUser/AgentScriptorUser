@@ -1,0 +1,2432 @@
+local player = game.Players.LocalPlayer
+local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+gui.Name = "Resistance Freedom"
+gui.ResetOnSpawn = false
+
+-- Main Frame
+local bg = Instance.new("Frame", gui)
+bg.Size = UDim2.new(0, 600, 0, 420)
+bg.Position = UDim2.new(0.5, -300, 0.5, -210)
+bg.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+bg.Active = true
+bg.Draggable = true
+bg.BorderSizePixel = 0
+Instance.new("UICorner", bg).CornerRadius = UDim.new(0, 12)
+
+local stroke = Instance.new("UIStroke", bg)
+stroke.Thickness = 4
+stroke.Color = Color3.fromRGB(255, 140, 0)
+stroke.Transparency = 0.1
+stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+
+-- Title
+local title = Instance.new("TextLabel", bg)
+title.Size = UDim2.new(1, 0, 0, 40)
+title.BackgroundColor3 = Color3.fromRGB(255, 140, 0)
+title.Text = "Resistance Freedom"
+title.Font = Enum.Font.SourceSansBold
+title.TextSize = 28
+title.TextColor3 = Color3.fromRGB(0, 0, 0)
+title.BorderSizePixel = 0
+
+-- Logo
+local logo = Instance.new("ImageLabel", title)
+logo.Size = UDim2.new(0, 30, 0, 30)
+logo.Position = UDim2.new(0, 5, 0, 5)
+logo.BackgroundTransparency = 1
+logo.Image = "rbxassetid://110313676338446"
+
+-- ScrollingFrame
+local scrollFrame = Instance.new("ScrollingFrame", bg)
+scrollFrame.Size = UDim2.new(1, -20, 1, -60)
+scrollFrame.Position = UDim2.new(0, 10, 0, 50)
+scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 2500) -- Adjust if you add more content
+scrollFrame.ScrollBarThickness = 8
+scrollFrame.BackgroundTransparency = 1
+scrollFrame.BorderSizePixel = 0
+scrollFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+scrollFrame.CanvasPosition = Vector2.new(0, 0)
+
+local layout = Instance.new("UIListLayout", scrollFrame)
+layout.SortOrder = Enum.SortOrder.LayoutOrder
+layout.Padding = UDim.new(0, 10)
+
+local textColor = Color3.fromRGB(255, 165, 0)
+
+-- Profile Frame
+local profileFrame = Instance.new("Frame", scrollFrame)
+profileFrame.Size = UDim2.new(1, -20, 0, 120)
+profileFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+profileFrame.LayoutOrder = 1
+Instance.new("UICorner", profileFrame).CornerRadius = UDim.new(0, 10)
+
+-- Avatar Image
+local avatar = Instance.new("ImageLabel", profileFrame)
+avatar.Size = UDim2.new(0, 80, 0, 80)
+avatar.Position = UDim2.new(0, 10, 0, 10)
+avatar.BackgroundTransparency = 1
+avatar.Image = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. player.UserId .. "&width=420&height=420&format=png"
+
+-- Display Name
+local displayName = Instance.new("TextLabel", profileFrame)
+displayName.Position = UDim2.new(0, 100, 0, 10)
+displayName.Size = UDim2.new(1, -110, 0, 25)
+displayName.BackgroundTransparency = 1
+displayName.Font = Enum.Font.GothamBold
+displayName.TextSize = 22
+displayName.TextColor3 = textColor
+displayName.TextXAlignment = Enum.TextXAlignment.Left
+displayName.Text = "Display Name: " .. player.DisplayName
+
+-- Username
+local username = Instance.new("TextLabel", profileFrame)
+username.Position = UDim2.new(0, 100, 0, 35)
+username.Size = UDim2.new(1, -110, 0, 20)
+username.BackgroundTransparency = 1
+username.Font = Enum.Font.Gotham
+username.TextSize = 18
+username.TextColor3 = textColor
+username.TextXAlignment = Enum.TextXAlignment.Left
+username.Text = "Username: @" .. player.Name
+
+-- User ID
+local userId = Instance.new("TextLabel", profileFrame)
+userId.Position = UDim2.new(0, 100, 0, 60)
+userId.Size = UDim2.new(1, -110, 0, 20)
+userId.BackgroundTransparency = 1
+userId.Font = Enum.Font.Gotham
+userId.TextSize = 18
+userId.TextColor3 = textColor
+userId.TextXAlignment = Enum.TextXAlignment.Left
+userId.Text = "User ID: " .. player.UserId
+
+-- Rank
+local rank = Instance.new("TextLabel", profileFrame)
+rank.Position = UDim2.new(0, 100, 0, 85)
+rank.Size = UDim2.new(1, -110, 0, 20)
+rank.BackgroundTransparency = 1
+rank.Font = Enum.Font.GothamBold
+rank.TextSize = 18
+rank.TextColor3 = textColor
+rank.TextXAlignment = Enum.TextXAlignment.Left
+rank.Text = "Rank: Developer"
+
+-- Button Factory
+local function createButton(parent, name, callback)
+    local button = Instance.new("TextButton", parent)
+    button.Size = UDim2.new(0, 170, 0, 40)
+    button.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+    button.Text = name
+    button.Font = Enum.Font.GothamBold
+    button.TextSize = 16
+    button.TextColor3 = Color3.fromRGB(0, 0, 0)
+    button.AutoButtonColor = true
+    Instance.new("UICorner", button).CornerRadius = UDim.new(0, 8)
+    button.MouseButton1Click:Connect(callback)
+end
+
+-- Reusable button row
+local function createButtonRow(order, buttons)
+    local frame = Instance.new("Frame", scrollFrame)
+    frame.Size = UDim2.new(1, -20, 0, 50)
+    frame.BackgroundTransparency = 1
+    frame.LayoutOrder = order
+
+    local layout = Instance.new("UIListLayout", frame)
+    layout.FillDirection = Enum.FillDirection.Horizontal
+    layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    layout.VerticalAlignment = Enum.VerticalAlignment.Center
+    layout.Padding = UDim.new(0, 10)
+
+    for _, data in ipairs(buttons) do
+        createButton(frame, data[1], data[2])
+    end
+end
+
+-- Add button rows
+createButtonRow(2, {
+    {"PortalGun [Client Sided]", function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Portal%20gun%20%5BClient%20Sided%5D"))()
+    end},
+    {"Tornado", function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Tornado"))()
+    end},
+    {"Suicide", function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Suicide%20Joke%20Da%20hood"))()
+    end}
+})
+
+createButtonRow(3, {
+    {"Holy Cross", function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Holy%20Cross%20script"))()
+    end},
+    {"Buy Sledgehammer", function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Buy%20Sledgehammer%20script"))()
+    end},
+    {"Sonic", function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Sonic%20Roll%20script"))()
+    end}
+})
+
+createButtonRow(4, {
+    {"Spiderman", function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Da%20Strike%20web%20swing%20sound"))()
+    end},
+    {"WalkOnWalls", function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Da%20hood%20walkonwalls"))()
+    end},
+    {"Crawl", function()
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/0Ben1/fe/main/obf_vZDX8j5ggfAf58QhdJ59BVEmF6nmZgq4Mcjt2l8wn16CiStIW2P6EkNc605qv9K4.lua.txt'))()
+    end}
+})
+
+createButtonRow(5, {
+    {"Neckgrab", function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Neckgrab"))()
+    end},
+    {"IP Logger", function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Da%20hood%20ip%20log%20script"))()
+    end},
+    {"Call of duty Zombie", function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Call%20of%20duty%20Zombie"))()
+    end}
+})
+
+createButtonRow(6, {
+    {"Ball", function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Ball%20script"))()
+    end}
+})
+
+-- Teleport Section Label
+local teleportSectionLabel = Instance.new("TextLabel", scrollFrame)
+teleportSectionLabel.Size = UDim2.new(1, -20, 0, 30)
+teleportSectionLabel.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+teleportSectionLabel.TextColor3 = Color3.fromRGB(0, 0, 0)
+teleportSectionLabel.Font = Enum.Font.GothamBold
+teleportSectionLabel.TextSize = 20
+teleportSectionLabel.Text = "Teleport"
+teleportSectionLabel.TextXAlignment = Enum.TextXAlignment.Left
+teleportSectionLabel.LayoutOrder = 7
+teleportSectionLabel.BorderSizePixel = 0
+Instance.new("UICorner", teleportSectionLabel).CornerRadius = UDim.new(0, 6)
+
+-- Row 6: Bank, Hood Fitness, Uphill GunShop
+createButtonRow(8, {
+    {"Bank", function()
+        local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then 
+            hrp.CFrame = CFrame.new(-433.46167, 34.843502, -284.619873, -0.999996424, 0.0026759801, 0, 0.0026759801, 0.999996424, 0, 0, 0, -1) 
+        end
+    end},
+    {"Hood Fitness", function()
+        local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then 
+            hrp.CFrame = CFrame.new(-74.880188, 19.5752907, -637.624817) 
+        end
+    end},
+    {"Uphill GunShop", function()
+        local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then 
+            hrp.CFrame = CFrame.new(481.647858, 44.9455032, -625.853882, -3.57627869e-07, -0.00109869963, 0.999999404, -0.000122077588, -0.999999404, -0.00109869975, 1, -0.000122077879, 1.78813934e-07) 
+        end
+    end}
+})
+
+-- Row 7: Police Station, Hair Salon, Taco Bell
+createButtonRow(9, {
+    {"Police Station", function()
+        local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then 
+            hrp.CFrame = CFrame.new(-253.491516, 18.2999573, -90.6114197, -1.1920929e-07, 0, -1.00000012, 0, 1, 0, 1.00000012, 0, -1.1920929e-07) 
+        end
+    end},
+    {"Hair Salon", function()
+        local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then 
+            hrp.CFrame = CFrame.new(-879.254822, 18.8800087, -657.187561, -1.1920929e-07, 0, 1.00000012, 0, 1, 0, -1.00000012, 0, -1.1920929e-07) 
+        end
+    end},
+    {"Taco Bell", function()
+        local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then 
+            hrp.CFrame = CFrame.new(573.16687, 50.8083496, -492.166138, -1, 0, 0, 0, 0, 1, 0, 1, 0) 
+        end
+    end}
+})
+
+-- Row 8: Basketball, DrumGun Area, Da Theater
+createButtonRow(10, {
+    {"Basketball", function()
+        local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then 
+            hrp.CFrame = CFrame.new(-932.670227, 16.9998245, -482.200012, -1, 0, 0, 0, 1, 0, 0, 0, -1) 
+        end
+    end},
+    {"DrumGun Area", function()
+        local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then 
+            hrp.CFrame = CFrame.new(-1177.28638, 26.7553253, -533.874451, -1.1920929e-07, 1.00000012, 0, -1.00000012, -1.1920929e-07, 0, 0, 0, 1) 
+        end
+    end},
+    {"Da Theater", function()
+        local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then 
+            hrp.CFrame = CFrame.new(-1005.99994, 45.5999527, -123.199982) 
+        end
+    end}
+})
+
+-- Row 9: Da Box, Food Shop, Church
+createButtonRow(11, {
+    {"Da Box", function()
+        local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then 
+            hrp.CFrame = CFrame.new(-262.110687, 19.3204613, -1127.6355) 
+        end
+    end},
+    {"Food Shop", function()
+        local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then 
+            hrp.CFrame = CFrame.new(-326.420441, 20.5576477, -298.053467) 
+        end
+    end},
+    {"Church", function()
+        local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then 
+            hrp.CFrame = CFrame.new(205.770004, 21.7550011, -11) 
+        end
+    end}
+})
+
+-- Row 10: Da Arcade, Fire department (updated), Da High School
+createButtonRow(12, {
+    {"Da Arcade", function()
+        local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then 
+            hrp.CFrame = CFrame.new(-216.000153, 19.005003, -306.874878, -1.1920929e-07, 0, 1.00000012, 0, 1, 0, -1.00000012, 0, -1.1920929e-07) 
+        end
+    end},
+    {"Fire department", function()
+        local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then 
+            hrp.CFrame = CFrame.new(-143.649292, 28.9644623, -116.684448, 0, 0, -1, 0, 1, 0, 1, 0, 0) 
+        end
+    end},
+    {"Da High School", function()
+        local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then 
+            hrp.CFrame = CFrame.new(-592.063477, 64.4375, 306.312561, -1, 0, 0, 0, 1, 0, 0, 0, -1) 
+        end
+    end}
+})
+
+-- Row 11: Hood Kicks, Da Military, Playground (Updated CFrame)
+createButtonRow(13, {
+    {"Hood Kicks", function()
+        local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then 
+            hrp.CFrame = CFrame.new(-224.806656, 18.9544506, -410.30307) 
+        end
+    end},
+    {"Da Military", function()
+        local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then 
+            hrp.CFrame = CFrame.new(31.3074722, 22.1925011, -866, 0, 0, -1, 0, 1, 0, 1, 0, 0) 
+        end
+    end},
+    {"Playground", function()
+        local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            hrp.CFrame = CFrame.new(
+                -217.972778, 26.2170639, -742.421448,
+                -0.00195229053, 4.76647983e-07, -0.999998033,
+                0.000488310761, 0.999999881, -4.76647983e-07,
+                0.999997914, -0.000488310761, -0.00195229053
+            )
+        end
+    end}
+})
+
+-- Row 12: DownHill GunShop, Gas Station, Barba
+createButtonRow(14, {
+    {"DownHill GunShop", function()
+        local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            hrp.CFrame = CFrame.new(
+                -584.004089, 5.18978119, -736.192566,
+                1, -8.63220121e-05, -4.84346927e-08,
+                -8.63220121e-05, -0.999999762, -0.00112218619,
+                4.84346927e-08, 0.00112218619, -0.999999762
+            )
+        end
+    end},
+    {"Gas Station", function()
+        local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            hrp.CFrame = CFrame.new(
+                539.494995, 44.2550011, -249.249969,
+                0, 0, 1,
+                0, 1, 0,
+                -1, 0, 0
+            )
+        end
+    end},
+    {"Barba", function()
+        local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            hrp.CFrame = CFrame.new(
+                1.10922575, 21.1216698, -102.050652,
+                5.96046448e-08, -2.91038305e-11, -1,
+                0.000610388815, 0.999999821, 2.91038305e-11,
+                0.999999762, -0.000610388815, 5.96046448e-08
+            )
+        end
+    end}
+})
+
+-- Aim/Hitbox Section Label
+local aimSectionLabel = Instance.new("TextLabel", scrollFrame)
+aimSectionLabel.Size = UDim2.new(1, -20, 0, 30)
+aimSectionLabel.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+aimSectionLabel.TextColor3 = Color3.fromRGB(0, 0, 0)
+aimSectionLabel.Font = Enum.Font.GothamBold
+aimSectionLabel.TextSize = 20
+aimSectionLabel.Text = "Aim/Hitbox"
+aimSectionLabel.TextXAlignment = Enum.TextXAlignment.Left
+aimSectionLabel.LayoutOrder = 15
+aimSectionLabel.BorderSizePixel = 0
+Instance.new("UICorner", aimSectionLabel).CornerRadius = UDim.new(0, 6)
+
+-- Aim/Hitbox Buttons Row: Kill Aura , Aimbot and Camlock
+createButtonRow(16, {
+    {
+        "Kill Aura",
+        function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Da%20hood%20KillAura%20Script"))()
+        end
+    },
+    {
+        "Aimbot",
+        function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Da%20hood%20Aimbot%20script"))()
+        end
+    },
+    {
+        "Camlock",
+        function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Camlock%20script"))()
+        end
+    }
+})
+
+-- Hitbox Expander Toggle Button
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local hitboxEnabled = false
+local hitboxLoop = nil
+
+local hitboxToggle = Instance.new("TextButton", scrollFrame)
+hitboxToggle.Size = UDim2.new(1, -20, 0, 40)
+hitboxToggle.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+hitboxToggle.TextColor3 = Color3.fromRGB(0, 0, 0)
+hitboxToggle.Font = Enum.Font.Gotham
+hitboxToggle.TextSize = 18
+hitboxToggle.Text = "Hitbox Expander: OFF"
+hitboxToggle.LayoutOrder = 17
+hitboxToggle.BorderSizePixel = 0
+Instance.new("UICorner", hitboxToggle).CornerRadius = UDim.new(0, 6)
+
+local function applyHitboxToCharacter(character)
+    local hrp = character:FindFirstChild("HumanoidRootPart")
+    if hrp then
+        hrp.Size = Vector3.new(20, 20, 20)
+        hrp.Transparency = 0.3
+        hrp.Material = Enum.Material.ForceField
+        hrp.Color = Color3.fromRGB(255, 165, 0) -- Orange
+        hrp.CanCollide = false
+    end
+    for _, part in ipairs(character:GetChildren()) do
+        if part:IsA("BasePart") then
+            part.CanCollide = false
+        end
+    end
+end
+
+local function removeHitboxFromCharacter(character)
+    local hrp = character:FindFirstChild("HumanoidRootPart")
+    if hrp then
+        hrp.Size = Vector3.new(2, 2, 1)
+        hrp.Transparency = 1
+        hrp.Material = Enum.Material.Plastic
+        hrp.Color = Color3.fromRGB(163, 162, 165)
+        hrp.CanCollide = true
+    end
+end
+
+local function restoreAllHitboxes()
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character then
+            removeHitboxFromCharacter(player.Character)
+        end
+    end
+end
+
+local function expandAllHitboxes()
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character then
+            applyHitboxToCharacter(player.Character)
+        end
+    end
+end
+
+hitboxToggle.MouseButton1Click:Connect(function()
+    hitboxEnabled = not hitboxEnabled
+    hitboxToggle.Text = "Hitbox Expander: " .. (hitboxEnabled and "ON" or "OFF")
+    hitboxToggle.BackgroundColor3 = hitboxEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(255, 165, 0)
+
+    if hitboxEnabled then
+        if hitboxLoop then
+            task.cancel(hitboxLoop)
+        end
+        hitboxLoop = task.spawn(function()
+            while hitboxEnabled do
+                expandAllHitboxes()
+                task.wait(0.1)
+            end
+        end)
+    else
+        if hitboxLoop then
+            task.cancel(hitboxLoop)
+            hitboxLoop = nil
+        end
+        restoreAllHitboxes()
+    end
+end)
+
+Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function(character)
+        task.wait(1)
+        if not hitboxEnabled then
+            removeHitboxFromCharacter(character)
+        end
+    end)
+end)
+
+for _, player in ipairs(Players:GetPlayers()) do
+    player.CharacterAdded:Connect(function(character)
+        task.wait(1)
+        if not hitboxEnabled then
+            removeHitboxFromCharacter(character)
+        end
+    end)
+end
+
+-- Visual Section Label
+local visualSectionLabel = Instance.new("TextLabel", scrollFrame)
+visualSectionLabel.Size = UDim2.new(1, -20, 0, 30)
+visualSectionLabel.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+visualSectionLabel.TextColor3 = Color3.fromRGB(0, 0, 0)
+visualSectionLabel.Font = Enum.Font.GothamBold
+visualSectionLabel.TextSize = 20
+visualSectionLabel.Text = "Visual"
+visualSectionLabel.TextXAlignment = Enum.TextXAlignment.Left
+visualSectionLabel.LayoutOrder = 20
+visualSectionLabel.BorderSizePixel = 0
+Instance.new("UICorner", visualSectionLabel).CornerRadius = UDim.new(0, 6)
+ 
+-- Visual buttons row
+createButtonRow(21, {
+    {
+        "ESP Players",
+        function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Da%20hood%20esp"))()
+        end
+    },
+    {
+        "Korblox Right",
+        function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Right%20Korblox", true))()
+        end
+    },
+    {
+        "Korblox Left",
+        function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Korblox%20Left"))()
+        end
+    }
+})
+
+-- Visual buttons row 22
+createButtonRow(22, {
+    {
+        "Headless",
+        function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Headless"))()
+        end
+    },
+    {
+        "GreenGoblin Hover",
+        function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Green%20Goblin%20Hover"))()
+        end
+    }
+})
+
+-- Esp Tracers Toggle Button (formerly Tracers Toggle)
+ 
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+ 
+local espEnabled = false
+ 
+local tracers = {}
+local TRACER_COLOR = Color3.fromRGB(0, 255, 0)
+local TRACER_THICKNESS = 0.1
+ 
+local function createTracer()
+    local part = Instance.new("Part")
+    part.Anchored = true
+    part.CanCollide = false
+    part.Transparency = 0.5
+    part.Material = Enum.Material.Neon
+    part.Color = TRACER_COLOR
+    part.Size = Vector3.new(TRACER_THICKNESS, TRACER_THICKNESS, 1)
+    part.Name = "TracerPart"
+    part.Parent = workspace
+    return part
+end
+ 
+local function addTracer(player)
+    if player == LocalPlayer then return end
+    if tracers[player] then return end
+    local tracerPart = createTracer()
+    tracers[player] = tracerPart
+end
+ 
+local function removeTracer(player)
+    if tracers[player] then
+        tracers[player]:Destroy()
+        tracers[player] = nil
+    end
+end
+ 
+local function clearAllTracers()
+    for _, tracer in pairs(tracers) do
+        tracer:Destroy()
+    end
+    tracers = {}
+end
+ 
+local updateConnection = nil
+ 
+local function enableESP()
+    for _, player in pairs(Players:GetPlayers()) do
+        addTracer(player)
+    end
+ 
+    Players.PlayerAdded:Connect(addTracer)
+    Players.PlayerRemoving:Connect(removeTracer)
+ 
+    updateConnection = RunService.Heartbeat:Connect(function()
+        local localChar = LocalPlayer.Character
+        if not localChar then return end
+        local localHead = localChar:FindFirstChild("Head")
+        if not localHead then return end
+ 
+        for player, tracer in pairs(tracers) do
+            if player.Character and player.Character:FindFirstChild("Head") then
+                local targetHead = player.Character.Head
+                local startPos = localHead.Position
+                local endPos = targetHead.Position
+ 
+                local direction = endPos - startPos
+                local distance = direction.Magnitude
+ 
+                tracer.Size = Vector3.new(TRACER_THICKNESS, TRACER_THICKNESS, distance)
+                tracer.CFrame = CFrame.new(startPos, endPos) * CFrame.new(0, 0, -distance / 2)
+                tracer.Transparency = 0.5
+                tracer.Color = TRACER_COLOR
+                tracer.Parent = workspace
+            else
+                tracer.Transparency = 1
+            end
+        end
+    end)
+end
+ 
+local function disableESP()
+    if updateConnection then
+        updateConnection:Disconnect()
+        updateConnection = nil
+    end
+    clearAllTracers()
+end
+ 
+-- Create the toggle button UI
+local espToggle = Instance.new("TextButton", scrollFrame)
+espToggle.Size = UDim2.new(1, -20, 0, 40)
+espToggle.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+espToggle.TextColor3 = Color3.fromRGB(0, 0, 0)
+espToggle.Font = Enum.Font.Gotham
+espToggle.TextSize = 18
+espToggle.Text = "Esp Tracers: OFF"  -- renamed toggle text
+espToggle.LayoutOrder = 23
+espToggle.BorderSizePixel = 0
+Instance.new("UICorner", espToggle).CornerRadius = UDim.new(0, 6)
+ 
+espToggle.MouseButton1Click:Connect(function()
+    espEnabled = not espEnabled
+    espToggle.Text = "ESP: " .. (espEnabled and "ON" or "OFF")
+    espToggle.BackgroundColor3 = espEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(255, 165, 0)
+ 
+    if espEnabled then
+        enableESP()
+    else
+        disableESP()
+    end
+end)
+ 
+-- Cleanup on player leave
+Players.PlayerRemoving:Connect(removeTracer)
+ 
+-- Remove tracers if toggle off on new characters
+Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function()
+        task.wait(1)
+        if not espEnabled then
+            removeTracer(player)
+        end
+    end)
+end)
+ 
+for _, player in pairs(Players:GetPlayers()) do
+    player.CharacterAdded:Connect(function()
+        task.wait(1)
+        if not espEnabled then
+            removeTracer(player)
+        end
+    end)
+end
+
+-- Money ESP Toggle System
+local moneyESPEnabled = false
+local moneyESPConnections = {}
+local processedMoneyDrops = {}
+local moneyESPThread = nil
+
+local function createMoneyESP(part, amountText)
+	if part:FindFirstChild("MoneyESP") then return end
+
+	local esp = Instance.new("BillboardGui")
+	esp.Name = "MoneyESP"
+	esp.Adornee = part
+	esp.Size = UDim2.new(0, 100, 0, 40)
+	esp.StudsOffset = Vector3.new(0, 2, 0)
+	esp.AlwaysOnTop = true
+
+	local label = Instance.new("TextLabel")
+	label.Size = UDim2.new(1, 0, 1, 0)
+	label.BackgroundTransparency = 1
+	label.Text = amountText or "$???"
+	label.TextColor3 = Color3.fromRGB(0, 255, 0)
+	label.TextStrokeTransparency = 0.2
+	label.TextStrokeColor3 = Color3.new(0, 0, 0)
+	label.TextScaled = true
+	label.Font = Enum.Font.GothamBold
+	label.Parent = esp
+
+	esp.Parent = part
+end
+
+local function scanMoneyESP()
+	for _, obj in ipairs(workspace:GetDescendants()) do
+		if obj:IsA("Part") and obj.Name == "MoneyDrop" and not processedMoneyDrops[obj] then
+			local gui = obj:FindFirstChild("BillboardGui")
+			if gui and gui:FindFirstChildOfClass("TextLabel") then
+				local label = gui:FindFirstChildOfClass("TextLabel")
+				createMoneyESP(obj, label.Text)
+			else
+				createMoneyESP(obj, "$???")
+			end
+			processedMoneyDrops[obj] = true
+		end
+	end
+end
+
+local function enableMoneyESP()
+	processedMoneyDrops = {}
+	moneyESPThread = task.spawn(function()
+		while moneyESPEnabled do
+			pcall(scanMoneyESP)
+			task.wait(2)
+		end
+	end)
+end
+
+local function disableMoneyESP()
+	moneyESPEnabled = false
+	if moneyESPThread then
+		task.cancel(moneyESPThread)
+	end
+	for _, obj in ipairs(workspace:GetDescendants()) do
+		if obj:IsA("BillboardGui") and obj.Name == "MoneyESP" then
+			obj:Destroy()
+		end
+	end
+	processedMoneyDrops = {}
+end
+
+-- GUI Button
+local moneyESPButton = Instance.new("TextButton", scrollFrame)
+moneyESPButton.Size = UDim2.new(1, -20, 0, 40)
+moneyESPButton.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+moneyESPButton.TextColor3 = Color3.fromRGB(0, 0, 0)
+moneyESPButton.Font = Enum.Font.Gotham
+moneyESPButton.TextSize = 18
+moneyESPButton.Text = "Money ESP: OFF"
+moneyESPButton.LayoutOrder = 24
+moneyESPButton.BorderSizePixel = 0
+Instance.new("UICorner", moneyESPButton).CornerRadius = UDim.new(0, 6)
+
+moneyESPButton.MouseButton1Click:Connect(function()
+	moneyESPEnabled = not moneyESPEnabled
+	moneyESPButton.Text = "Money ESP: " .. (moneyESPEnabled and "ON" or "OFF")
+	moneyESPButton.BackgroundColor3 = moneyESPEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(255, 165, 0)
+
+	if moneyESPEnabled then
+		enableMoneyESP()
+	else
+		disableMoneyESP()
+	end
+end)
+
+-- Toggles Section Label
+local togglesSectionLabel = Instance.new("TextLabel", scrollFrame)
+togglesSectionLabel.Size = UDim2.new(1, -20, 0, 30)
+togglesSectionLabel.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+togglesSectionLabel.TextColor3 = Color3.fromRGB(0, 0, 0)
+togglesSectionLabel.Font = Enum.Font.GothamBold
+togglesSectionLabel.TextSize = 20
+togglesSectionLabel.Text = "Toggles"
+togglesSectionLabel.TextXAlignment = Enum.TextXAlignment.Left
+togglesSectionLabel.LayoutOrder = 30
+togglesSectionLabel.BorderSizePixel = 0
+Instance.new("UICorner", togglesSectionLabel).CornerRadius = UDim.new(0, 6)
+
+local player = game:GetService("Players").LocalPlayer
+local runService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+
+-- Anti Slow Toggle
+local antiSlowEnabled = false
+local antiSlowConnection
+
+local function startAntiSlow()
+    return runService.Heartbeat:Connect(function()
+        local char = player.Character
+        if char and char:FindFirstChild("BodyEffects") then
+            local movement = char.BodyEffects:FindFirstChild("Movement")
+            local reload = char.BodyEffects:FindFirstChild("Reload")
+            if movement then
+                local block = movement:FindFirstChild("NoJumping") or movement:FindFirstChild("ReduceWalk") or movement:FindFirstChild("NoWalkSpeed")
+                if block then block:Destroy() end
+            end
+            if reload and reload:IsA("BoolValue") and reload.Value == true then
+                reload.Value = false
+            end
+        end
+    end)
+end
+
+local antiSlowToggle = Instance.new("TextButton", scrollFrame)
+antiSlowToggle.Size = UDim2.new(1, -20, 0, 40)
+antiSlowToggle.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+antiSlowToggle.TextColor3 = Color3.fromRGB(0, 0, 0)
+antiSlowToggle.Font = Enum.Font.Gotham
+antiSlowToggle.TextSize = 18
+antiSlowToggle.Text = "Anti Slow: OFF"
+antiSlowToggle.LayoutOrder = 32
+antiSlowToggle.BorderSizePixel = 0
+Instance.new("UICorner", antiSlowToggle).CornerRadius = UDim.new(0, 6)
+
+antiSlowToggle.MouseButton1Click:Connect(function()
+    antiSlowEnabled = not antiSlowEnabled
+    antiSlowToggle.Text = "Anti Slow: " .. (antiSlowEnabled and "ON" or "OFF")
+    antiSlowToggle.BackgroundColor3 = antiSlowEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(255, 165, 0)
+
+    if antiSlowEnabled then
+        antiSlowConnection = startAntiSlow()
+    elseif antiSlowConnection then
+        antiSlowConnection:Disconnect()
+        antiSlowConnection = nil
+    end
+end)
+
+-- Anti Stomp Toggle
+local antiStompEnabled = false
+local antiStompConnection
+
+local function IsLocalPlayerRagdolled()
+    local character = player.Character
+    if character then
+        local bodyEffects = character:FindFirstChild("BodyEffects")
+        local grabbed = character:FindFirstChild("GRABBING_CONSTRAINT") ~= nil
+        if bodyEffects and bodyEffects:FindFirstChild("K.O") and bodyEffects["K.O"].Value == true and not grabbed then
+            return true
+        end
+    end
+    return false
+end
+
+local function AntiStompStart()
+    if antiStompConnection then return end
+    antiStompConnection = runService.RenderStepped:Connect(function()
+        if antiStompEnabled and IsLocalPlayerRagdolled() then
+            local character = player.Character or player.CharacterAdded:Wait()
+            local humanoid = character:FindFirstChild("Humanoid")
+            if humanoid and humanoid.Health > 0 then
+                humanoid.Health = 0
+            end
+        end
+    end)
+end
+
+local function AntiStompStop()
+    if antiStompConnection then
+        antiStompConnection:Disconnect()
+        antiStompConnection = nil
+    end
+end
+
+local antiStompToggle = Instance.new("TextButton", scrollFrame)
+antiStompToggle.Size = UDim2.new(1, -20, 0, 40)
+antiStompToggle.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+antiStompToggle.TextColor3 = Color3.fromRGB(0, 0, 0)
+antiStompToggle.Font = Enum.Font.Gotham
+antiStompToggle.TextSize = 18
+antiStompToggle.Text = "Anti Stomp: OFF"
+antiStompToggle.LayoutOrder = 34
+antiStompToggle.BorderSizePixel = 0
+Instance.new("UICorner", antiStompToggle).CornerRadius = UDim.new(0, 6)
+
+antiStompToggle.MouseButton1Click:Connect(function()
+    antiStompEnabled = not antiStompEnabled
+    antiStompToggle.Text = "Anti Stomp: " .. (antiStompEnabled and "ON" or "OFF")
+    antiStompToggle.BackgroundColor3 = antiStompEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(255, 165, 0)
+
+    if antiStompEnabled then
+        AntiStompStart()
+    else
+        AntiStompStop()
+    end
+end)
+
+-- Anti Grab Toggle
+local antiGrabEnabled = false
+local antiGrabConnection
+
+local function StartAntiGrab()
+    if antiGrabConnection then return end
+    antiGrabConnection = runService.Heartbeat:Connect(function()
+        local char = player.Character
+        if char then
+            local grabConstraint = char:FindFirstChild("GRABBING_CONSTRAINT")
+            if grabConstraint then
+                grabConstraint:Destroy()
+            end
+        end
+    end)
+end
+
+local function StopAntiGrab()
+    if antiGrabConnection then
+        antiGrabConnection:Disconnect()
+        antiGrabConnection = nil
+    end
+end
+
+local antiGrabToggle = Instance.new("TextButton", scrollFrame)
+antiGrabToggle.Size = UDim2.new(1, -20, 0, 40)
+antiGrabToggle.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+antiGrabToggle.TextColor3 = Color3.fromRGB(0, 0, 0)
+antiGrabToggle.Font = Enum.Font.Gotham
+antiGrabToggle.TextSize = 18
+antiGrabToggle.Text = "Anti Grab: OFF"
+antiGrabToggle.LayoutOrder = 35
+antiGrabToggle.BorderSizePixel = 0
+Instance.new("UICorner", antiGrabToggle).CornerRadius = UDim.new(0, 6)
+
+antiGrabToggle.MouseButton1Click:Connect(function()
+    antiGrabEnabled = not antiGrabEnabled
+    antiGrabToggle.Text = "Anti Grab: " .. (antiGrabEnabled and "ON" or "OFF")
+    antiGrabToggle.BackgroundColor3 = antiGrabEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(255, 165, 0)
+
+    if antiGrabEnabled then
+        StartAntiGrab()
+    else
+        StopAntiGrab()
+    end
+end)
+
+-- NoClip Toggle
+local Noclip = false
+local noClipConnection
+
+local function setNoclip(char, state)
+    for _, part in pairs(char:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.CanCollide = not state
+        end
+    end
+end
+
+local function startNoclip(char)
+    if noClipConnection then noClipConnection:Disconnect() end
+    noClipConnection = runService.Stepped:Connect(function()
+        if Noclip and char and char.Parent then
+            setNoclip(char, true)
+        elseif char then
+            setNoclip(char, false)
+        end
+    end)
+end
+
+local function stopNoclip(char)
+    if noClipConnection then
+        noClipConnection:Disconnect()
+        noClipConnection = nil
+    end
+    if char then
+        setNoclip(char, false)
+    end
+end
+
+local noClipToggle = Instance.new("TextButton", scrollFrame)
+noClipToggle.Size = UDim2.new(1, -20, 0, 40)
+noClipToggle.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+noClipToggle.TextColor3 = Color3.fromRGB(0, 0, 0)
+noClipToggle.Font = Enum.Font.Gotham
+noClipToggle.TextSize = 18
+noClipToggle.Text = "NoClip: OFF"
+noClipToggle.LayoutOrder = 36
+noClipToggle.BorderSizePixel = 0
+Instance.new("UICorner", noClipToggle).CornerRadius = UDim.new(0, 6)
+
+noClipToggle.MouseButton1Click:Connect(function()
+    Noclip = not Noclip
+    noClipToggle.Text = "NoClip: " .. (Noclip and "ON" or "OFF")
+    noClipToggle.BackgroundColor3 = Noclip and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(255, 165, 0)
+
+    local character = player.Character or player.CharacterAdded:Wait()
+    if Noclip then
+        startNoclip(character)
+    else
+        stopNoclip(character)
+    end
+end)
+
+player.CharacterAdded:Connect(function(char)
+    if Noclip then
+        startNoclip(char)
+    end
+end)
+
+-- Double Jump Toggle
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid
+local jumping = false
+local doubleJumpUsed = false
+
+local SOUND_ID = "rbxassetid://158309736"  -- Double jump sound asset ID
+local doubleJumpEnabled = false
+
+local stateChangedConnection
+local jumpRequestConnection
+
+local function setupDoubleJumpSound(char)
+    local rootPart = char:WaitForChild("HumanoidRootPart")
+    if not rootPart:FindFirstChild("DoubleJumpSound") then
+        local sound = Instance.new("Sound")
+        sound.Name = "DoubleJumpSound"
+        sound.SoundId = SOUND_ID
+        sound.Volume = 1
+        sound.Parent = rootPart
+    end
+end
+
+local function disconnectDoubleJumpConnections()
+    if stateChangedConnection then
+        stateChangedConnection:Disconnect()
+        stateChangedConnection = nil
+    end
+    if jumpRequestConnection then
+        jumpRequestConnection:Disconnect()
+        jumpRequestConnection = nil
+    end
+end
+
+local function onJumpRequest()
+    if not doubleJumpEnabled then return end
+    if jumping and not doubleJumpUsed and humanoid and humanoid.FloorMaterial == Enum.Material.Air then
+        local rootPart = character:FindFirstChild("HumanoidRootPart")
+        if rootPart then
+            rootPart.Velocity = Vector3.new(rootPart.Velocity.X, 50, rootPart.Velocity.Z)
+            doubleJumpUsed = true
+
+            local sound = rootPart:FindFirstChild("DoubleJumpSound")
+            if sound then
+                sound:Play()
+            end
+        end
+    end
+end
+
+local function onCharacterLoaded(char)
+    disconnectDoubleJumpConnections()
+
+    character = char
+    humanoid = character:WaitForChild("Humanoid")
+    jumping = false
+    doubleJumpUsed = false
+
+    setupDoubleJumpSound(character)
+
+    stateChangedConnection = humanoid.StateChanged:Connect(function(_, newState)
+        if newState == Enum.HumanoidStateType.Freefall then
+            jumping = true
+        elseif newState == Enum.HumanoidStateType.Landed then
+            jumping = false
+            doubleJumpUsed = false
+        end
+    end)
+
+    jumpRequestConnection = UserInputService.JumpRequest:Connect(onJumpRequest)
+end
+
+-- Initialize for current character
+onCharacterLoaded(character)
+
+-- Update on respawn
+player.CharacterAdded:Connect(onCharacterLoaded)
+
+-- Double Jump Toggle Button
+local doubleJumpToggle = Instance.new("TextButton", scrollFrame)
+doubleJumpToggle.Size = UDim2.new(1, -20, 0, 40)
+doubleJumpToggle.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+doubleJumpToggle.TextColor3 = Color3.fromRGB(0, 0, 0)
+doubleJumpToggle.Font = Enum.Font.Gotham
+doubleJumpToggle.TextSize = 18
+doubleJumpToggle.Text = "Double Jump: OFF"
+doubleJumpToggle.LayoutOrder = 37
+doubleJumpToggle.BorderSizePixel = 0
+Instance.new("UICorner", doubleJumpToggle).CornerRadius = UDim.new(0, 6)
+
+doubleJumpToggle.MouseButton1Click:Connect(function()
+    doubleJumpEnabled = not doubleJumpEnabled
+    doubleJumpToggle.Text = "Double Jump: " .. (doubleJumpEnabled and "ON" or "OFF")
+    doubleJumpToggle.BackgroundColor3 = doubleJumpEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(255, 165, 0)
+
+    if not doubleJumpEnabled then
+        disconnectDoubleJumpConnections()
+    else
+        local char = player.Character or player.CharacterAdded:Wait()
+        onCharacterLoaded(char)
+    end
+end)
+
+-- === NEW AUTO HEAL (Chicken Buy) TOGGLE BELOW ===
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local localPlayer = Players.LocalPlayer
+local shop = workspace.Ignored.Shop
+local chickenItem = shop:GetChildren()[43]
+
+local newChickenCFrame = CFrame.new(
+    300.77301, 49.8827477, -627.567017,
+    0.99999994, -0.000258984684, -8.62661327e-05,
+    0.000258947432, 0.999999881, -0.000431621302,
+    8.6377906e-05, 0.00043159895, 0.999999881
+)
+
+local autoHealEnabled = false
+local buyCoroutine
+local isBuying = false
+local returnCFrame = nil
+
+local function stopBuying()
+    if buyCoroutine and coroutine.status(buyCoroutine) ~= "dead" then
+        isBuying = false
+        buyCoroutine = nil
+        if returnCFrame and localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            localPlayer.Character.HumanoidRootPart.CFrame = returnCFrame
+            returnCFrame = nil
+        end
+    end
+end
+
+local function buyChickenLoop()
+    isBuying = true
+    if localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        returnCFrame = localPlayer.Character.HumanoidRootPart.CFrame
+    end
+
+    while isBuying do
+        if not localPlayer.Character or not localPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            wait(1)
+            continue
+        end
+
+        localPlayer.Character.HumanoidRootPart.CFrame = newChickenCFrame * CFrame.new(0, 5, 0)
+
+        if chickenItem and chickenItem:FindFirstChild("ClickDetector") then
+            fireclickdetector(chickenItem.ClickDetector)
+        end
+
+        wait(0.4)
+
+        local chickenTool = localPlayer.Backpack:FindFirstChild("[Chicken]")
+        if chickenTool and localPlayer.Character and localPlayer.Character:FindFirstChild("Humanoid") then
+            localPlayer.Character.Humanoid:EquipTool(chickenTool)
+            if localPlayer.Character:FindFirstChild("[Chicken]") then
+                localPlayer.Character["[Chicken]"]:Activate()
+            end
+        end
+
+        wait(0.5)
+    end
+end
+
+local function onHealthChanged(hp)
+    local humanoid = localPlayer.Character and localPlayer.Character:FindFirstChild("Humanoid")
+    if not humanoid then return end
+
+    if not autoHealEnabled then return end
+
+    if hp < humanoid.MaxHealth then
+        if not isBuying then
+            buyCoroutine = coroutine.create(buyChickenLoop)
+            coroutine.resume(buyCoroutine)
+        end
+    else
+        stopBuying()
+    end
+end
+
+local autoHealToggle = Instance.new("TextButton", scrollFrame)
+autoHealToggle.Size = UDim2.new(1, -20, 0, 40)
+autoHealToggle.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+autoHealToggle.TextColor3 = Color3.fromRGB(0, 0, 0)
+autoHealToggle.Font = Enum.Font.Gotham
+autoHealToggle.TextSize = 18
+autoHealToggle.Text = "Auto Heal: OFF"
+autoHealToggle.LayoutOrder = 38
+autoHealToggle.BorderSizePixel = 0
+Instance.new("UICorner", autoHealToggle).CornerRadius = UDim.new(0, 6)
+
+autoHealToggle.MouseButton1Click:Connect(function()
+    autoHealEnabled = not autoHealEnabled
+    autoHealToggle.Text = "Auto Heal: " .. (autoHealEnabled and "ON" or "OFF")
+    autoHealToggle.BackgroundColor3 = autoHealEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(255, 165, 0)
+
+    if not autoHealEnabled then
+        stopBuying()
+    else
+        local character = localPlayer.Character
+        if character then
+            local humanoid = character:FindFirstChild("Humanoid")
+            if humanoid then
+                humanoid.HealthChanged:Connect(onHealthChanged)
+                wait(0.5)
+                onHealthChanged(humanoid.Health)
+            end
+        end
+    end
+end)
+
+-- Reconnect to health change when character respawns
+localPlayer.CharacterAdded:Connect(function(char)
+    local hum = char:WaitForChild("Humanoid")
+    hum.HealthChanged:Connect(onHealthChanged)
+    wait(0.5)
+    onHealthChanged(hum.Health)
+end)
+
+if localPlayer.Character then
+    local hum = localPlayer.Character:FindFirstChild("Humanoid")
+    if hum then
+        hum.HealthChanged:Connect(onHealthChanged)
+        wait(0.5)
+        onHealthChanged(hum.Health)
+    end
+end
+
+local noJumpCooldownEnabled = false
+local gmt, oldNewIndex
+
+local function enableNoJumpCooldown()
+    if game.PlaceId ~= 2788229376 then return end
+
+    gmt = getrawmetatable(game)
+    setreadonly(gmt, false)
+    oldNewIndex = gmt.__newindex
+
+    gmt.__newindex = newcclosure(function(t, i, v)
+        if i == "JumpPower" then
+            return oldNewIndex(t, i, 50)  -- Force JumpPower = 50
+        end
+        return oldNewIndex(t, i, v)
+    end)
+    setreadonly(gmt, true)
+end
+
+local function disableNoJumpCooldown()
+    if gmt and oldNewIndex then
+        setreadonly(gmt, false)
+        gmt.__newindex = oldNewIndex
+        setreadonly(gmt, true)
+    end
+end
+
+local noJumpCooldownToggle = Instance.new("TextButton", scrollFrame)
+noJumpCooldownToggle.Size = UDim2.new(1, -20, 0, 40)
+noJumpCooldownToggle.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+noJumpCooldownToggle.TextColor3 = Color3.fromRGB(0, 0, 0)
+noJumpCooldownToggle.Font = Enum.Font.Gotham
+noJumpCooldownToggle.TextSize = 18
+noJumpCooldownToggle.Text = "NoJumpCoolDown: OFF"
+noJumpCooldownToggle.LayoutOrder = 39
+noJumpCooldownToggle.BorderSizePixel = 0
+Instance.new("UICorner", noJumpCooldownToggle).CornerRadius = UDim.new(0, 6)
+
+noJumpCooldownToggle.MouseButton1Click:Connect(function()
+    noJumpCooldownEnabled = not noJumpCooldownEnabled
+    noJumpCooldownToggle.Text = "NoJumpCoolDown: " .. (noJumpCooldownEnabled and "ON" or "OFF")
+    noJumpCooldownToggle.BackgroundColor3 = noJumpCooldownEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(255, 165, 0)
+
+    if noJumpCooldownEnabled then
+        enableNoJumpCooldown()
+        print("NoJumpCoolDown Enabled")
+    else
+        disableNoJumpCooldown()
+        print("NoJumpCoolDown Disabled")
+    end
+end)
+
+local respawnWhereDiedEnabled = false
+local lastPosition = nil
+
+local function savePosition(char)
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if hrp then
+        lastPosition = hrp.Position
+    end
+end
+
+local function onCharacterRespawn(char)
+    local hrp = char:WaitForChild("HumanoidRootPart", 10)
+    if hrp and lastPosition and respawnWhereDiedEnabled then
+        task.wait(0.2)
+        hrp.CFrame = CFrame.new(lastPosition + Vector3.new(0, 5, 0))
+    end
+
+    while char.Parent and respawnWhereDiedEnabled do
+        savePosition(char)
+        task.wait(1)
+    end
+end
+
+-- Toggle UI Button
+local respawnToggle = Instance.new("TextButton", scrollFrame)
+respawnToggle.Size = UDim2.new(1, -20, 0, 40)
+respawnToggle.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+respawnToggle.TextColor3 = Color3.fromRGB(0, 0, 0)
+respawnToggle.Font = Enum.Font.Gotham
+respawnToggle.TextSize = 18
+respawnToggle.Text = "Respawn Where Died: OFF"
+respawnToggle.LayoutOrder = 40
+respawnToggle.BorderSizePixel = 0
+Instance.new("UICorner", respawnToggle).CornerRadius = UDim.new(0, 6)
+
+respawnToggle.MouseButton1Click:Connect(function()
+    respawnWhereDiedEnabled = not respawnWhereDiedEnabled
+    respawnToggle.Text = "Respawn Where Died: " .. (respawnWhereDiedEnabled and "ON" or "OFF")
+    respawnToggle.BackgroundColor3 = respawnWhereDiedEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(255, 165, 0)
+
+    if respawnWhereDiedEnabled and localPlayer.Character then
+        onCharacterRespawn(localPlayer.Character)
+    end
+end)
+
+-- Hook into character respawning
+localPlayer.CharacterAdded:Connect(onCharacterRespawn)
+
+-- Initialize if character already exists
+if localPlayer.Character then
+    onCharacterRespawn(localPlayer.Character)
+end
+
+-- Anti Bag Toggle
+local antiBagEnabled = false
+local antiBagConnection
+
+local function enableAntiBag()
+    if game.PlaceId ~= 2788229376 then return end
+    local LP = game.Players.LocalPlayer
+
+    -- Remove any existing socks
+    for i, v in ipairs(LP.Character:GetDescendants()) do
+        if v.Name == "Christmas_Sock" then
+            v:Destroy()
+        end
+    end
+
+    -- Monitor future socks
+    antiBagConnection = LP.Character.ChildAdded:Connect(function()
+        task.wait(0.5)
+        for i, v in ipairs(LP.Character:GetDescendants()) do
+            if v.Name == "Christmas_Sock" then
+                v:Destroy()
+            end
+        end
+    end)
+end
+
+local function disableAntiBag()
+    if antiBagConnection then
+        antiBagConnection:Disconnect()
+        antiBagConnection = nil
+    end
+end
+
+local antiBagToggle = Instance.new("TextButton", scrollFrame)
+antiBagToggle.Size = UDim2.new(1, -20, 0, 40)
+antiBagToggle.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+antiBagToggle.TextColor3 = Color3.fromRGB(0, 0, 0)
+antiBagToggle.Font = Enum.Font.Gotham
+antiBagToggle.TextSize = 18
+antiBagToggle.Text = "Anti Bag: OFF"
+antiBagToggle.LayoutOrder = 41
+antiBagToggle.BorderSizePixel = 0
+Instance.new("UICorner", antiBagToggle).CornerRadius = UDim.new(0, 6)
+
+antiBagToggle.MouseButton1Click:Connect(function()
+    antiBagEnabled = not antiBagEnabled
+    antiBagToggle.Text = "Anti Bag: " .. (antiBagEnabled and "ON" or "OFF")
+    antiBagToggle.BackgroundColor3 = antiBagEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(255, 165, 0)
+
+    if antiBagEnabled then
+        enableAntiBag()
+    else
+        disableAntiBag()
+    end
+end)
+
+-- Auto re-enable after respawn
+game.Players.LocalPlayer.CharacterAdded:Connect(function(char)
+    if antiBagEnabled then
+        task.wait(1)
+        enableAntiBag()
+    end
+end)
+
+-- Silent Animation V1 Toggle
+local silentAnimV1Enabled = false
+local silentAnimV1Connections = {}
+
+local function enableSilentAnimation(character)
+    local humanoid = character:WaitForChild("Humanoid")
+
+    -- Block all animation plays
+    table.insert(silentAnimV1Connections, humanoid.AnimationPlayed:Connect(function(track)
+        track:Stop()
+    end))
+
+    -- Remove Animate script if it appears
+    local function removeAnimate()
+        local animate = character:FindFirstChild("Animate")
+        if animate then
+            animate:Destroy()
+        end
+    end
+
+    removeAnimate()
+
+    table.insert(silentAnimV1Connections, character.ChildAdded:Connect(function(child)
+        if child.Name == "Animate" then
+            task.wait()
+            child:Destroy()
+        end
+    end))
+end
+
+local function disableSilentAnimation()
+    for _, conn in ipairs(silentAnimV1Connections) do
+        if conn and conn.Disconnect then
+            conn:Disconnect()
+        end
+    end
+    silentAnimV1Connections = {}
+end
+
+local silentAnimV1Toggle = Instance.new("TextButton", scrollFrame)
+silentAnimV1Toggle.Size = UDim2.new(1, -20, 0, 40)
+silentAnimV1Toggle.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+silentAnimV1Toggle.TextColor3 = Color3.fromRGB(0, 0, 0)
+silentAnimV1Toggle.Font = Enum.Font.Gotham
+silentAnimV1Toggle.TextSize = 18
+silentAnimV1Toggle.Text = "Silent Animation V1: OFF"
+silentAnimV1Toggle.LayoutOrder = 42
+silentAnimV1Toggle.BorderSizePixel = 0
+Instance.new("UICorner", silentAnimV1Toggle).CornerRadius = UDim.new(0, 6)
+
+silentAnimV1Toggle.MouseButton1Click:Connect(function()
+    silentAnimV1Enabled = not silentAnimV1Enabled
+    silentAnimV1Toggle.Text = "Silent Animation V1: " .. (silentAnimV1Enabled and "ON" or "OFF")
+    silentAnimV1Toggle.BackgroundColor3 = silentAnimV1Enabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(255, 165, 0)
+
+    if silentAnimV1Enabled then
+        if localPlayer.Character then
+            enableSilentAnimation(localPlayer.Character)
+        end
+    else
+        disableSilentAnimation()
+    end
+end)
+
+-- Ensure toggle effect applies on respawn
+localPlayer.CharacterAdded:Connect(function(char)
+    if silentAnimV1Enabled then
+        enableSilentAnimation(char)
+    end
+end)
+
+-- Activate if already spawned
+if localPlayer.Character and silentAnimV1Enabled then
+    enableSilentAnimation(localPlayer.Character)
+end
+
+-- Silent Animation V2 Toggle
+local silentAnimV2Enabled = false
+local silentAnimV2Connections = {}
+
+local function stopToolAnimationsV2(character)
+    -- Stop animations started by tools, without touching Animate script
+    local function onToolAdded(tool)
+        if tool:IsA("Tool") then
+            -- Tool's AnimationController animations
+            local animController = tool:FindFirstChildOfClass("AnimationController")
+            if animController then
+                table.insert(silentAnimV2Connections, animController.AnimationPlayed:Connect(function(track)
+                    track:Stop()
+                end))
+            end
+
+            -- Also stop animations played via Humanoid.Animator while tool equipped
+            local humanoid = character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                local animator = humanoid:FindFirstChildOfClass("Animator")
+                if animator then
+                    table.insert(silentAnimV2Connections, animator.AnimationPlayed:Connect(function(track)
+                        track:Stop()
+                    end))
+                end
+            end
+        end
+    end
+
+    -- Connect existing tools
+    for _, tool in pairs(character:GetChildren()) do
+        onToolAdded(tool)
+    end
+
+    -- Connect tools added later
+    table.insert(silentAnimV2Connections, character.ChildAdded:Connect(onToolAdded))
+end
+
+local function enableSilentAnimV2(character)
+    stopToolAnimationsV2(character)
+end
+
+local function disableSilentAnimV2()
+    for _, conn in ipairs(silentAnimV2Connections) do
+        if conn and conn.Disconnect then
+            conn:Disconnect()
+        end
+    end
+    silentAnimV2Connections = {}
+end
+
+local silentAnimV2Toggle = Instance.new("TextButton", scrollFrame)
+silentAnimV2Toggle.Size = UDim2.new(1, -20, 0, 40)
+silentAnimV2Toggle.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+silentAnimV2Toggle.TextColor3 = Color3.fromRGB(0, 0, 0)
+silentAnimV2Toggle.Font = Enum.Font.Gotham
+silentAnimV2Toggle.TextSize = 18
+silentAnimV2Toggle.Text = "Silent Animation V2: OFF"
+silentAnimV2Toggle.LayoutOrder = 43
+silentAnimV2Toggle.BorderSizePixel = 0
+Instance.new("UICorner", silentAnimV2Toggle).CornerRadius = UDim.new(0, 6)
+
+silentAnimV2Toggle.MouseButton1Click:Connect(function()
+    silentAnimV2Enabled = not silentAnimV2Enabled
+    silentAnimV2Toggle.Text = "Silent Animation V2: " .. (silentAnimV2Enabled and "ON" or "OFF")
+    silentAnimV2Toggle.BackgroundColor3 = silentAnimV2Enabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(255, 165, 0)
+
+    if silentAnimV2Enabled then
+        if localPlayer.Character then
+            enableSilentAnimV2(localPlayer.Character)
+        end
+    else
+        disableSilentAnimV2()
+    end
+end)
+
+-- Ensure V2 toggle applies on respawn
+localPlayer.CharacterAdded:Connect(function(char)
+    if silentAnimV2Enabled then
+        enableSilentAnimV2(char)
+    end
+end)
+
+-- Activate V2 if already spawned
+if localPlayer.Character and silentAnimV2Enabled then
+    enableSilentAnimV2(localPlayer.Character)
+end
+
+-- SelfDamageNumbers Toggle
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local Debris = game:GetService("Debris")
+local localPlayer = Players.LocalPlayer
+
+local selfDamageNumbersEnabled = false
+local selfDamageNumbersConnections = {}
+
+local function showDamageNumber(character, amount, isHealing)
+	if not character or not character:FindFirstChild("Head") then return end
+	if character ~= localPlayer.Character then return end
+
+	local head = character.Head
+
+	local gui = Instance.new("BillboardGui")
+	gui.Adornee = head
+	gui.Size = UDim2.new(0, 100, 0, 40)
+	gui.StudsOffset = Vector3.new(0, 2, 0)
+	gui.AlwaysOnTop = true
+	gui.Parent = workspace
+
+	local label = Instance.new("TextLabel")
+	label.Size = UDim2.new(1, 0, 1, 0)
+	label.BackgroundTransparency = 1
+	label.TextScaled = true
+	label.Text = (isHealing and "+" or "-") .. tostring(math.floor(amount))
+	label.TextColor3 = isHealing and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+	label.Font = Enum.Font.GothamBold
+	label.Parent = gui
+
+	local tween = TweenService:Create(gui, TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {StudsOffset = Vector3.new(0, 4, 0)})
+	local fadeTween = TweenService:Create(label, TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {TextTransparency = 1})
+
+	tween:Play()
+	fadeTween:Play()
+	Debris:AddItem(gui, 1.2)
+end
+
+local function enableSelfDamageNumbers(character)
+	local humanoid = character:WaitForChild("Humanoid")
+	local lastHealth = humanoid.Health
+
+	local conn = humanoid.HealthChanged:Connect(function(newHealth)
+		local diff = newHealth - lastHealth
+		if diff ~= 0 then
+			showDamageNumber(character, math.abs(diff), diff > 0)
+		end
+		lastHealth = newHealth
+	end)
+
+	table.insert(selfDamageNumbersConnections, conn)
+end
+
+local function disableSelfDamageNumbers()
+	for _, conn in ipairs(selfDamageNumbersConnections) do
+		if conn and conn.Disconnect then
+			conn:Disconnect()
+		end
+	end
+	selfDamageNumbersConnections = {}
+end
+
+local selfDamageToggle = Instance.new("TextButton", scrollFrame)
+selfDamageToggle.Size = UDim2.new(1, -20, 0, 40)
+selfDamageToggle.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+selfDamageToggle.TextColor3 = Color3.fromRGB(0, 0, 0)
+selfDamageToggle.Font = Enum.Font.Gotham
+selfDamageToggle.TextSize = 18
+selfDamageToggle.Text = "SelfDamageNumbers: OFF"
+selfDamageToggle.LayoutOrder = 44
+selfDamageToggle.BorderSizePixel = 0
+Instance.new("UICorner", selfDamageToggle).CornerRadius = UDim.new(0, 6)
+
+selfDamageToggle.MouseButton1Click:Connect(function()
+	selfDamageNumbersEnabled = not selfDamageNumbersEnabled
+	selfDamageToggle.Text = "SelfDamageNumbers: " .. (selfDamageNumbersEnabled and "ON" or "OFF")
+	selfDamageToggle.BackgroundColor3 = selfDamageNumbersEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(255, 165, 0)
+
+	if selfDamageNumbersEnabled then
+		if localPlayer.Character then
+			enableSelfDamageNumbers(localPlayer.Character)
+		end
+	else
+		disableSelfDamageNumbers()
+	end
+end)
+
+-- Ensure toggle applies on respawn
+localPlayer.CharacterAdded:Connect(function(char)
+	if selfDamageNumbersEnabled then
+		wait(1)
+		enableSelfDamageNumbers(char)
+	end
+end)
+
+-- Apply immediately if already spawned
+if localPlayer.Character and selfDamageNumbersEnabled then
+	enableSelfDamageNumbers(localPlayer.Character)
+end
+
+-- DamageNumbersAll Toggle
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local Debris = game:GetService("Debris")
+local localPlayer = Players.LocalPlayer
+
+local damageNumbersAllEnabled = false
+local damageNumbersAllConnections = {}
+
+local function showDamageNumber(character, amount, isHealing)
+	if not character or not character:FindFirstChild("Head") then return end
+	
+	local head = character.Head
+
+	local gui = Instance.new("BillboardGui")
+	gui.Adornee = head
+	gui.Size = UDim2.new(0, 100, 0, 40)
+	gui.StudsOffset = Vector3.new(0, 2, 0)
+	gui.AlwaysOnTop = true
+	gui.Parent = workspace
+
+	local label = Instance.new("TextLabel")
+	label.Size = UDim2.new(1, 0, 1, 0)
+	label.BackgroundTransparency = 1
+	label.TextScaled = true
+	label.Text = (isHealing and "+" or "-") .. tostring(math.floor(amount))
+	label.TextColor3 = isHealing and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+	label.Font = Enum.Font.GothamBold
+	label.Parent = gui
+
+	local tweenInfo = TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+	local tween = TweenService:Create(gui, tweenInfo, {StudsOffset = Vector3.new(0, 4, 0)})
+	local fadeTween = TweenService:Create(label, tweenInfo, {TextTransparency = 1})
+
+	tween:Play()
+	fadeTween:Play()
+
+	Debris:AddItem(gui, 1.2)
+end
+
+local function trackHealth(character)
+	local humanoid = character:WaitForChild("Humanoid")
+	local lastHealth = humanoid.Health
+
+	local conn = humanoid.HealthChanged:Connect(function(newHealth)
+		local diff = newHealth - lastHealth
+		
+		if character ~= localPlayer.Character and diff ~= 0 then
+			showDamageNumber(character, math.abs(diff), diff > 0)
+		end
+
+		lastHealth = newHealth
+	end)
+	
+	return conn
+end
+
+local function enableDamageNumbersAll()
+	disableDamageNumbersAll()
+
+	for _, player in pairs(Players:GetPlayers()) do
+		if player ~= localPlayer and player.Character then
+			local conn = trackHealth(player.Character)
+			table.insert(damageNumbersAllConnections, conn)
+		end
+	end
+
+	local playerAddedConn = Players.PlayerAdded:Connect(function(player)
+		if player ~= localPlayer then
+			local charAddedConn = player.CharacterAdded:Connect(function(char)
+				char:WaitForChild("Humanoid")
+				if damageNumbersAllEnabled then
+					local conn = trackHealth(char)
+					table.insert(damageNumbersAllConnections, conn)
+				end
+			end)
+			table.insert(damageNumbersAllConnections, charAddedConn)
+		end
+	end)
+
+	table.insert(damageNumbersAllConnections, playerAddedConn)
+end
+
+function disableDamageNumbersAll()
+	for _, conn in ipairs(damageNumbersAllConnections) do
+		if conn and conn.Disconnect then
+			conn:Disconnect()
+		end
+	end
+	damageNumbersAllConnections = {}
+end
+
+local damageNumbersAllToggle = Instance.new("TextButton", scrollFrame)
+damageNumbersAllToggle.Size = UDim2.new(1, -20, 0, 40)
+damageNumbersAllToggle.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+damageNumbersAllToggle.TextColor3 = Color3.fromRGB(0, 0, 0)
+damageNumbersAllToggle.Font = Enum.Font.Gotham
+damageNumbersAllToggle.TextSize = 18
+damageNumbersAllToggle.Text = "DamageNumbersAll: OFF"
+damageNumbersAllToggle.LayoutOrder = 45
+damageNumbersAllToggle.BorderSizePixel = 0
+Instance.new("UICorner", damageNumbersAllToggle).CornerRadius = UDim.new(0, 6)
+
+damageNumbersAllToggle.MouseButton1Click:Connect(function()
+	damageNumbersAllEnabled = not damageNumbersAllEnabled
+	damageNumbersAllToggle.Text = "DamageNumbersAll: " .. (damageNumbersAllEnabled and "ON" or "OFF")
+	damageNumbersAllToggle.BackgroundColor3 = damageNumbersAllEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(255, 165, 0)
+
+	if damageNumbersAllEnabled then
+		enableDamageNumbersAll()
+	else
+		disableDamageNumbersAll()
+	end
+end)
+
+-- Reactivate on respawn if toggle is ON
+localPlayer.CharacterAdded:Connect(function()
+	if damageNumbersAllEnabled then
+		enableDamageNumbersAll()
+	end
+end)
+
+-- Activate immediately if enabled on script start
+if damageNumbersAllEnabled then
+	enableDamageNumbersAll()
+end
+
+-- Auto Stomp Toggle
+local autoStompEnabled = false
+local stompConnection = nil
+
+local autoStompButton = Instance.new("TextButton", scrollFrame)
+autoStompButton.Size = UDim2.new(1, -20, 0, 40)
+autoStompButton.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+autoStompButton.TextColor3 = Color3.fromRGB(0, 0, 0)
+autoStompButton.Font = Enum.Font.Gotham
+autoStompButton.TextSize = 18
+autoStompButton.Text = "Auto Stomp: OFF"
+autoStompButton.LayoutOrder = 46
+autoStompButton.BorderSizePixel = 0
+Instance.new("UICorner", autoStompButton).CornerRadius = UDim.new(0, 6)
+
+local MainEvent = nil
+if game.PlaceId == 2788229376 then
+    MainEvent = game:GetService('ReplicatedStorage'):FindFirstChild("MainEvent")
+end
+
+if not MainEvent then
+    warn("MainEvent not found! Auto Stomp will not work.")
+end
+
+local RunService = game:GetService("RunService")
+
+autoStompButton.MouseButton1Click:Connect(function()
+	autoStompEnabled = not autoStompEnabled
+	autoStompButton.Text = "Auto Stomp: " .. (autoStompEnabled and "ON" or "OFF")
+	autoStompButton.BackgroundColor3 = autoStompEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(255, 165, 0)
+
+	if autoStompEnabled then
+        if MainEvent then
+            -- Connect the RenderStepped event to fire "Stomp" repeatedly
+            stompConnection = RunService.RenderStepped:Connect(function()
+                MainEvent:FireServer("Stomp")
+            end)
+        end
+	else
+        -- Disconnect the RenderStepped event when toggled off
+        if stompConnection then
+            stompConnection:Disconnect()
+            stompConnection = nil
+        end
+	end
+end)
+
+-- Auto Reload Toggle with Functionality
+local autoReloadEnabled = false
+local reloadConnection
+
+local autoReloadButton = Instance.new("TextButton", scrollFrame)
+autoReloadButton.Size = UDim2.new(1, -20, 0, 40)
+autoReloadButton.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+autoReloadButton.TextColor3 = Color3.fromRGB(0, 0, 0)
+autoReloadButton.Font = Enum.Font.Gotham
+autoReloadButton.TextSize = 18
+autoReloadButton.Text = "Auto Reload: OFF"
+autoReloadButton.LayoutOrder = 47
+autoReloadButton.BorderSizePixel = 0
+Instance.new("UICorner", autoReloadButton).CornerRadius = UDim.new(0, 6)
+
+local Players = game:GetService("Players")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+local player = Players.LocalPlayer
+local reloadThreshold = 1
+
+-- Function to simulate pressing "R"
+local function pressR()
+	VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.R, false, game)
+	task.wait(0.1)
+	VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.R, false, game)
+end
+
+-- Check if the tool is a gun with ammo
+local function isGun(tool)
+	if not tool:IsA("Tool") then return false end
+	return tool:FindFirstChild("Ammo") or tool:FindFirstChild("Clip") or tool:FindFirstChild("AmmoGui")
+end
+
+-- Toggle Function
+autoReloadButton.MouseButton1Click:Connect(function()
+	autoReloadEnabled = not autoReloadEnabled
+	autoReloadButton.Text = "Auto Reload: " .. (autoReloadEnabled and "ON" or "OFF")
+	autoReloadButton.BackgroundColor3 = autoReloadEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(255, 165, 0)
+
+	if autoReloadEnabled then
+		reloadConnection = task.spawn(function()
+			while autoReloadEnabled do
+				local character = player.Character or player.CharacterAdded:Wait()
+				local tool = character:FindFirstChildOfClass("Tool")
+				if tool and isGun(tool) then
+					local ammo = tool:FindFirstChild("Ammo") or tool:FindFirstChild("Clip")
+					if ammo and tonumber(ammo.Value) <= reloadThreshold then
+						pressR()
+					end
+				end
+				task.wait(0.3)
+			end
+		end)
+	else
+		-- Stop the reload task
+		autoReloadEnabled = false
+	end
+end)
+
+-- AUTO ARMOR Toggle Button
+local autoArmorEnabled = false
+local armorMonitorConnection = nil
+
+local autoArmorButton = Instance.new("TextButton", scrollFrame)
+autoArmorButton.Size = UDim2.new(1, -20, 0, 40)
+autoArmorButton.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+autoArmorButton.TextColor3 = Color3.fromRGB(0, 0, 0)
+autoArmorButton.Font = Enum.Font.Gotham
+autoArmorButton.TextSize = 18
+autoArmorButton.Text = "Auto Armor: OFF"
+autoArmorButton.LayoutOrder = 48
+autoArmorButton.BorderSizePixel = 0
+Instance.new("UICorner", autoArmorButton).CornerRadius = UDim.new(0, 6)
+
+-- Auto Armor Logic
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local localPlayer = Players.LocalPlayer
+local armorShop = workspace.Ignored.Shop["[High-Medium Armor] - $2513"]
+local shopCFrame = CFrame.new(-934.025024, -28.149826, 570.549683)
+
+local function teleport(cframe)
+    local hrp = localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if hrp then
+        hrp.CFrame = cframe
+    end
+end
+
+local function isArmorMissing()
+    local character = localPlayer.Character
+    if not character then return true end
+
+    local bodyEffects = character:FindFirstChild("BodyEffects")
+    if not bodyEffects then return true end
+
+    local armorValue = bodyEffects:FindFirstChild("Armor")
+    if not armorValue then return true end
+
+    return armorValue.Value < 90
+end
+
+local function startArmorMonitor()
+    if armorMonitorConnection then
+        armorMonitorConnection:Disconnect()
+    end
+
+    localPlayer.Character:WaitForChild("HumanoidRootPart")
+    local lastCheck = tick()
+
+    armorMonitorConnection = RunService.Heartbeat:Connect(function()
+        if tick() - lastCheck >= 1 then
+            lastCheck = tick()
+
+            if isArmorMissing() then
+                local hrp = localPlayer.Character:FindFirstChild("HumanoidRootPart")
+                if not hrp then return end
+
+                local originalCFrame = hrp.CFrame
+                teleport(shopCFrame)
+                wait(0.25)
+                if armorShop:FindFirstChild("ClickDetector") then
+                    fireclickdetector(armorShop.ClickDetector)
+                end
+                wait(0.25)
+                teleport(originalCFrame)
+            end
+        end
+    end)
+end
+
+autoArmorButton.MouseButton1Click:Connect(function()
+	autoArmorEnabled = not autoArmorEnabled
+	autoArmorButton.Text = "Auto Armor: " .. (autoArmorEnabled and "ON" or "OFF")
+	autoArmorButton.BackgroundColor3 = autoArmorEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(255, 165, 0)
+
+	if autoArmorEnabled then
+		startArmorMonitor()
+		localPlayer.CharacterAdded:Connect(function()
+			wait(0.5)
+			if autoArmorEnabled then
+				startArmorMonitor()
+			end
+		end)
+	else
+		if armorMonitorConnection then
+			armorMonitorConnection:Disconnect()
+			armorMonitorConnection = nil
+		end
+	end
+end)
+
+-- NO FOG TOGGLE
+local noFogEnabled = false
+local fogStartConn, fogEndConn = nil, nil
+local lighting = game:GetService("Lighting")
+
+local noFogButton = Instance.new("TextButton", scrollFrame)
+noFogButton.Size = UDim2.new(1, -20, 0, 40)
+noFogButton.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+noFogButton.TextColor3 = Color3.fromRGB(0, 0, 0)
+noFogButton.Font = Enum.Font.Gotham
+noFogButton.TextSize = 18
+noFogButton.Text = "No Fog: OFF"
+noFogButton.LayoutOrder = 49
+noFogButton.BorderSizePixel = 0
+Instance.new("UICorner", noFogButton).CornerRadius = UDim.new(0, 6)
+
+-- Store original values to restore later
+local original = {
+	FogStart = lighting.FogStart,
+	FogEnd = lighting.FogEnd,
+	Brightness = lighting.Brightness,
+	OutdoorAmbient = lighting.OutdoorAmbient,
+	Ambient = lighting.Ambient
+}
+
+noFogButton.MouseButton1Click:Connect(function()
+	noFogEnabled = not noFogEnabled
+	noFogButton.Text = "No Fog: " .. (noFogEnabled and "ON" or "OFF")
+	noFogButton.BackgroundColor3 = noFogEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(255, 165, 0)
+
+	if noFogEnabled then
+		lighting.FogStart = 1000000
+		lighting.FogEnd = 1000000
+		lighting.Brightness = 5
+		lighting.OutdoorAmbient = Color3.new(1, 1, 1)
+		lighting.Ambient = Color3.new(1, 1, 1)
+
+		-- Lock fog settings
+		fogStartConn = lighting:GetPropertyChangedSignal("FogStart"):Connect(function()
+			lighting.FogStart = 1000000
+		end)
+		fogEndConn = lighting:GetPropertyChangedSignal("FogEnd"):Connect(function()
+			lighting.FogEnd = 1000000
+		end)
+	else
+		-- Restore original lighting
+		lighting.FogStart = original.FogStart
+		lighting.FogEnd = original.FogEnd
+		lighting.Brightness = original.Brightness
+		lighting.OutdoorAmbient = original.OutdoorAmbient
+		lighting.Ambient = original.Ambient
+
+		-- Disconnect signals
+		if fogStartConn then fogStartConn:Disconnect() end
+		if fogEndConn then fogEndConn:Disconnect() end
+	end
+end)
+
+-- Main Section Label
+local mainSectionLabel = Instance.new("TextLabel", scrollFrame)
+mainSectionLabel.Size = UDim2.new(1, -20, 0, 30)
+mainSectionLabel.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+mainSectionLabel.TextColor3 = Color3.fromRGB(0, 0, 0)
+mainSectionLabel.Font = Enum.Font.GothamBold
+mainSectionLabel.TextSize = 20
+mainSectionLabel.Text = "Main"
+mainSectionLabel.TextXAlignment = Enum.TextXAlignment.Left
+mainSectionLabel.LayoutOrder = 50
+mainSectionLabel.BorderSizePixel = 0
+Instance.new("UICorner", mainSectionLabel).CornerRadius = UDim.new(0, 6)
+
+-- Main Section Buttons
+createButtonRow(51, {
+    {"Speed Boost", function()
+        -- Replace this URL with your actual Speed Boost script link
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/SpeedBoost"))()
+    end},
+    {"TrashTalk [X]", function()
+        -- TrashTalk [X] local script
+        local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local ChatService = game:GetService("TextChatService")
+        local UserInputService = game:GetService("UserInputService")
+
+        local isRunning = false
+
+        local function sendMessage(message)
+            if ChatService.ChatVersion == Enum.ChatVersion.TextChatService then
+                local textChannel = ChatService.TextChannels:FindFirstChild("RBXGeneral")
+                if textChannel then
+                    textChannel:SendAsync(message)
+                else
+                    warn("TextChatService channel RBXGeneral not found!")
+                end
+            else
+                local chatEvents = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
+                if chatEvents then
+                    local sayMessageRequest = chatEvents:FindFirstChild("SayMessageRequest")
+                    if sayMessageRequest then
+                        sayMessageRequest:FireServer(message, "All")
+                    else
+                        warn("SayMessageRequest not found in DefaultChatSystemChatEvents!")
+                    end
+                else
+                    warn("DefaultChatSystemChatEvents not found in ReplicatedStorage!")
+                end
+            end
+        end
+
+        local function sayGoodbye()
+            if isRunning then return end
+            isRunning = true
+
+            local messages = {
+                "Easy Sonn",
+                "Mad Already? LOL",
+                "Skill issue Son",
+                "Is that even a Aim???",
+                "Lolll what are you aiming at???",
+                "Keep yapping Barbie Ahh",
+                "Quit the game lil bro",
+                "XDD",
+                "How did u fail to get me XD",
+                "even my grandma has Better AIM then you",
+                "Go play Brookhaven or adopt me something lol"
+            }
+
+            for _, msg in ipairs(messages) do
+                sendMessage(msg)
+                wait(1.5)
+            end
+
+            isRunning = false
+        end
+
+        sayGoodbye()
+
+        UserInputService.InputBegan:Connect(function(input, gameProcessed)
+            if not gameProcessed and input.KeyCode == Enum.KeyCode.X then
+                sayGoodbye()
+            end
+        end)
+    end},
+    {"ClickTeleport Tool", function()
+        -- Correct Click Teleport Tool script link
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/ClickTeleport%20Tool"))()
+    end}
+})
+
+createButtonRow(51, {
+    {"RacistTalk", function()
+        local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ChatService = game:GetService("TextChatService")
+local UserInputService = game:GetService("UserInputService")
+
+local isRunning = false
+
+local function sendMessage(message)
+    if ChatService.ChatVersion == Enum.ChatVersion.TextChatService then
+        local textChannel = ChatService.TextChannels:FindFirstChild("RBXGeneral")
+        if textChannel then
+            textChannel:SendAsync(message)
+        else
+            warn("TextChatService channel RBXGeneral not found!")
+        end
+    else
+        local chatEvents = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
+        if chatEvents then
+            local sayMessageRequest = chatEvents:FindFirstChild("SayMessageRequest")
+            if sayMessageRequest then
+                sayMessageRequest:FireServer(message, "All")
+            else
+                warn("SayMessageRequest not found in DefaultChatSystemChatEvents!")
+            end
+        else
+            warn("DefaultChatSystemChatEvents not found in ReplicatedStorage!")
+        end
+    end
+end
+
+local function sayGoodbye()
+    if isRunning then return end
+    isRunning = true
+
+    sendMessage("<N<>E<>G<>G<>E<>R> ")
+    wait(1.5)
+    sendMessage("<N<>E<>G<>G<>E<>R> PEOPLE ")
+    wait(1.5)
+    sendMessage("<N<>E<>G<>G<>E<>R>   <N<>E<>G<>G<>E<>R> IM  A MONEY LIL <N<>E<>G<>G<>E<>R>")
+
+    isRunning = false
+end
+
+sayGoodbye()
+    end}
+})
+
+local plr = game.Players.LocalPlayer
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+
+local flyEnabled = false
+local flying = false
+local flyLoopRunning = false
+local speed = 10
+local pos, gyro, Core, Weld
+local keys = {q = false, e = false}
+local mobileFlyGui = nil
+
+local function createCoreAndWeld()
+    if workspace:FindFirstChild("Core") then workspace.Core:Destroy() end
+
+    Core = Instance.new("Part")
+    Core.Name = "Core"
+    Core.Size = Vector3.new(0.05, 0.05, 0.05)
+    Core.Anchored = false
+    Core.CanCollide = false
+    Core.Transparency = 1
+    Core.Parent = workspace
+
+    local character = plr.Character
+    if not character then return end
+
+    local lowerTorso = character:WaitForChild("LowerTorso", 5)
+    if not lowerTorso then Core:Destroy() return end
+
+    Weld = Instance.new("Weld")
+    Weld.Part0 = Core
+    Weld.Part1 = lowerTorso
+    Weld.C0 = CFrame.new(0, 0, 0)
+    Weld.Parent = Core
+end
+
+local function createMobileFlyGui()
+    -- Always create new GUI; remove old one if exists
+    if plr.PlayerGui:FindFirstChild("MobileFly") then
+        plr.PlayerGui.MobileFly:Destroy()
+    end
+
+    mobileFlyGui = Instance.new("ScreenGui")
+    mobileFlyGui.Name = "MobileFly"
+    mobileFlyGui.ResetOnSpawn = false
+    mobileFlyGui.Parent = plr:WaitForChild("PlayerGui")
+
+    local function makeButton(name, text, pos)
+        local btn = Instance.new("TextButton", mobileFlyGui)
+        btn.Name = name
+        btn.Text = text
+        btn.Size = UDim2.new(0, 100, 0, 100)
+        btn.Position = pos
+        btn.BackgroundColor3 = Color3.fromRGB(200, 200, 255)
+        btn.TextColor3 = Color3.new(0, 0, 0)
+        btn.TextScaled = true
+        btn.AutoButtonColor = false
+        btn.MouseButton1Down:Connect(function() keys[name:lower()] = true end)
+        btn.MouseButton1Up:Connect(function() keys[name:lower()] = false end)
+        btn.MouseLeave:Connect(function() keys[name:lower()] = false end)
+    end
+
+    makeButton("Q", "⬆️", UDim2.new(0.8, 0, 0.7, 0))
+    makeButton("E", "⬇️", UDim2.new(0.8, 0, 0.82, 0))
+end
+
+local function removeMobileFlyGui()
+    if plr.PlayerGui:FindFirstChild("MobileFly") then
+        plr.PlayerGui.MobileFly:Destroy()
+    end
+    keys.q = false
+    keys.e = false
+end
+
+local function canMoveTo(position)
+    local character = plr.Character
+    local rootPart = character and character:FindFirstChild("HumanoidRootPart")
+    if not rootPart then return false end
+
+    local rayParams = RaycastParams.new()
+    rayParams.FilterDescendantsInstances = {character}
+    rayParams.FilterType = Enum.RaycastFilterType.Blacklist
+    rayParams.IgnoreWater = true
+
+    local direction = position - rootPart.Position
+    local raycast = workspace:Raycast(rootPart.Position, direction, rayParams)
+    if raycast then
+        local hitDist = (raycast.Position - rootPart.Position).Magnitude
+        return hitDist >= direction.Magnitude - 0.5
+    end
+    return true
+end
+
+local function startFly()
+    if flyLoopRunning then return end
+    flying = true
+    flyLoopRunning = true
+
+    local character = plr.Character
+    if not character then return end
+
+    pos = Instance.new("BodyPosition")
+    pos.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+    pos.Position = character.HumanoidRootPart.Position
+    pos.Parent = workspace.Core
+
+    gyro = Instance.new("BodyGyro")
+    gyro.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+    gyro.CFrame = character.HumanoidRootPart.CFrame
+    gyro.Parent = workspace.Core
+
+    task.spawn(function()
+        while flying and pos and gyro and plr.Character do
+            task.wait()
+
+            local humanoid = plr.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid then humanoid.PlatformStand = true end
+
+            local cam = workspace.CurrentCamera
+            local camLook = cam.CFrame.LookVector
+            local moveDir = humanoid and humanoid.MoveDirection or Vector3.zero
+            local vertical = (keys.q and speed or 0) - (keys.e and speed or 0)
+
+            local move = moveDir.Magnitude > 0 and moveDir.Unit * speed or Vector3.zero
+            move = Vector3.new(move.X, vertical, move.Z)
+
+            local targetPos = pos.Position + move
+            if canMoveTo(targetPos) then
+                pos.Position = targetPos
+            end
+
+            local forward = Vector3.new(camLook.X, 0, camLook.Z)
+            if forward.Magnitude > 0 then
+                gyro.CFrame = CFrame.new(Vector3.zero, forward.Unit)
+            end
+        end
+
+        stopFly()
+    end)
+end
+
+function stopFly()
+    flying = false
+    flyLoopRunning = false
+
+    if pos then pos:Destroy() pos = nil end
+    if gyro then gyro:Destroy() gyro = nil end
+    if Weld then Weld:Destroy() Weld = nil end
+    if Core then Core:Destroy() Core = nil end
+
+    removeMobileFlyGui()
+
+    local character = plr.Character
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        humanoid.PlatformStand = false
+        humanoid:SetStateEnabled(Enum.HumanoidStateType.PlatformStanding, false)
+        humanoid:ChangeState(Enum.HumanoidStateType.Running)
+        humanoid.WalkSpeed = 16
+    end
+
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+    if root then
+        root.Velocity = Vector3.zero
+        root.AssemblyLinearVelocity = Vector3.zero
+        root.CFrame = root.CFrame + Vector3.new(0, 2, 0)
+    end
+
+    keys.q = false
+    keys.e = false
+end
+
+local function onCharacterAdded(char)
+    stopFly()
+    char:WaitForChild("LowerTorso", 5)
+    createCoreAndWeld()
+    if flyEnabled then
+        startFly()
+        createMobileFlyGui()
+    end
+end
+
+plr.CharacterAdded:Connect(onCharacterAdded)
+if plr.Character then onCharacterAdded(plr.Character) end
+
+-- ======= Fly Toggle Button =======
+local flyButton = Instance.new("TextButton", scrollFrame)
+flyButton.Size = UDim2.new(1, -20, 0, 40)
+flyButton.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+flyButton.TextColor3 = Color3.fromRGB(0, 0, 0)
+flyButton.Font = Enum.Font.Gotham
+flyButton.TextSize = 18
+flyButton.Text = "Fly: OFF"
+flyButton.LayoutOrder = 52
+flyButton.BorderSizePixel = 0
+Instance.new("UICorner", flyButton).CornerRadius = UDim.new(0, 6)
+
+flyButton.MouseButton1Click:Connect(function()
+    flyEnabled = not flyEnabled
+    flyButton.Text = "Fly: " .. (flyEnabled and "ON" or "OFF")
+    flyButton.BackgroundColor3 = flyEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(255, 165, 0)
+
+    if flyEnabled then
+        createCoreAndWeld()
+        startFly()
+        createMobileFlyGui() -- recreate the buttons freshly
+    else
+        stopFly()
+    end
+end)
