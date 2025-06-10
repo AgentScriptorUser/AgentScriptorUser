@@ -1,6 +1,6 @@
 local DepthMode = "AlwaysOnTop"
 local FillTransparency = 0.5
-local OutlineTransparency = 0 -- Visible outline
+local OutlineTransparency = 0
 
 local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
@@ -13,79 +13,80 @@ Storage.Parent = CoreGui
 
 -- Team color mapping
 local TeamColors = {
-    ["Infirmary Staff"] = Color3.fromRGB(255, 105, 180), -- Pink
-    ["High Command"] = Color3.fromRGB(255, 165, 0),      -- Light Orange
-    ["Emergency Response Team"] = Color3.fromRGB(173, 216, 230), -- Light Blue
-    ["Overseer Command"] = Color3.fromRGB(135, 206, 235), -- Sky Blue
-    ["Maximum Security Inmate"] = Color3.fromRGB(255, 255, 0), -- Yellow
-    ["Solitary Confinement"] = Color3.fromRGB(139, 0, 0), -- Dark Red
-    ["Inmate"] = Color3.fromRGB(255, 140, 0), -- Orange
-    ["Correctional Staff"] = Color3.fromRGB(0, 0, 139), -- Dark Blue
-    ["Criminal"] = Color3.fromRGB(255, 0, 0) -- Red
+    ["Infirmary Staff"] = Color3.fromRGB(255, 105, 180),
+    ["High Command"] = Color3.fromRGB(255, 165, 0),
+    ["Emergency Response Team"] = Color3.fromRGB(173, 216, 230),
+    ["Overseer Command"] = Color3.fromRGB(135, 206, 235),
+    ["Maximum Security Inmate"] = Color3.fromRGB(255, 255, 0),
+    ["Solitary Confinement"] = Color3.fromRGB(139, 0, 0),
+    ["Inmate"] = Color3.fromRGB(255, 140, 0),
+    ["Correctional Staff"] = Color3.fromRGB(0, 0, 139),
+    ["Criminal"] = Color3.fromRGB(255, 0, 0)
 }
 
--- Return color based on team
 local function GetTeamColor(plr)
     if plr.Team and TeamColors[plr.Team.Name] then
         return TeamColors[plr.Team.Name]
     else
-        return Color3.fromRGB(255, 255, 255) -- Default white
+        return Color3.fromRGB(255, 255, 255)
     end
 end
 
--- Update highlight when team changes
 local function UpdateHighlightTeam(plr)
     local highlight = Storage:FindFirstChild(plr.Name)
     if highlight then
-        local teamColor = GetTeamColor(plr)
-        highlight.FillColor = teamColor
-        highlight.OutlineColor = teamColor
+        local color = GetTeamColor(plr)
+        highlight.FillColor = color
+        highlight.OutlineColor = color
     end
 end
 
--- Create and set up Highlight
 local function Highlight(plr)
-    -- Cleanup old
     if Storage:FindFirstChild(plr.Name) then
         Storage[plr.Name]:Destroy()
     end
 
-    -- Create new highlight
     local highlight = Instance.new("Highlight")
     highlight.Name = plr.Name
     highlight.DepthMode = DepthMode
     highlight.FillTransparency = FillTransparency
     highlight.OutlineTransparency = OutlineTransparency
-    local teamColor = GetTeamColor(plr)
-    highlight.FillColor = teamColor
-    highlight.OutlineColor = teamColor
+    local color = GetTeamColor(plr)
+    highlight.FillColor = color
+    highlight.OutlineColor = color
     highlight.Parent = Storage
 
-    -- Apply if character exists
-    if plr.Character then
-        highlight.Adornee = plr.Character
+    -- When their character loads, set adornee
+    local function OnCharacterAdded(char)
+        highlight.Adornee = char
     end
 
-    -- Character added listener
-    connections[plr.Name .. "_char"] = plr.CharacterAdded:Connect(function(char)
-        highlight.Adornee = char
-    end)
+    if plr.Character then
+        OnCharacterAdded(plr.Character)
+    end
 
-    -- Team changed listener
+    connections[plr.Name .. "_char"] = plr.CharacterAdded:Connect(OnCharacterAdded)
     connections[plr.Name .. "_team"] = plr:GetPropertyChangedSignal("Team"):Connect(function()
         UpdateHighlightTeam(plr)
     end)
 end
 
--- Add ESP to all players
+-- Initial setup for all players
 for _, plr in ipairs(Players:GetPlayers()) do
     Highlight(plr)
 end
 
--- New players
-Players.PlayerAdded:Connect(Highlight)
+Players.PlayerAdded:Connect(function(plr)
+    Highlight(plr)
+    -- Also make sure new players get highlight when their character loads
+    plr.CharacterAdded:Connect(function(char)
+        local highlight = Storage:FindFirstChild(plr.Name)
+        if highlight then
+            highlight.Adornee = char
+        end
+    end)
+end)
 
--- Player removing
 Players.PlayerRemoving:Connect(function(plr)
     if Storage:FindFirstChild(plr.Name) then
         Storage[plr.Name]:Destroy()
@@ -98,7 +99,6 @@ Players.PlayerRemoving:Connect(function(plr)
     end
 end)
 
--- Fallback loop to make sure all highlights stay on
 task.spawn(function()
     while true do
         for _, plr in ipairs(Players:GetPlayers()) do
@@ -109,6 +109,6 @@ task.spawn(function()
                 highlight.Adornee = plr.Character
             end
         end
-        task.wait(5) -- every 5 seconds
+        task.wait(5)
     end
 end)
