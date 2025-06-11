@@ -291,105 +291,6 @@ createButtonRow(8, {
     }
 })
 
---[[
-createButtonRow(9, {
-    {
-        "Need to Poop Really Hard",
-        function()
-            -- Animation ID
-local animationId = "rbxassetid://204328711"
-
--- Sound ID (you can change this to any punch sound you want)
-local soundId = "rbxassetid://5512747993" -- Example punch sound
-
--- Get the local player and character
-local player = game.Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
-local humanoid = character:WaitForChild("Humanoid")
-
--- Create and load the animation
-local animation = Instance.new("Animation")
-animation.AnimationId = animationId
-
-local animationTrack = humanoid:LoadAnimation(animation)
-
--- Create and set up the sound
-local punchSound = Instance.new("Sound")
-punchSound.SoundId = soundId
-punchSound.Volume = 1
-punchSound.Looped = true -- Make the sound loop
-punchSound.Parent = character:WaitForChild("HumanoidRootPart")
-
--- Play animation and sound
-animationTrack:Play()
-animationTrack.Looped = true -- Super Punch usually plays once
-
-punchSound:Play() -- Play the punch sound in loop
-        end
-    },
-    {
-        "Slap",
-        function()
-            -- Animation ID
-local animationId = "rbxassetid://243827693"
-
--- Sound ID (you can change this to any punch sound you want)
-local soundId = "rbxassetid://5189782994" -- Example punch sound
-
--- Get the local player and character
-local player = game.Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
-local humanoid = character:WaitForChild("Humanoid")
-
--- Create and load the animation
-local animation = Instance.new("Animation")
-animation.AnimationId = animationId
-
-local animationTrack = humanoid:LoadAnimation(animation)
-
--- Create and set up the sound
-local punchSound = Instance.new("Sound")
-punchSound.SoundId = soundId
-punchSound.Volume = 1
-punchSound.Looped = true -- Make the sound loop
-punchSound.Parent = character:WaitForChild("HumanoidRootPart")
-
--- Play animation and sound
-animationTrack:Play()
-animationTrack.Looped = true -- Super Punch usually plays once
-
-punchSound:Play() -- Play the punch sound in loop
-
--- Animation ID
-local animationId = "rbxassetid://243827693"
-
--- Sound ID (you can change this to any punch sound you want)
-local 
-        end
-    },
-    {
-        "Cough",
-        function()
-            -- Animation ID
-local animationId = "rbxassetid://272761516"
-
--- Sound ID (you can change this to any punch sound you want)
-local soundId = "rbxassetid://178522287" -- Example punch sound
-
--- Get the local player and character
-local player = game.Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
-local humanoid = character:WaitForChild("Humanoid")
-
--- Create and load the animation
-local animation = Instance.new("Animation")
-animation.AnimationId = animationId
-
-local animationTrack = humanoid:LoadAnimation(animation)
-
--- Create and set up the sound
-local punchSound = Instance.new("Sound")
-punchSound.SoundId = soundId
 punchSound.Volume = 1
 punchSound.Looped = true -- Make the sound loop
 punchSound.Parent = character:WaitForChild("HumanoidRootPart")
@@ -403,4 +304,79 @@ punchSound:Play() -- Play the punch sound in loop
         end
     }
 })
-]]
+
+-- Fun Stuff Buttons Row
+createButtonRow(9, {
+    {
+        "Need to Poop Really Hard",
+        function()
+            local animationId = "rbxassetid://204328711"
+            local soundId = "rbxassetid://5512747993"
+
+            local player = game.Players.LocalPlayer
+            local character = player.Character or player.CharacterAdded:Wait()
+            local humanoid = character:WaitForChild("Humanoid")
+
+            local animation = Instance.new("Animation")
+            animation.AnimationId = animationId
+            local animationTrack = humanoid:LoadAnimation(animation)
+            animationTrack.Looped = true
+            animationTrack:Play()
+
+            local sound = Instance.new("Sound")
+            sound.SoundId = soundId
+            sound.Volume = 1
+            sound.Looped = true
+            sound.Parent = character:WaitForChild("HumanoidRootPart")
+            sound:Play()
+        end
+    },
+    {
+        "Cough",
+        function()
+            local animationId = "rbxassetid://272761516"
+            local soundId = "rbxassetid://178522287"
+
+            local player = game.Players.LocalPlayer
+            local character = player.Character or player.CharacterAdded:Wait()
+            local humanoid = character:WaitForChild("Humanoid")
+
+            local animation = Instance.new("Animation")
+            animation.AnimationId = animationId
+            local animationTrack = humanoid:LoadAnimation(animation)
+            animationTrack.Looped = true
+            animationTrack:Play()
+
+            local sound = Instance.new("Sound")
+            sound.SoundId = soundId
+            sound.Volume = 1
+            sound.Looped = true
+            sound.Parent = character:WaitForChild("HumanoidRootPart")
+            sound:Play()
+        end
+    },
+    {
+        "Slap",
+        function()
+            local animationId = "rbxassetid://243827693"
+            local soundId = "rbxassetid://5189782994"
+
+            local player = game.Players.LocalPlayer
+            local character = player.Character or player.CharacterAdded:Wait()
+            local humanoid = character:WaitForChild("Humanoid")
+
+            local animation = Instance.new("Animation")
+            animation.AnimationId = animationId
+            local animationTrack = humanoid:LoadAnimation(animation)
+            animationTrack.Looped = true
+            animationTrack:Play()
+
+            local sound = Instance.new("Sound")
+            sound.SoundId = soundId
+            sound.Volume = 1
+            sound.Looped = true
+            sound.Parent = character:WaitForChild("HumanoidRootPart")
+            sound:Play()
+        end
+    }
+})
