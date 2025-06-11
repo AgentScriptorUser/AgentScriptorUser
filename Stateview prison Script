@@ -366,3 +366,31 @@ createButtonRow(9, {
         end
     }
 })
+
+-- Fun Stuff Buttons Row 10
+createButtonRow(10, {
+    {
+        "Ironman Flight",
+        function()
+            local animationId = "rbxassetid://97172005"
+            local soundId = "rbxassetid://6202832800"
+
+            local player = game.Players.LocalPlayer
+            local character = player.Character or player.CharacterAdded:Wait()
+            local humanoid = character:WaitForChild("Humanoid")
+
+            local animation = Instance.new("Animation")
+            animation.AnimationId = animationId
+            local animationTrack = humanoid:LoadAnimation(animation)
+            animationTrack.Looped = true
+            animationTrack:Play()
+
+            local flightSound = Instance.new("Sound")
+            flightSound.SoundId = soundId
+            flightSound.Volume = 1
+            flightSound.Looped = true
+            flightSound.Parent = character:WaitForChild("HumanoidRootPart")
+            flightSound:Play()
+        end
+    }
+})
