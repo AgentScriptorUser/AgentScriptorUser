@@ -1,0 +1,406 @@
+local player = game.Players.LocalPlayer
+local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+gui.Name = "Resistance Freedom"
+gui.ResetOnSpawn = false
+
+-- Main Frame
+local bg = Instance.new("Frame", gui)
+bg.Size = UDim2.new(0, 600, 0, 420)
+bg.Position = UDim2.new(0.5, -300, 0.5, -210)
+bg.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+bg.Active = true
+bg.Draggable = true
+bg.BorderSizePixel = 0
+Instance.new("UICorner", bg).CornerRadius = UDim.new(0, 12)
+
+local stroke = Instance.new("UIStroke", bg)
+stroke.Thickness = 4
+stroke.Color = Color3.fromRGB(255, 140, 0)
+stroke.Transparency = 0.1
+stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+
+-- Title
+local title = Instance.new("TextLabel", bg)
+title.Size = UDim2.new(1, 0, 0, 40)
+title.BackgroundColor3 = Color3.fromRGB(255, 140, 0)
+title.Text = "Resistance Freedom"
+title.Font = Enum.Font.SourceSansBold
+title.TextSize = 28
+title.TextColor3 = Color3.fromRGB(0, 0, 0)
+title.BorderSizePixel = 0
+
+-- Logo
+local logo = Instance.new("ImageLabel", title)
+logo.Size = UDim2.new(0, 30, 0, 30)
+logo.Position = UDim2.new(0, 5, 0, 5)
+logo.BackgroundTransparency = 1
+logo.Image = "rbxassetid://110313676338446"
+
+-- ScrollingFrame
+local scrollFrame = Instance.new("ScrollingFrame", bg)
+scrollFrame.Size = UDim2.new(1, -20, 1, -60)
+scrollFrame.Position = UDim2.new(0, 10, 0, 50)
+scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 500) -- Adjust if you add more content
+scrollFrame.ScrollBarThickness = 8
+scrollFrame.BackgroundTransparency = 1
+scrollFrame.BorderSizePixel = 0
+scrollFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+scrollFrame.CanvasPosition = Vector2.new(0, 0)
+
+local layout = Instance.new("UIListLayout", scrollFrame)
+layout.SortOrder = Enum.SortOrder.LayoutOrder
+layout.Padding = UDim.new(0, 10)
+
+local textColor = Color3.fromRGB(255, 165, 0)
+
+-- Profile Frame
+local profileFrame = Instance.new("Frame", scrollFrame)
+profileFrame.Size = UDim2.new(1, -20, 0, 120)
+profileFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+profileFrame.LayoutOrder = 1
+Instance.new("UICorner", profileFrame).CornerRadius = UDim.new(0, 10)
+
+-- Avatar Image
+local avatar = Instance.new("ImageLabel", profileFrame)
+avatar.Size = UDim2.new(0, 80, 0, 80)
+avatar.Position = UDim2.new(0, 10, 0, 10)
+avatar.BackgroundTransparency = 1
+avatar.Image = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. player.UserId .. "&width=420&height=420&format=png"
+
+-- Display Name
+local displayName = Instance.new("TextLabel", profileFrame)
+displayName.Position = UDim2.new(0, 100, 0, 10)
+displayName.Size = UDim2.new(1, -110, 0, 25)
+displayName.BackgroundTransparency = 1
+displayName.Font = Enum.Font.GothamBold
+displayName.TextSize = 22
+displayName.TextColor3 = textColor
+displayName.TextXAlignment = Enum.TextXAlignment.Left
+displayName.Text = "Display Name: " .. player.DisplayName
+
+-- Username
+local username = Instance.new("TextLabel", profileFrame)
+username.Position = UDim2.new(0, 100, 0, 35)
+username.Size = UDim2.new(1, -110, 0, 20)
+username.BackgroundTransparency = 1
+username.Font = Enum.Font.Gotham
+username.TextSize = 18
+username.TextColor3 = textColor
+username.TextXAlignment = Enum.TextXAlignment.Left
+username.Text = "Username: @" .. player.Name
+
+-- User ID
+local userId = Instance.new("TextLabel", profileFrame)
+userId.Position = UDim2.new(0, 100, 0, 60)
+userId.Size = UDim2.new(1, -110, 0, 20)
+userId.BackgroundTransparency = 1
+userId.Font = Enum.Font.Gotham
+userId.TextSize = 18
+userId.TextColor3 = textColor
+userId.TextXAlignment = Enum.TextXAlignment.Left
+userId.Text = "User ID: " .. player.UserId
+
+-- Rank
+local rank = Instance.new("TextLabel", profileFrame)
+rank.Position = UDim2.new(0, 100, 0, 85)
+rank.Size = UDim2.new(1, -110, 0, 20)
+rank.BackgroundTransparency = 1
+rank.Font = Enum.Font.GothamBold
+rank.TextSize = 18
+rank.TextColor3 = textColor
+rank.TextXAlignment = Enum.TextXAlignment.Left
+rank.Text = "Rank: Developer"
+
+-- Button Factory
+local function createButton(parent, name, callback)
+    local button = Instance.new("TextButton", parent)
+    button.Size = UDim2.new(0, 170, 0, 40)
+    button.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+    button.Text = name
+    button.Font = Enum.Font.GothamBold
+    button.TextSize = 16
+    button.TextColor3 = Color3.fromRGB(0, 0, 0)
+    button.AutoButtonColor = true
+    Instance.new("UICorner", button).CornerRadius = UDim.new(0, 8)
+    button.MouseButton1Click:Connect(callback)
+end
+
+-- Reusable button row
+local function createButtonRow(order, buttons)
+    local frame = Instance.new("Frame", scrollFrame)
+    frame.Size = UDim2.new(1, -20, 0, 50)
+    frame.BackgroundTransparency = 1
+    frame.LayoutOrder = order
+
+    local layout = Instance.new("UIListLayout", frame)
+    layout.FillDirection = Enum.FillDirection.Horizontal
+    layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    layout.VerticalAlignment = Enum.VerticalAlignment.Center
+    layout.Padding = UDim.new(0, 10)
+
+    for _, data in ipairs(buttons) do
+        createButton(frame, data[1], data[2])
+    end
+end
+
+-- Add button rows
+createButtonRow(2, {
+    {"InfiniteJump", function() loadstring(game:HttpGet("https://pastebin.com/raw/b0LWGG21"))() end},
+    {"Speed Hack", function() loadstring(game:HttpGet("https://pastebin.com/raw/NDexbWEm"))() end},
+    {"Close GUI", function() gui:Destroy() end}
+})
+
+createButtonRow(3, {
+    {"ESP Players", function() loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Stateview%20prison%20esp"))()() end},
+    {"ChatLogs", function() loadstring(game:HttpGet("https://pastebin.com/raw/imXt1659"))() end},
+    {"Tool Viewer", function() loadstring(game:HttpGet("https://pastebin.com/raw/ZUr5WE4V"))() end}
+})
+
+createButtonRow(4, {
+    {"Server ID", function() loadstring(game:HttpGet("https://pastebin.com/raw/wsHnLVjA"))() end}
+})
+
+-- Teleport Section Label
+local teleportSectionLabel = Instance.new("TextLabel", scrollFrame)
+teleportSectionLabel.Size = UDim2.new(1, -20, 0, 30)
+teleportSectionLabel.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+teleportSectionLabel.TextColor3 = Color3.fromRGB(0, 0, 0)
+teleportSectionLabel.Font = Enum.Font.GothamBold
+teleportSectionLabel.TextSize = 20
+teleportSectionLabel.Text = "Teleport Section"
+teleportSectionLabel.TextXAlignment = Enum.TextXAlignment.Left
+teleportSectionLabel.LayoutOrder = 5
+teleportSectionLabel.BorderSizePixel = 0
+Instance.new("UICorner", teleportSectionLabel).CornerRadius = UDim.new(0, 6)
+
+-- Teleport buttons row
+createButtonRow(6, {
+    {
+        "Lunch",
+        function()
+            local character = player.Character or player.CharacterAdded:Wait()
+            local hrp = character:WaitForChild("HumanoidRootPart")
+            hrp.CFrame = CFrame.new(-2275.65747, 31.4989319, -902.728271)
+        end
+    },
+    {
+        "Cell Block",
+        function()
+            local character = player.Character or player.CharacterAdded:Wait()
+            local hrp = character:WaitForChild("HumanoidRootPart")
+            hrp.CFrame = CFrame.new(
+                -2263.07202, 31.4987488, -871.630371,
+                4.58955765e-05, 0.999847651, 0.0174564533,
+                1, -4.60147858e-05, -4.0140003e-07,
+                4.0140003e-07, 0.0174564533, -0.999847651
+            )
+        end
+    }
+})
+
+-- Fun Stuff Section Label
+local funStuffLabel = Instance.new("TextLabel", scrollFrame)
+funStuffLabel.Size = UDim2.new(1, -20, 0, 30)
+funStuffLabel.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+funStuffLabel.TextColor3 = Color3.fromRGB(0, 0, 0)
+funStuffLabel.Font = Enum.Font.GothamBold
+funStuffLabel.TextSize = 20
+funStuffLabel.Text = "Fun Stuff"
+funStuffLabel.TextXAlignment = Enum.TextXAlignment.Left
+funStuffLabel.LayoutOrder = 7
+funStuffLabel.BorderSizePixel = 0
+Instance.new("UICorner", funStuffLabel).CornerRadius = UDim.new(0, 6)
+
+-- Fun Stuff Buttons Row
+createButtonRow(8, {
+    {
+        "Jumping Jacks",
+        function()
+            local animationId = "rbxassetid://429681631"
+            local soundId = ""
+
+            local player = game.Players.LocalPlayer
+            local character = player.Character or player.CharacterAdded:Wait()
+            local humanoid = character:WaitForChild("Humanoid")
+
+            local animation = Instance.new("Animation")
+            animation.AnimationId = animationId
+            local animationTrack = humanoid:LoadAnimation(animation)
+            animationTrack.Looped = true
+            animationTrack:Play()
+
+            if soundId ~= "" then
+                local sound = Instance.new("Sound")
+                sound.SoundId = soundId
+                sound.Volume = 1
+                sound.Looped = true
+                sound.Parent = character:WaitForChild("HumanoidRootPart")
+                sound:Play()
+            end
+        end
+    },
+    {
+        "Fake Crouch",
+        function()
+            local animationId = "rbxassetid://287325678"
+            local soundId = ""
+
+            local player = game.Players.LocalPlayer
+            local character = player.Character or player.CharacterAdded:Wait()
+            local humanoid = character:WaitForChild("Humanoid")
+
+            local animation = Instance.new("Animation")
+            animation.AnimationId = animationId
+            local animationTrack = humanoid:LoadAnimation(animation)
+            animationTrack.Looped = true
+            animationTrack:Play()
+
+            if soundId ~= "" then
+                local sound = Instance.new("Sound")
+                sound.SoundId = soundId
+                sound.Volume = 1
+                sound.Looped = true
+                sound.Parent = character:WaitForChild("HumanoidRootPart")
+                sound:Play()
+            end
+        end
+    },
+    {
+        "Super Punch",
+        function()
+            local animationId = "rbxassetid://126753849"
+            local soundId = "rbxassetid://278061737"
+
+            local player = game.Players.LocalPlayer
+            local character = player.Character or player.CharacterAdded:Wait()
+            local humanoid = character:WaitForChild("Humanoid")
+
+            local animation = Instance.new("Animation")
+            animation.AnimationId = animationId
+            local animationTrack = humanoid:LoadAnimation(animation)
+            animationTrack.Looped = true
+            animationTrack:Play()
+
+            local punchSound = Instance.new("Sound")
+            punchSound.SoundId = soundId
+            punchSound.Volume = 1
+            punchSound.Looped = true
+            punchSound.Parent = character:WaitForChild("HumanoidRootPart")
+            punchSound:Play()
+        end
+    }
+})
+
+--[[
+createButtonRow(9, {
+    {
+        "Need to Poop Really Hard",
+        function()
+            -- Animation ID
+local animationId = "rbxassetid://204328711"
+
+-- Sound ID (you can change this to any punch sound you want)
+local soundId = "rbxassetid://5512747993" -- Example punch sound
+
+-- Get the local player and character
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+
+-- Create and load the animation
+local animation = Instance.new("Animation")
+animation.AnimationId = animationId
+
+local animationTrack = humanoid:LoadAnimation(animation)
+
+-- Create and set up the sound
+local punchSound = Instance.new("Sound")
+punchSound.SoundId = soundId
+punchSound.Volume = 1
+punchSound.Looped = true -- Make the sound loop
+punchSound.Parent = character:WaitForChild("HumanoidRootPart")
+
+-- Play animation and sound
+animationTrack:Play()
+animationTrack.Looped = true -- Super Punch usually plays once
+
+punchSound:Play() -- Play the punch sound in loop
+        end
+    },
+    {
+        "Slap",
+        function()
+            -- Animation ID
+local animationId = "rbxassetid://243827693"
+
+-- Sound ID (you can change this to any punch sound you want)
+local soundId = "rbxassetid://5189782994" -- Example punch sound
+
+-- Get the local player and character
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+
+-- Create and load the animation
+local animation = Instance.new("Animation")
+animation.AnimationId = animationId
+
+local animationTrack = humanoid:LoadAnimation(animation)
+
+-- Create and set up the sound
+local punchSound = Instance.new("Sound")
+punchSound.SoundId = soundId
+punchSound.Volume = 1
+punchSound.Looped = true -- Make the sound loop
+punchSound.Parent = character:WaitForChild("HumanoidRootPart")
+
+-- Play animation and sound
+animationTrack:Play()
+animationTrack.Looped = true -- Super Punch usually plays once
+
+punchSound:Play() -- Play the punch sound in loop
+
+-- Animation ID
+local animationId = "rbxassetid://243827693"
+
+-- Sound ID (you can change this to any punch sound you want)
+local 
+        end
+    },
+    {
+        "Cough",
+        function()
+            -- Animation ID
+local animationId = "rbxassetid://272761516"
+
+-- Sound ID (you can change this to any punch sound you want)
+local soundId = "rbxassetid://178522287" -- Example punch sound
+
+-- Get the local player and character
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+
+-- Create and load the animation
+local animation = Instance.new("Animation")
+animation.AnimationId = animationId
+
+local animationTrack = humanoid:LoadAnimation(animation)
+
+-- Create and set up the sound
+local punchSound = Instance.new("Sound")
+punchSound.SoundId = soundId
+punchSound.Volume = 1
+punchSound.Looped = true -- Make the sound loop
+punchSound.Parent = character:WaitForChild("HumanoidRootPart")
+
+-- Play animation and sound
+animationTrack:Play()
+animationTrack.Looped = true -- Super Punch usually plays once
+
+punchSound:Play() -- Play the punch sound in loop
+
+        end
+    }
+})
+]]
