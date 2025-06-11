@@ -211,86 +211,84 @@ funStuffLabel.LayoutOrder = 7
 funStuffLabel.BorderSizePixel = 0
 Instance.new("UICorner", funStuffLabel).CornerRadius = UDim.new(0, 6)
 
-
--- Fun Stuff Buttons Row
+-- Fun Stuff Buttons Row 8
 createButtonRow(8, {
-{
-"Jumping Jacks",
-function()
-local animationId = "rbxassetid://429681631"
-local soundId = ""
+    {
+        "Jumping Jacks",
+        function()
+            local animationId = "rbxassetid://429681631"
+            local soundId = ""
 
-local player = game.Players.LocalPlayer  
-        local character = player.Character or player.CharacterAdded:Wait()  
-        local humanoid = character:WaitForChild("Humanoid")  
+            local player = game.Players.LocalPlayer
+            local character = player.Character or player.CharacterAdded:Wait()
+            local humanoid = character:WaitForChild("Humanoid")
 
-        local animation = Instance.new("Animation")  
-        animation.AnimationId = animationId  
-        local animationTrack = humanoid:LoadAnimation(animation)  
-        animationTrack.Looped = true  
-        animationTrack:Play()  
+            local animation = Instance.new("Animation")
+            animation.AnimationId = animationId
+            local animationTrack = humanoid:LoadAnimation(animation)
+            animationTrack.Looped = true
+            animationTrack:Play()
 
-        if soundId ~= "" then  
-            local sound = Instance.new("Sound")  
-            sound.SoundId = soundId  
-            sound.Volume = 1  
-            sound.Looped = true  
-            sound.Parent = character:WaitForChild("HumanoidRootPart")  
-            sound:Play()  
-        end  
-    end  
-},  
-{  
-    "Fake Crouch",  
-    function()  
-        local animationId = "rbxassetid://287325678"  
-        local soundId = ""  
+            if soundId ~= "" then
+                local sound = Instance.new("Sound")
+                sound.SoundId = soundId
+                sound.Volume = 1
+                sound.Looped = true
+                sound.Parent = character:WaitForChild("HumanoidRootPart")
+                sound:Play()
+            end
+        end
+    },
+    {
+        "Fake Crouch",
+        function()
+            local animationId = "rbxassetid://287325678"
+            local soundId = ""
 
-        local player = game.Players.LocalPlayer  
-        local character = player.Character or player.CharacterAdded:Wait()  
-        local humanoid = character:WaitForChild("Humanoid")  
+            local player = game.Players.LocalPlayer
+            local character = player.Character or player.CharacterAdded:Wait()
+            local humanoid = character:WaitForChild("Humanoid")
 
-        local animation = Instance.new("Animation")  
-        animation.AnimationId = animationId  
-        local animationTrack = humanoid:LoadAnimation(animation)  
-        animationTrack.Looped = true  
-        animationTrack:Play()  
+            local animation = Instance.new("Animation")
+            animation.AnimationId = animationId
+            local animationTrack = humanoid:LoadAnimation(animation)
+            animationTrack.Looped = true
+            animationTrack:Play()
 
-        if soundId ~= "" then  
-            local sound = Instance.new("Sound")  
-            sound.SoundId = soundId  
-            sound.Volume = 1  
-            sound.Looped = true  
-            sound.Parent = character:WaitForChild("HumanoidRootPart")  
-            sound:Play()  
-        end  
-    end  
-},  
-{  
-    "Super Punch",  
-    function()  
-        local animationId = "rbxassetid://126753849"  
-        local soundId = "rbxassetid://278061737"  
+            if soundId ~= "" then
+                local sound = Instance.new("Sound")
+                sound.SoundId = soundId
+                sound.Volume = 1
+                sound.Looped = true
+                sound.Parent = character:WaitForChild("HumanoidRootPart")
+                sound:Play()
+            end
+        end
+    },
+    {
+        "Super Punch",
+        function()
+            local animationId = "rbxassetid://126753849"
+            local soundId = "rbxassetid://278061737"
 
-        local player = game.Players.LocalPlayer  
-        local character = player.Character or player.CharacterAdded:Wait()  
-        local humanoid = character:WaitForChild("Humanoid")  
+            local player = game.Players.LocalPlayer
+            local character = player.Character or player.CharacterAdded:Wait()
+            local humanoid = character:WaitForChild("Humanoid")
 
-        local animation = Instance.new("Animation")  
-        animation.AnimationId = animationId  
-        local animationTrack = humanoid:LoadAnimation(animation)  
-        animationTrack.Looped = true  
-        animationTrack:Play()  
+            local animation = Instance.new("Animation")
+            animation.AnimationId = animationId
+            local animationTrack = humanoid:LoadAnimation(animation)
+            animationTrack.Looped = true
+            animationTrack:Play()
 
-        local punchSound = Instance.new("Sound")  
-        punchSound.SoundId = soundId  
-        punchSound.Volume = 1  
-        punchSound.Looped = true  
-        punchSound.Parent = character:WaitForChild("HumanoidRootPart")  
-        punchSound:Play()  
-    end  
-}
-
+            local punchSound = Instance.new("Sound")
+            punchSound.SoundId = soundId
+            punchSound.Volume = 1
+            punchSound.Looped = true
+            punchSound.Parent = character:WaitForChild("HumanoidRootPart")
+            punchSound:Play()
+        end
+    }
 })
 
 -- Fun Stuff Buttons Row 9
