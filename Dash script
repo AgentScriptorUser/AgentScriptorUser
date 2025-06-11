@@ -1,0 +1,147 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+
+local player = Players.LocalPlayer
+local scriptRef = script
+
+local speed = 8
+local dashTime = 0.2
+local cooldown = 0.5
+local isCooldown = false
+local dashAnimId = "rbxassetid://18537367238"
+local dashSoundId = "rbxassetid://3084314259"
+
+-- Create and parent GUI
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "DashGui"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = player:WaitForChild("PlayerGui")
+
+local dashButton = Instance.new("TextButton")
+dashButton.Size = UDim2.new(0, 120, 0, 50)
+dashButton.Position = UDim2.new(1, -140, 1, -80)
+dashButton.AnchorPoint = Vector2.new(0.5, 0.5)
+dashButton.Text = "DASH"
+dashButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40) -- Dark grey
+dashButton.TextColor3 = Color3.new(1, 1, 1)
+dashButton.TextStrokeTransparency = 0 -- Enable outline
+dashButton.TextStrokeColor3 = Color3.fromRGB(255, 165, 0) -- Orange text outline
+dashButton.TextScaled = true
+dashButton.Font = Enum.Font.GothamBold
+dashButton.Parent = screenGui
+
+local uicorner = Instance.new("UICorner", dashButton)
+uicorner.CornerRadius = UDim.new(0, 12)
+
+local uistroke = Instance.new("UIStroke", dashButton)
+uistroke.Thickness = 2
+uistroke.Color = Color3.fromRGB(255, 165, 0) -- Orange border
+uistroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+
+-- Draggable GUI
+local dragging = false
+local dragStart, startPos
+
+local function updateInput(input)
+	local delta = input.Position - dragStart
+	dashButton.Position = UDim2.new(
+		startPos.X.Scale,
+		startPos.X.Offset + delta.X,
+		startPos.Y.Scale,
+		startPos.Y.Offset + delta.Y
+	)
+end
+
+dashButton.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = true
+		dragStart = input.Position
+		startPos = dashButton.Position
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+			end
+		end)
+	end
+end)
+
+dashButton.InputChanged:Connect(function(input)
+	if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+		updateInput(input)
+	end
+end)
+
+-- Dash function
+local function dash()
+	if isCooldown then return end
+	local char = player.Character
+	if not char then return end
+
+	local hrp = char:FindFirstChild("HumanoidRootPart")
+	local hum = char:FindFirstChild("Humanoid")
+	if not hrp or not hum then return end
+
+	isCooldown = true
+
+	-- Play dash animation
+	local animator = hum:FindFirstChildOfClass("Animator") or Instance.new("Animator", hum)
+	local dashAnim = Instance.new("Animation")
+	dashAnim.AnimationId = dashAnimId
+	local track = animator:LoadAnimation(dashAnim)
+	track:Play()
+
+	-- Play dash sound
+	local dashSound = Instance.new("Sound")
+	dashSound.SoundId = dashSoundId
+	dashSound.Volume = 1
+	dashSound.PlayOnRemove = true
+	dashSound.Parent = hrp
+	dashSound:Destroy()
+
+	-- Dash movement
+	local connection
+	connection = RunService.RenderStepped:Connect(function()
+		if hum.MoveDirection.Magnitude > 0 then
+			hrp.Velocity = hum.MoveDirection * (speed * 10)
+		else
+			hrp.Velocity = hrp.CFrame.LookVector * (speed * 10)
+		end
+	end)
+
+	task.delay(dashTime, function()
+		if connection then connection:Disconnect() end
+		if track then track:Stop() end
+	end)
+
+	task.delay(cooldown, function()
+		isCooldown = false
+	end)
+end
+
+-- Button and key press
+dashButton.MouseButton1Click:Connect(dash)
+
+UserInputService.InputBegan:Connect(function(input, gp)
+	if gp then return end
+	if input.KeyCode == Enum.KeyCode.X then
+		dash()
+	end
+end)
+
+-- Cleanup on death
+local function setupCharacter(char)
+	local hum = char:WaitForChild("Humanoid", 5)
+	if hum then
+		hum.Died:Connect(function()
+			if screenGui then screenGui:Destroy() end
+			if scriptRef then scriptRef:Destroy() end
+		end)
+	end
+end
+
+if player.Character then
+	setupCharacter(player.Character)
+end
+
+player.CharacterAdded:Connect(setupCharacter)
