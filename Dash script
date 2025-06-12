@@ -3,8 +3,11 @@ local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
 local player = Players.LocalPlayer
-local scriptRef = script
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local hrp = character:WaitForChild("HumanoidRootPart")
 
+-- Dash settings
 local speed = 8
 local dashTime = 0.2
 local cooldown = 0.5
@@ -12,10 +15,10 @@ local isCooldown = false
 local dashAnimId = "rbxassetid://18537367238"
 local dashSoundId = "rbxassetid://3084314259"
 
--- Create and parent GUI
+-- GUI Setup
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "DashGui"
-screenGui.ResetOnSpawn = false
+screenGui.ResetOnSpawn = true -- Ensures GUI is removed on reset
 screenGui.Parent = player:WaitForChild("PlayerGui")
 
 local dashButton = Instance.new("TextButton")
@@ -23,21 +26,16 @@ dashButton.Size = UDim2.new(0, 120, 0, 50)
 dashButton.Position = UDim2.new(1, -140, 1, -80)
 dashButton.AnchorPoint = Vector2.new(0.5, 0.5)
 dashButton.Text = "DASH"
-dashButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40) -- Dark grey
+dashButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 dashButton.TextColor3 = Color3.new(1, 1, 1)
-dashButton.TextStrokeTransparency = 0 -- Enable outline
-dashButton.TextStrokeColor3 = Color3.fromRGB(255, 165, 0) -- Orange text outline
+dashButton.TextStrokeTransparency = 0
+dashButton.TextStrokeColor3 = Color3.fromRGB(255, 165, 0)
 dashButton.TextScaled = true
 dashButton.Font = Enum.Font.GothamBold
 dashButton.Parent = screenGui
 
-local uicorner = Instance.new("UICorner", dashButton)
-uicorner.CornerRadius = UDim.new(0, 12)
-
-local uistroke = Instance.new("UIStroke", dashButton)
-uistroke.Thickness = 2
-uistroke.Color = Color3.fromRGB(255, 165, 0) -- Orange border
-uistroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+Instance.new("UICorner", dashButton).CornerRadius = UDim.new(0, 12)
+Instance.new("UIStroke", dashButton).Color = Color3.fromRGB(255, 165, 0)
 
 -- Draggable GUI
 local dragging = false
@@ -58,6 +56,7 @@ dashButton.InputBegan:Connect(function(input)
 		dragging = true
 		dragStart = input.Position
 		startPos = dashButton.Position
+
 		input.Changed:Connect(function()
 			if input.UserInputState == Enum.UserInputState.End then
 				dragging = false
@@ -72,26 +71,21 @@ dashButton.InputChanged:Connect(function(input)
 	end
 end)
 
--- Dash function
+-- Dash Function
 local function dash()
 	if isCooldown then return end
-	local char = player.Character
-	if not char then return end
-
-	local hrp = char:FindFirstChild("HumanoidRootPart")
-	local hum = char:FindFirstChild("Humanoid")
-	if not hrp or not hum then return end
+	if not character or not hrp or not humanoid then return end
 
 	isCooldown = true
 
-	-- Play dash animation
-	local animator = hum:FindFirstChildOfClass("Animator") or Instance.new("Animator", hum)
+	-- Animation
+	local animator = humanoid:FindFirstChildOfClass("Animator") or Instance.new("Animator", humanoid)
 	local dashAnim = Instance.new("Animation")
 	dashAnim.AnimationId = dashAnimId
 	local track = animator:LoadAnimation(dashAnim)
 	track:Play()
 
-	-- Play dash sound
+	-- Sound
 	local dashSound = Instance.new("Sound")
 	dashSound.SoundId = dashSoundId
 	dashSound.Volume = 1
@@ -99,14 +93,11 @@ local function dash()
 	dashSound.Parent = hrp
 	dashSound:Destroy()
 
-	-- Dash movement
+	-- Dash Motion
 	local connection
 	connection = RunService.RenderStepped:Connect(function()
-		if hum.MoveDirection.Magnitude > 0 then
-			hrp.Velocity = hum.MoveDirection * (speed * 10)
-		else
-			hrp.Velocity = hrp.CFrame.LookVector * (speed * 10)
-		end
+		local dir = humanoid.MoveDirection
+		hrp.Velocity = (dir.Magnitude > 0 and dir or hrp.CFrame.LookVector) * (speed * 10)
 	end)
 
 	task.delay(dashTime, function()
@@ -119,7 +110,7 @@ local function dash()
 	end)
 end
 
--- Button and key press
+-- Input Listeners
 dashButton.MouseButton1Click:Connect(dash)
 
 UserInputService.InputBegan:Connect(function(input, gp)
@@ -129,19 +120,8 @@ UserInputService.InputBegan:Connect(function(input, gp)
 	end
 end)
 
--- Cleanup on death
-local function setupCharacter(char)
-	local hum = char:WaitForChild("Humanoid", 5)
-	if hum then
-		hum.Died:Connect(function()
-			if screenGui then screenGui:Destroy() end
-			if scriptRef then scriptRef:Destroy() end
-		end)
-	end
-end
-
-if player.Character then
-	setupCharacter(player.Character)
-end
-
-player.CharacterAdded:Connect(setupCharacter)
+-- Auto-destroy GUI/script on death
+humanoid.Died:Connect(function()
+	if screenGui then screenGui:Destroy() end
+	if script then script:Destroy() end
+end)
