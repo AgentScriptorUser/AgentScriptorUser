@@ -2255,7 +2255,7 @@ createButtonRow(52, {
     end},
 
     {"Cframe Speed", function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Cframe%20Speed"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Cframe%20Speed%20script"))()
     end}
 })
 
