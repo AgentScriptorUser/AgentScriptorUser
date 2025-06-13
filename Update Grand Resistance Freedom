@@ -204,6 +204,12 @@ createButtonRow(6, {
     end}
 })
 
+createButtonRow(7, {
+    {"CameraMan", function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/CameraMan%20script"))()
+    end}
+})
+
 -- Teleport Section Label
 local teleportSectionLabel = Instance.new("TextLabel", scrollFrame)
 teleportSectionLabel.Size = UDim2.new(1, -20, 0, 30)
@@ -213,12 +219,12 @@ teleportSectionLabel.Font = Enum.Font.GothamBold
 teleportSectionLabel.TextSize = 20
 teleportSectionLabel.Text = "Teleport"
 teleportSectionLabel.TextXAlignment = Enum.TextXAlignment.Left
-teleportSectionLabel.LayoutOrder = 7
+teleportSectionLabel.LayoutOrder = 8
 teleportSectionLabel.BorderSizePixel = 0
 Instance.new("UICorner", teleportSectionLabel).CornerRadius = UDim.new(0, 6)
 
 -- Row 6: Bank, Hood Fitness, Uphill GunShop
-createButtonRow(8, {
+createButtonRow(9, {
     {"Bank", function()
         local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
         if hrp then 
@@ -240,7 +246,7 @@ createButtonRow(8, {
 })
 
 -- Row 7: Police Station, Hair Salon, Taco Bell
-createButtonRow(9, {
+createButtonRow(10, {
     {"Police Station", function()
         local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
         if hrp then 
@@ -262,7 +268,7 @@ createButtonRow(9, {
 })
 
 -- Row 8: Basketball, DrumGun Area, Da Theater
-createButtonRow(10, {
+createButtonRow(11, {
     {"Basketball", function()
         local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
         if hrp then 
@@ -284,7 +290,7 @@ createButtonRow(10, {
 })
 
 -- Row 9: Da Box, Food Shop, Church
-createButtonRow(11, {
+createButtonRow(12, {
     {"Da Box", function()
         local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
         if hrp then 
@@ -306,7 +312,7 @@ createButtonRow(11, {
 })
 
 -- Row 10: Da Arcade, Fire department (updated), Da High School
-createButtonRow(12, {
+createButtonRow(13, {
     {"Da Arcade", function()
         local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
         if hrp then 
@@ -328,7 +334,7 @@ createButtonRow(12, {
 })
 
 -- Row 11: Hood Kicks, Da Military, Playground (Updated CFrame)
-createButtonRow(13, {
+createButtonRow(14, {
     {"Hood Kicks", function()
         local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
         if hrp then 
@@ -355,7 +361,7 @@ createButtonRow(13, {
 })
 
 -- Row 12: DownHill GunShop, Gas Station, Barba
-createButtonRow(14, {
+createButtonRow(15, {
     {"DownHill GunShop", function()
         local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
         if hrp then
@@ -400,12 +406,12 @@ aimSectionLabel.Font = Enum.Font.GothamBold
 aimSectionLabel.TextSize = 20
 aimSectionLabel.Text = "Aim/Hitbox"
 aimSectionLabel.TextXAlignment = Enum.TextXAlignment.Left
-aimSectionLabel.LayoutOrder = 15
+aimSectionLabel.LayoutOrder = 16
 aimSectionLabel.BorderSizePixel = 0
 Instance.new("UICorner", aimSectionLabel).CornerRadius = UDim.new(0, 6)
 
 -- Aim/Hitbox Buttons Row: Kill Aura , Aimbot and Camlock
-createButtonRow(16, {
+createButtonRow(17, {
     {
         "Kill Aura",
         function()
@@ -440,7 +446,7 @@ hitboxToggle.TextColor3 = Color3.fromRGB(0, 0, 0)
 hitboxToggle.Font = Enum.Font.Gotham
 hitboxToggle.TextSize = 18
 hitboxToggle.Text = "Hitbox Expander: OFF"
-hitboxToggle.LayoutOrder = 17
+hitboxToggle.LayoutOrder = 18
 hitboxToggle.BorderSizePixel = 0
 Instance.new("UICorner", hitboxToggle).CornerRadius = UDim.new(0, 6)
 
