@@ -2094,7 +2094,7 @@ noFogButton.MouseButton1Click:Connect(function()
 	end
 end)
 
--- Main Section Label
+-- ======= MAIN SECTION LABEL =======
 local mainSectionLabel = Instance.new("TextLabel", scrollFrame)
 mainSectionLabel.Size = UDim2.new(1, -20, 0, 30)
 mainSectionLabel.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
@@ -2107,134 +2107,75 @@ mainSectionLabel.LayoutOrder = 50
 mainSectionLabel.BorderSizePixel = 0
 Instance.new("UICorner", mainSectionLabel).CornerRadius = UDim.new(0, 6)
 
-
--- Main Section Buttons
+-- ======= MAIN BUTTONS =======
 createButtonRow(51, {
-{"Speed Boost", function()
--- Replace this URL with your actual Speed Boost script link
-loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/SpeedBoost"))()
-end},
-{"TrashTalk [X]", function()
--- TrashTalk [X] local script
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local ChatService = game:GetService("TextChatService")
-local UserInputService = game:GetService("UserInputService")
+    {"Speed Boost", function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/SpeedBoost"))()
+    end},
+    {"TrashTalk [X]", function()
+        local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local ChatService = game:GetService("TextChatService")
+        local UserInputService = game:GetService("UserInputService")
 
-local isRunning = false  
+        local isRunning = false
 
-    local function sendMessage(message)  
-        if ChatService.ChatVersion == Enum.ChatVersion.TextChatService then  
-            local textChannel = ChatService.TextChannels:FindFirstChild("RBXGeneral")  
-            if textChannel then  
-                textChannel:SendAsync(message)  
-            else  
-                warn("TextChatService channel RBXGeneral not found!")  
-            end  
-        else  
-            local chatEvents = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")  
-            if chatEvents then  
-                local sayMessageRequest = chatEvents:FindFirstChild("SayMessageRequest")  
-                if sayMessageRequest then  
-                    sayMessageRequest:FireServer(message, "All")  
-                else  
-                    warn("SayMessageRequest not found in DefaultChatSystemChatEvents!")  
-                end  
-            else  
-                warn("DefaultChatSystemChatEvents not found in ReplicatedStorage!")  
-            end  
-        end  
-    end  
+        local function sendMessage(message)
+            if ChatService.ChatVersion == Enum.ChatVersion.TextChatService then
+                local textChannel = ChatService.TextChannels:FindFirstChild("RBXGeneral")
+                if textChannel then
+                    textChannel:SendAsync(message)
+                end
+            else
+                local chatEvents = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
+                if chatEvents then
+                    local sayMessageRequest = chatEvents:FindFirstChild("SayMessageRequest")
+                    if sayMessageRequest then
+                        sayMessageRequest:FireServer(message, "All")
+                    end
+                end
+            end
+        end
 
-    local function sayGoodbye()  
-        if isRunning then return end  
-        isRunning = true  
+        local function sayLines()
+            if isRunning then return end
+            isRunning = true
 
-        local messages = {  
-            "Easy Sonn",  
-            "Mad Already? LOL",  
-            "Skill issue Son",  
-            "Is that even a Aim???",  
-            "Lolll what are you aiming at???",  
-            "Keep yapping Barbie Ahh",  
-            "Quit the game lil bro",  
-            "XDD",  
-            "How did u fail to get me XD",  
-            "even my grandma has Better AIM then you",  
-            "Go play Brookhaven or adopt me something lol"  
-        }  
+            local messages = {
+                "Easy Sonn",
+                "Mad Already? LOL",
+                "Skill issue Son",
+                "Is that even an Aim???",
+                "Lolll what are you aiming at???",
+                "Keep yapping Barbie Ahh",
+                "Quit the game lil bro",
+                "XDD",
+                "How did u fail to get me XD",
+                "Even my grandma has better aim than you",
+                "Go play Brookhaven or Adopt Me or something lol"
+            }
 
-        for _, msg in ipairs(messages) do  
-            sendMessage(msg)  
-            wait(1.5)  
-        end  
+            for _, msg in ipairs(messages) do
+                sendMessage(msg)
+                wait(1.5)
+            end
 
-        isRunning = false  
-    end  
+            isRunning = false
+        end
 
-    sayGoodbye()  
+        sayLines()
 
-    UserInputService.InputBegan:Connect(function(input, gameProcessed)  
-        if not gameProcessed and input.KeyCode == Enum.KeyCode.X then  
-            sayGoodbye()  
-        end  
-    end)  
-end},  
-{"ClickTeleport Tool", function()  
-    -- Correct Click Teleport Tool script link  
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/ClickTeleport%20Tool"))()  
-end}
-
+        UserInputService.InputBegan:Connect(function(input, gameProcessed)
+            if not gameProcessed and input.KeyCode == Enum.KeyCode.X then
+                sayLines()
+            end
+        end)
+    end},
+    {"ClickTeleport Tool", function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/ClickTeleport%20Tool"))()
+    end}
 })
 
-createButtonRow(51, {
-{"RacistTalk", function()
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local ChatService = game:GetService("TextChatService")
-local UserInputService = game:GetService("UserInputService")
-
-local isRunning = false
-
-local function sendMessage(message)
-if ChatService.ChatVersion == Enum.ChatVersion.TextChatService then
-local textChannel = ChatService.TextChannels:FindFirstChild("RBXGeneral")
-if textChannel then
-textChannel:SendAsync(message)
-else
-warn("TextChatService channel RBXGeneral not found!")
-end
-else
-local chatEvents = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
-if chatEvents then
-local sayMessageRequest = chatEvents:FindFirstChild("SayMessageRequest")
-if sayMessageRequest then
-sayMessageRequest:FireServer(message, "All")
-else
-warn("SayMessageRequest not found in DefaultChatSystemChatEvents!")
-end
-else
-warn("DefaultChatSystemChatEvents not found in ReplicatedStorage!")
-end
-end
-end
-
-local function sayGoodbye()
-if isRunning then return end
-isRunning = true
-
-sendMessage("<N<>E<>G<>G<>E<>R> ")  
-wait(1.5)  
-sendMessage("<N<>E<>G<>G<>E<>R> PEOPLE ")  
-wait(1.5)  
-sendMessage("<N<>E<>G<>G<>E<>R>   <N<>E<>G<>G<>E<>R> IM  A MONEY LIL <N<>E<>G<>G<>E<>R>")  
-
-isRunning = false
-
-end
-
-sayGoodbye()
-end}
-})
-
+-- ======= FLY SYSTEM TOGGLE =======
 local plr = game.Players.LocalPlayer
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
@@ -2245,187 +2186,158 @@ local flyLoopRunning = false
 local speed = 10
 local pos, gyro, Core, Weld
 local keys = {q = false, e = false}
-local mobileFlyGui = nil
 
-local function createCoreAndWeld()
-if workspace:FindFirstChild("Core") then workspace.Core:Destroy() end
-
-Core = Instance.new("Part")  
-Core.Name = "Core"  
-Core.Size = Vector3.new(0.05, 0.05, 0.05)  
-Core.Anchored = false  
-Core.CanCollide = false  
-Core.Transparency = 1  
-Core.Parent = workspace  
-
-local character = plr.Character  
-if not character then return end  
-
-local lowerTorso = character:WaitForChild("LowerTorso", 5)  
-if not lowerTorso then Core:Destroy() return end  
-
-Weld = Instance.new("Weld")  
-Weld.Part0 = Core  
-Weld.Part1 = lowerTorso  
-Weld.C0 = CFrame.new(0, 0, 0)  
-Weld.Parent = Core
-
-end
-
+-- Fly GUI Controls for Mobile
 local function createMobileFlyGui()
--- Always create new GUI; remove old one if exists
-if plr.PlayerGui:FindFirstChild("MobileFly") then
-plr.PlayerGui.MobileFly:Destroy()
-end
+    local gui = plr.PlayerGui:FindFirstChild("MobileFly")
+    if gui then gui:Destroy() end
 
-mobileFlyGui = Instance.new("ScreenGui")  
-mobileFlyGui.Name = "MobileFly"  
-mobileFlyGui.ResetOnSpawn = false  
-mobileFlyGui.Parent = plr:WaitForChild("PlayerGui")  
+    local flyGui = Instance.new("ScreenGui", plr.PlayerGui)
+    flyGui.Name = "MobileFly"
+    flyGui.ResetOnSpawn = false
 
-local function makeButton(name, text, pos)  
-    local btn = Instance.new("TextButton", mobileFlyGui)  
-    btn.Name = name  
-    btn.Text = text  
-    btn.Size = UDim2.new(0, 100, 0, 100)  
-    btn.Position = pos  
-    btn.BackgroundColor3 = Color3.fromRGB(200, 200, 255)  
-    btn.TextColor3 = Color3.new(0, 0, 0)  
-    btn.TextScaled = true  
-    btn.AutoButtonColor = false  
-    btn.MouseButton1Down:Connect(function() keys[name:lower()] = true end)  
-    btn.MouseButton1Up:Connect(function() keys[name:lower()] = false end)  
-    btn.MouseLeave:Connect(function() keys[name:lower()] = false end)  
-end  
+    local function makeButton(name, text, pos)
+        local btn = Instance.new("TextButton", flyGui)
+        btn.Name = name
+        btn.Text = text
+        btn.Size = UDim2.new(0, 100, 0, 100)
+        btn.Position = pos
+        btn.BackgroundColor3 = Color3.fromRGB(200, 200, 255)
+        btn.TextColor3 = Color3.new(0, 0, 0)
+        btn.TextScaled = true
+        btn.MouseButton1Down:Connect(function() keys[name:lower()] = true end)
+        btn.MouseButton1Up:Connect(function() keys[name:lower()] = false end)
+        btn.MouseLeave:Connect(function() keys[name:lower()] = false end)
+    end
 
-makeButton("Q", "⬆️", UDim2.new(0.8, 0, 0.7, 0))  
-makeButton("E", "⬇️", UDim2.new(0.8, 0, 0.82, 0))
-
+    makeButton("Q", "⬆️", UDim2.new(0.8, 0, 0.7, 0))
+    makeButton("E", "⬇️", UDim2.new(0.8, 0, 0.82, 0))
 end
 
 local function removeMobileFlyGui()
-if plr.PlayerGui:FindFirstChild("MobileFly") then
-plr.PlayerGui.MobileFly:Destroy()
+    local gui = plr.PlayerGui:FindFirstChild("MobileFly")
+    if gui then gui:Destroy() end
+    keys.q, keys.e = false, false
 end
-keys.q = false
-keys.e = false
+
+local function createCoreAndWeld()
+    if workspace:FindFirstChild("Core") then workspace.Core:Destroy() end
+
+    Core = Instance.new("Part", workspace)
+    Core.Name = "Core"
+    Core.Size = Vector3.new(0.05, 0.05, 0.05)
+    Core.Anchored = false
+    Core.CanCollide = false
+    Core.Transparency = 1
+
+    local lowerTorso = plr.Character and plr.Character:WaitForChild("LowerTorso", 5)
+    if not lowerTorso then Core:Destroy() return end
+
+    Weld = Instance.new("Weld", Core)
+    Weld.Part0 = Core
+    Weld.Part1 = lowerTorso
+    Weld.C0 = CFrame.new(0, 0, 0)
 end
 
 local function canMoveTo(position)
-local character = plr.Character
-local rootPart = character and character:FindFirstChild("HumanoidRootPart")
-if not rootPart then return false end
+    local root = plr.Character and plr.Character:FindFirstChild("HumanoidRootPart")
+    if not root then return false end
 
-local rayParams = RaycastParams.new()  
-rayParams.FilterDescendantsInstances = {character}  
-rayParams.FilterType = Enum.RaycastFilterType.Blacklist  
-rayParams.IgnoreWater = true  
+    local rayParams = RaycastParams.new()
+    rayParams.FilterDescendantsInstances = {plr.Character}
+    rayParams.FilterType = Enum.RaycastFilterType.Blacklist
+    rayParams.IgnoreWater = true
 
-local direction = position - rootPart.Position  
-local raycast = workspace:Raycast(rootPart.Position, direction, rayParams)  
-if raycast then  
-    local hitDist = (raycast.Position - rootPart.Position).Magnitude  
-    return hitDist >= direction.Magnitude - 0.5  
-end  
-return true
-
+    local direction = position - root.Position
+    local result = workspace:Raycast(root.Position, direction, rayParams)
+    if result then
+        local hitDist = (result.Position - root.Position).Magnitude
+        return hitDist >= direction.Magnitude - 0.5
+    end
+    return true
 end
 
 local function startFly()
-if flyLoopRunning then return end
-flying = true
-flyLoopRunning = true
+    if flyLoopRunning then return end
+    flying = true
+    flyLoopRunning = true
 
-local character = plr.Character  
-if not character then return end  
+    pos = Instance.new("BodyPosition", workspace.Core)
+    pos.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+    pos.Position = plr.Character.HumanoidRootPart.Position
 
-pos = Instance.new("BodyPosition")  
-pos.MaxForce = Vector3.new(math.huge, math.huge, math.huge)  
-pos.Position = character.HumanoidRootPart.Position  
-pos.Parent = workspace.Core  
+    gyro = Instance.new("BodyGyro", workspace.Core)
+    gyro.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+    gyro.CFrame = plr.Character.HumanoidRootPart.CFrame
 
-gyro = Instance.new("BodyGyro")  
-gyro.MaxTorque = Vector3.new(9e9, 9e9, 9e9)  
-gyro.CFrame = character.HumanoidRootPart.CFrame  
-gyro.Parent = workspace.Core  
+    task.spawn(function()
+        while flying and pos and gyro do
+            task.wait()
 
-task.spawn(function()  
-    while flying and pos and gyro and plr.Character do  
-        task.wait()  
+            local humanoid = plr.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid then humanoid.PlatformStand = true end
 
-        local humanoid = plr.Character:FindFirstChildOfClass("Humanoid")  
-        if humanoid then humanoid.PlatformStand = true end  
+            local moveDir = humanoid and humanoid.MoveDirection or Vector3.zero
+            local vertical = (keys.q and speed or 0) - (keys.e and speed or 0)
+            local move = moveDir.Magnitude > 0 and moveDir.Unit * speed or Vector3.zero
+            move = Vector3.new(move.X, vertical, move.Z)
 
-        local cam = workspace.CurrentCamera  
-        local camLook = cam.CFrame.LookVector  
-        local moveDir = humanoid and humanoid.MoveDirection or Vector3.zero  
-        local vertical = (keys.q and speed or 0) - (keys.e and speed or 0)  
+            local targetPos = pos.Position + move
+            if canMoveTo(targetPos) then pos.Position = targetPos end
 
-        local move = moveDir.Magnitude > 0 and moveDir.Unit * speed or Vector3.zero  
-        move = Vector3.new(move.X, vertical, move.Z)  
+            local camLook = workspace.CurrentCamera.CFrame.LookVector
+            local forward = Vector3.new(camLook.X, 0, camLook.Z)
+            if forward.Magnitude > 0 then
+                gyro.CFrame = CFrame.new(Vector3.zero, forward.Unit)
+            end
+        end
 
-        local targetPos = pos.Position + move  
-        if canMoveTo(targetPos) then  
-            pos.Position = targetPos  
-        end  
-
-        local forward = Vector3.new(camLook.X, 0, camLook.Z)  
-        if forward.Magnitude > 0 then  
-            gyro.CFrame = CFrame.new(Vector3.zero, forward.Unit)  
-        end  
-    end  
-
-    stopFly()  
-end)
-
+        stopFly()
+    end)
 end
 
 function stopFly()
-flying = false
-flyLoopRunning = false
+    flying = false
+    flyLoopRunning = false
 
-if pos then pos:Destroy() pos = nil end  
-if gyro then gyro:Destroy() gyro = nil end  
-if Weld then Weld:Destroy() Weld = nil end  
-if Core then Core:Destroy() Core = nil end  
+    if pos then pos:Destroy() end
+    if gyro then gyro:Destroy() end
+    if Weld then Weld:Destroy() end
+    if Core then Core:Destroy() end
 
-removeMobileFlyGui()  
+    removeMobileFlyGui()
 
-local character = plr.Character  
-local humanoid = character and character:FindFirstChildOfClass("Humanoid")  
-if humanoid then  
-    humanoid.PlatformStand = false  
-    humanoid:SetStateEnabled(Enum.HumanoidStateType.PlatformStanding, false)  
-    humanoid:ChangeState(Enum.HumanoidStateType.Running)  
-    humanoid.WalkSpeed = 16  
-end  
+    local humanoid = plr.Character and plr.Character:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        humanoid.PlatformStand = false
+        humanoid:ChangeState(Enum.HumanoidStateType.Running)
+        humanoid.WalkSpeed = 16
+    end
 
-local root = character and character:FindFirstChild("HumanoidRootPart")  
-if root then  
-    root.Velocity = Vector3.zero  
-    root.AssemblyLinearVelocity = Vector3.zero  
-    root.CFrame = root.CFrame + Vector3.new(0, 2, 0)  
-end  
+    local root = plr.Character and plr.Character:FindFirstChild("HumanoidRootPart")
+    if root then
+        root.Velocity = Vector3.zero
+        root.AssemblyLinearVelocity = Vector3.zero
+        root.CFrame = root.CFrame + Vector3.new(0, 2, 0)
+    end
 
-keys.q = false  
-keys.e = false
-
+    keys.q, keys.e = false, false
 end
 
 local function onCharacterAdded(char)
-stopFly()
-char:WaitForChild("LowerTorso", 5)
-createCoreAndWeld()
-if flyEnabled then
-startFly()
-createMobileFlyGui()
-end
+    stopFly()
+    char:WaitForChild("LowerTorso", 5)
+    createCoreAndWeld()
+    if flyEnabled then
+        startFly()
+        createMobileFlyGui()
+    end
 end
 
 plr.CharacterAdded:Connect(onCharacterAdded)
 if plr.Character then onCharacterAdded(plr.Character) end
 
--- ======= Fly Toggle Button =======
+-- ======= FLY TOGGLE BUTTON =======
 local flyButton = Instance.new("TextButton", scrollFrame)
 flyButton.Size = UDim2.new(1, -20, 0, 40)
 flyButton.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
@@ -2438,23 +2350,20 @@ flyButton.BorderSizePixel = 0
 Instance.new("UICorner", flyButton).CornerRadius = UDim.new(0, 6)
 
 flyButton.MouseButton1Click:Connect(function()
-flyEnabled = not flyEnabled
-flyButton.Text = "Fly: " .. (flyEnabled and "ON" or "OFF")
-flyButton.BackgroundColor3 = flyEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(255, 165, 0)
-
-if flyEnabled then  
-    createCoreAndWeld()  
-    startFly()  
-    createMobileFlyGui() -- recreate the buttons freshly  
-else  
-    stopFly()  
-end
-
+    flyEnabled = not flyEnabled
+    flyButton.Text = "Fly: " .. (flyEnabled and "ON" or "OFF")
+    flyButton.BackgroundColor3 = flyEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(255, 165, 0)
+    if flyEnabled then
+        createCoreAndWeld()
+        startFly()
+        createMobileFlyGui()
+    else
+        stopFly()
+    end
 end)
 
--- ChatLogs Toggle Button
+-- ======= CHAT LOGS TOGGLE BUTTON =======
 local chatLogsEnabled = false
- 
 local chatLogsToggle = Instance.new("TextButton", scrollFrame)
 chatLogsToggle.Size = UDim2.new(1, -20, 0, 40)
 chatLogsToggle.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
@@ -2465,16 +2374,10 @@ chatLogsToggle.Text = "ChatLogs: OFF"
 chatLogsToggle.LayoutOrder = 53
 chatLogsToggle.BorderSizePixel = 0
 Instance.new("UICorner", chatLogsToggle).CornerRadius = UDim.new(0, 6)
- 
+
 chatLogsToggle.MouseButton1Click:Connect(function()
     chatLogsEnabled = not chatLogsEnabled
     game:GetService("TextChatService").ChatWindowConfiguration.Enabled = chatLogsEnabled
- 
-    if chatLogsEnabled then
-        chatLogsToggle.Text = "ChatLogs: ON"
-        chatLogsToggle.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
-    else
-        chatLogsToggle.Text = "ChatLogs: OFF"
-        chatLogsToggle.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
-    end
+    chatLogsToggle.Text = "ChatLogs: " .. (chatLogsEnabled and "ON" or "OFF")
+    chatLogsToggle.BackgroundColor3 = chatLogsEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(255, 165, 0)
 end)
