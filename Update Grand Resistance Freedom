@@ -198,6 +198,9 @@ createButtonRow(6, {
     end},
     {"Dash", function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Dash%20script"))()
+    end},
+    {"PPBat", function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/PpBat%20script"))()
     end}
 })
 
