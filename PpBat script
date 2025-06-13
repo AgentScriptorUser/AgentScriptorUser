@@ -1,0 +1,74 @@
+function Buy(ObjectName)
+    local LockPicker = workspace.Ignored.Shop[ObjectName]
+    local head = LockPicker:FindFirstChild("Head")
+    local clickDetector = LockPicker:FindFirstChild("ClickDetector") or (head and head:FindFirstChildOfClass("ClickDetector"))
+    
+    if head and clickDetector then
+        local plr = game.Players.LocalPlayer
+        local character = plr.Character or plr.CharacterAdded:Wait()
+        local hrp = character:WaitForChild("HumanoidRootPart")
+        
+        -- Save current position
+        local originalCFrame = hrp.CFrame
+        
+        -- Move the player's character to the position of the item
+        hrp.CFrame = head.CFrame + Vector3.new(0, 3, 0)
+        wait(0.5)
+        
+        -- Trigger the ClickDetector to buy the item
+        fireclickdetector(clickDetector)
+        fireclickdetector(clickDetector)
+        wait(0.3)
+        
+        -- Return to original position
+        hrp.CFrame = originalCFrame
+    else
+        warn("Head or ClickDetector not found in the object:", ObjectName)
+    end
+end
+
+-- Buy the Bat
+Buy("[Bat] - $300")
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+
+local tool = player.Backpack:FindFirstChild("[Bat]") or character:FindFirstChild("[Bat]")
+if not tool or not tool:IsA("Tool") then
+warn("Tool '[Bat]' not found.")
+return
+end
+
+-- Make sure it's not equipped
+tool.Parent = character
+
+-- Find torso part (UpperTorso for R15, Torso for R6)
+local torso = character:FindFirstChild("UpperTorso") or character:FindFirstChild("Torso")
+if not torso then
+warn("Torso not found.")
+return
+end
+
+-- Make sure tool has a handle
+local handle = tool:FindFirstChild("Handle")
+if not handle then
+warn("Tool does not have a handle.")
+return
+end
+
+-- Remove any previous welds on handle
+for _, v in ipairs(handle:GetChildren()) do
+if v:IsA("Weld") then
+v:Destroy()
+end
+end
+
+-- Create new weld
+handle.CFrame = torso.CFrame * CFrame.new(0, 0, -0.5) * CFrame.Angles(math.rad(90), 0, 0) -- Adjust offset as needed
+local weld = Instance.new("Weld")
+weld.Part0 = torso
+weld.Part1 = handle
+weld.C0 = torso.CFrame:toObjectSpace(handle.CFrame)
+weld.Parent = handle
+
