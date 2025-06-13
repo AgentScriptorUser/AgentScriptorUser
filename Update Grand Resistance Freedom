@@ -2245,6 +2245,17 @@ TextChatService.ChatWindowConfiguration.Enabled = true
     end}
 })
 
+createButtonRow(52, {
+    {"ForceReset", function()
+        local player = game.Players.LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+        local humanoid = character:FindFirstChild("Humanoid")
+        if humanoid then
+            humanoid.Health = 0
+        end
+    end}
+})
+
 local plr = game.Players.LocalPlayer
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
@@ -2443,7 +2454,7 @@ flyButton.TextColor3 = Color3.fromRGB(0, 0, 0)
 flyButton.Font = Enum.Font.Gotham
 flyButton.TextSize = 18
 flyButton.Text = "Fly: OFF"
-flyButton.LayoutOrder = 52
+flyButton.LayoutOrder = 53
 flyButton.BorderSizePixel = 0
 Instance.new("UICorner", flyButton).CornerRadius = UDim.new(0, 6)
 
