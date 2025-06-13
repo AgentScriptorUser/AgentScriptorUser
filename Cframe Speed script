@@ -1,0 +1,59 @@
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local speed = 100
+local cframeEnabled = false
+local connection
+
+-- CFrame move logic
+local function startCFrame()
+    if cframeEnabled then return end
+    cframeEnabled = true
+
+    connection = RunService.RenderStepped:Connect(function(dt)
+        local char = player.Character
+        if not char then return end
+
+        local hrp = char:FindFirstChild("HumanoidRootPart")
+        local humanoid = char:FindFirstChild("Humanoid")
+
+        if hrp and humanoid and humanoid.MoveDirection.Magnitude > 0 then
+            hrp.CFrame = hrp.CFrame + (humanoid.MoveDirection * speed * dt)
+        end
+    end)
+
+    print("CFrame movement ENABLED")
+end
+
+local function stopCFrame()
+    if not cframeEnabled then return end
+    cframeEnabled = false
+
+    if connection then
+        connection:Disconnect()
+        connection = nil
+    end
+
+    print("CFrame movement DISABLED")
+end
+
+-- Auto-stop on reset or death
+local function onCharacter(character)
+    stopCFrame()
+
+    local humanoid = character:WaitForChild("Humanoid", 5)
+    if humanoid then
+        humanoid.Died:Connect(function()
+            stopCFrame()
+        end)
+    end
+end
+
+-- Initial + future respawn hook
+if player.Character then
+    onCharacter(player.Character)
+end
+player.CharacterAdded:Connect(onCharacter)
+
+-- AUTO START for testing — you can remove this if using a toggle
+startCFrame()
