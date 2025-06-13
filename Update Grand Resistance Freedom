@@ -2238,6 +2238,10 @@ sayGoodbye()
         -- Enable Chat Logs
 local TextChatService = game:GetService("TextChatService")
 TextChatService.ChatWindowConfiguration.Enabled = true
+    end},
+
+   {"Animation Pack", function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Animation%20Pack"))()
     end}
 })
 
