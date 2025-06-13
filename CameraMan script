@@ -1,0 +1,89 @@
+function Buy(ObjectName)
+    local LockPicker = workspace.Ignored.Shop[ObjectName]
+    local head = LockPicker:FindFirstChild("Head")
+    local clickDetector = LockPicker:FindFirstChild("ClickDetector") or (head and head:FindFirstChildOfClass("ClickDetector"))
+    
+    if head and clickDetector then
+        local plr = game.Players.LocalPlayer
+        local character = plr.Character or plr.CharacterAdded:Wait()
+        local hrp = character:WaitForChild("HumanoidRootPart")
+        
+        -- Save current position
+        local originalCFrame = hrp.CFrame
+        
+        -- Move the player's character to the position of the item
+        hrp.CFrame = head.CFrame + Vector3.new(0, 3, 0)
+        wait(0.5)
+        
+        -- Trigger the ClickDetector to buy the item
+        fireclickdetector(clickDetector)
+        fireclickdetector(clickDetector)
+        wait(0.3)
+        
+        -- Return to original position
+        hrp.CFrame = originalCFrame
+    else
+        warn("Head or ClickDetector not found in the object:", ObjectName)
+    end
+end
+
+-- Buy the Camera
+Buy("[Camera] - $109")
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+local function equipAndMountCamera()
+local character = player.Character or player.CharacterAdded:Wait()
+local backpack = player:WaitForChild("Backpack")
+local tool = backpack:FindFirstChild("[Camera]") -- Tool name with brackets
+
+-- On the head, facing left (90 degrees Y-axis rotation)  
+local offset = CFrame.new(0, 0, 0) * CFrame.Angles(0, math.rad(-90), 0)  
+
+if not tool then    
+	warn("[Camera] tool not found in Backpack.")    
+	return    
+end    
+
+tool.Parent = character -- Equip the tool    
+
+tool.Equipped:Connect(function()    
+	local head = character:FindFirstChild("Head")    
+	local handle = tool:FindFirstChild("Handle")    
+
+	if head and handle then    
+		handle.Anchored = false    
+		handle:BreakJoints()    
+
+		local weld = Instance.new("Weld")    
+		weld.Name = "CameraHeadWeld"    
+		weld.Part0 = head    
+		weld.Part1 = handle    
+		weld.C0 = CFrame.new()    
+		weld.C1 = offset    
+		weld.Parent = handle    
+
+		handle.CFrame = head.CFrame * offset    
+	end    
+end)    
+
+tool.Unequipped:Connect(function()    
+	local handle = tool:FindFirstChild("Handle")    
+	if handle then    
+		local weld = handle:FindFirstChild("CameraHeadWeld")    
+		if weld then    
+			weld:Destroy()    
+		end    
+	end    
+end)
+
+end
+
+-- Run on spawn or respawn
+if player.Character then
+equipAndMountCamera()
+else
+player.CharacterAdded:Connect(equipAndMountCamera)
+end
+
