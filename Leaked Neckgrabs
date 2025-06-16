@@ -1,0 +1,72 @@
+-- Create GUI elements
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "ResistanceGUI"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 340, 0, 180) -- Wider to allow gap
+frame.Position = UDim2.new(0.5, -170, 0.5, -90)
+frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+frame.BorderSizePixel = 0
+frame.Parent = screenGui
+
+-- Title Label
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 30)
+title.Position = UDim2.new(0, 0, 0, 10)
+title.BackgroundTransparency = 1
+title.Text = "Resistance Freedom"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.Font = Enum.Font.SourceSansBold
+title.TextSize = 24
+title.Parent = frame
+
+-- Button sizes and gap
+local buttonWidth = 130
+local buttonGap = 20
+local leftPadding = 30
+
+-- Leaked NewGrabs button
+local button1 = Instance.new("TextButton")
+button1.Name = "LeakedNewGrabs"
+button1.Size = UDim2.new(0, buttonWidth, 0, 50)
+button1.Position = UDim2.new(0, leftPadding, 0, 60)
+button1.Text = "Leaked NewGrabs"
+button1.TextColor3 = Color3.fromRGB(255, 255, 255)
+button1.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+button1.Font = Enum.Font.SourceSansBold
+button1.TextSize = 20
+button1.Parent = frame
+
+-- Leaked OldGrabs button
+local button2 = Instance.new("TextButton")
+button2.Name = "LeakedOldGrabs"
+button2.Size = UDim2.new(0, buttonWidth, 0, 50)
+button2.Position = UDim2.new(0, leftPadding + buttonWidth + buttonGap, 0, 60)
+button2.Text = "Leaked OldGrabs"
+button2.TextColor3 = Color3.fromRGB(255, 255, 255)
+button2.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+button2.Font = Enum.Font.SourceSansBold
+button2.TextSize = 20
+button2.Parent = frame
+
+-- Function: Leaked NewGrabs
+button1.MouseButton1Click:Connect(function()
+    screenGui:Destroy()
+    getgenv().config = {
+        antimod = true,
+        animationpack = true,
+        control = {
+            cframespeed = 2,
+            flyspeed = 30,
+        }
+    }
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/faisal222212/neck-grabs/refs/heads/main/neckgrabsv2.lua"))()
+end)
+
+-- Function: Leaked OldGrabs
+button2.MouseButton1Click:Connect(function()
+    screenGui:Destroy()
+    loadstring(game:HttpGet("https://floopie.uk/projects/privateprojects/scripts/control.lua"))()
+end)
