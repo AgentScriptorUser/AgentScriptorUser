@@ -181,20 +181,8 @@ createButtonRow(4, {
 })
 
 createButtonRow(5, {
-    {"Zeraya Neckgrab", function()
-        
-getgenv().config = {
-    antimod = true, -- checks for mod in the server
-    animationpack = true, -- enables animation control
-    control = {
-        cframespeed = 2, -- change cframe speed for control
-        flyspeed = 30, -- change fly speed for control
-    }
-}
-
-
-loadstring(game:HttpGet("https://raw.githubusercontent.com/faisal222212/neck-grabs/refs/heads/main/neckgrabsv2.lua"))();
-    end},
+    {"Neckgrab", function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Leaked%20Neckgrabs", true))()
     {"IP Logger", function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Da%20hood%20ip%20log%20script"))()
     end},
