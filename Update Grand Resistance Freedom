@@ -2262,10 +2262,6 @@ createButtonRow(52, {
         if humanoid then
             humanoid.Health = 0
         end
-    end},
-
-    {"Cframe Speed", function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Cframe%20Speed%20script"))()
     end}
 })
 
