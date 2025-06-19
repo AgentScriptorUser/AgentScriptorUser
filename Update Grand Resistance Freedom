@@ -1,6 +1,6 @@
 local player = game.Players.LocalPlayer
 local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
-gui.Name = "Resistance Freedom"
+gui.Name = "Nexora"
 gui.ResetOnSpawn = false
 
 -- Main Frame
