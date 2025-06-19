@@ -432,6 +432,16 @@ createButtonRow(17, {
     }
 })
 
+-- Void Spam Button (Row 18)
+createButtonRow(18, {
+    {
+        "Void Spam",
+        function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Void%20spam"))()
+        end
+    }
+})
+
 -- Hitbox Expander Toggle Button
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
@@ -446,7 +456,7 @@ hitboxToggle.TextColor3 = Color3.fromRGB(0, 0, 0)
 hitboxToggle.Font = Enum.Font.Gotham
 hitboxToggle.TextSize = 18
 hitboxToggle.Text = "Hitbox Expander: OFF"
-hitboxToggle.LayoutOrder = 18
+hitboxToggle.LayoutOrder = 19
 hitboxToggle.BorderSizePixel = 0
 Instance.new("UICorner", hitboxToggle).CornerRadius = UDim.new(0, 6)
 
