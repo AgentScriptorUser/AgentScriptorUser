@@ -1,0 +1,142 @@
+-- SERVICES
+local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local speed = 20 -- Change this to adjust SuperHuman speed
+
+-- GUI SETUP
+local ScreenGui = Instance.new("ScreenGui")
+local Frame = Instance.new("Frame")
+local Title = Instance.new("TextLabel")
+local ToggleButton = Instance.new("TextButton")
+local CloseButton = Instance.new("TextButton")
+local UICorner1 = Instance.new("UICorner")
+local UICorner2 = Instance.new("UICorner")
+local UICorner3 = Instance.new("UICorner")
+local UIStroke = Instance.new("UIStroke")
+
+ScreenGui.Name = "SuperHumanGui"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = player:WaitForChild("PlayerGui")
+
+Frame.Name = "SuperHumanFrame"
+Frame.Parent = ScreenGui
+Frame.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
+Frame.Position = UDim2.new(0.35, 0, 0.35, 0)
+Frame.Size = UDim2.new(0, 240, 0, 120)
+Frame.BorderSizePixel = 0
+Frame.Active = true
+Frame.Draggable = true
+
+UICorner1.CornerRadius = UDim.new(0, 12)
+UICorner1.Parent = Frame
+
+UIStroke.Parent = Frame
+UIStroke.Color = Color3.fromRGB(255, 136, 0)
+UIStroke.Thickness = 2
+
+Title.Name = "SuperHumanTitle"
+Title.Parent = Frame
+Title.BackgroundTransparency = 1
+Title.Size = UDim2.new(1, 0, 0.3, 0)
+Title.Font = Enum.Font.GothamBold
+Title.Text = "SuperHuman"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextScaled = true
+
+ToggleButton.Name = "SuperHumanToggle"
+ToggleButton.Parent = Frame
+ToggleButton.Position = UDim2.new(0.1, 0, 0.5, 0)
+ToggleButton.Size = UDim2.new(0.8, 0, 0.35, 0)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(55, 165, 95)
+ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleButton.Text = "Toggle ON"
+ToggleButton.Font = Enum.Font.GothamBold
+ToggleButton.TextScaled = true
+
+UICorner2.CornerRadius = UDim.new(0, 8)
+UICorner2.Parent = ToggleButton
+
+CloseButton.Name = "SuperHumanClose"
+CloseButton.Parent = Frame
+CloseButton.Size = UDim2.new(0, 30, 0, 30)
+CloseButton.Position = UDim2.new(1, -35, 0, 5)
+CloseButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+CloseButton.TextColor3 = Color3.new(1, 1, 1)
+CloseButton.Text = "X"
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.TextScaled = true
+CloseButton.ZIndex = 2
+
+UICorner3.CornerRadius = UDim.new(0, 8)
+UICorner3.Parent = CloseButton
+
+-- STATE VARS
+local enabled = false
+local speedConn
+local jumpConns = {}
+
+-- FUNCTIONS
+local function enableSuperHuman(char)
+	local hum = char:WaitForChild("Humanoid")
+	local hrp = char:WaitForChild("HumanoidRootPart")
+
+	-- Speed
+	speedConn = RunService.RenderStepped:Connect(function()
+		if hum.MoveDirection.Magnitude > 0 then
+			hrp.Velocity = hum.MoveDirection * (speed * 10)
+		end
+	end)
+
+	-- Jump
+	local jumpConn = hum.StateChanged:Connect(function(_, newState)
+		if newState == Enum.HumanoidStateType.Jumping then
+			task.wait(0.05)
+			hrp.Velocity = Vector3.new(hrp.Velocity.X, 200, hrp.Velocity.Z)
+		end
+	end)
+	table.insert(jumpConns, jumpConn)
+end
+
+local function disableSuperHuman()
+	if speedConn then
+		speedConn:Disconnect()
+		speedConn = nil
+	end
+	for _, conn in ipairs(jumpConns) do
+		conn:Disconnect()
+	end
+	jumpConns = {}
+end
+
+-- Hook on character spawn
+player.CharacterAdded:Connect(function(char)
+	if enabled then
+		char:WaitForChild("HumanoidRootPart")
+		char:WaitForChild("Humanoid")
+		enableSuperHuman(char)
+	end
+end)
+
+-- BUTTONS
+ToggleButton.MouseButton1Click:Connect(function()
+	enabled = not enabled
+	ToggleButton.Text = enabled and "Toggle OFF" or "Toggle ON"
+	local targetColor = enabled and Color3.fromRGB(200, 70, 70) or Color3.fromRGB(55, 165, 95)
+	TweenService:Create(ToggleButton, TweenInfo.new(0.3), {BackgroundColor3 = targetColor}):Play()
+
+	if enabled then
+		if player.Character then
+			enableSuperHuman(player.Character)
+		end
+	else
+		disableSuperHuman()
+	end
+end)
+
+CloseButton.MouseButton1Click:Connect(function()
+	disableSuperHuman()
+	ScreenGui:Destroy()
+end)
