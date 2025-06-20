@@ -1,0 +1,343 @@
+-- SERVICES
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local plr = game.Players.LocalPlayer
+
+-- ANIMATION IDS
+local AnimationIdIdle = "rbxassetid://3541114300"
+local AnimationIdFly = "rbxassetid://3541044388"
+
+-- STATE VARS
+local flying = false
+local flyLoopRunning = false
+local speed = 10
+local pos, gyro, torso, Core, Weld
+local keys = {q = false, e = false}
+local mobileFlyGui = nil
+local flyAnimTrack, idleAnimTrack
+
+-- === GUI ===
+local ScreenGui = Instance.new("ScreenGui")
+local Frame = Instance.new("Frame")
+local Title = Instance.new("TextLabel")
+local ToggleButton = Instance.new("TextButton")
+local UICorner1 = Instance.new("UICorner")
+local UICorner2 = Instance.new("UICorner")
+local UIStroke = Instance.new("UIStroke")
+
+ScreenGui.Name = "SuperheroFlyGui"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = plr:WaitForChild("PlayerGui")
+
+Frame.Name = "MainFrame"
+Frame.Parent = ScreenGui
+Frame.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
+Frame.Position = UDim2.new(0.35, 0, 0.35, 0)
+Frame.Size = UDim2.new(0, 240, 0, 120)
+Frame.BorderSizePixel = 0
+Frame.Active = true
+Frame.Draggable = true
+
+UICorner1.CornerRadius = UDim.new(0, 12)
+UICorner1.Parent = Frame
+
+UIStroke.Parent = Frame
+UIStroke.Color = Color3.fromRGB(255, 136, 0)
+UIStroke.Thickness = 2
+
+Title.Name = "Title"
+Title.Parent = Frame
+Title.BackgroundTransparency = 1
+Title.Size = UDim2.new(1, 0, 0.3, 0)
+Title.Font = Enum.Font.GothamBold
+Title.Text = "Superhero Fly"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextScaled = true
+
+ToggleButton.Name = "ToggleButton"
+ToggleButton.Parent = Frame
+ToggleButton.Position = UDim2.new(0.1, 0, 0.5, 0)
+ToggleButton.Size = UDim2.new(0.8, 0, 0.35, 0)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(55, 165, 95)
+ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleButton.Text = "Toggle ON"
+ToggleButton.Font = Enum.Font.GothamBold
+ToggleButton.TextScaled = true
+
+UICorner2.CornerRadius = UDim.new(0, 8)
+UICorner2.Parent = ToggleButton
+
+-- CLOSE BUTTON
+local CloseButton = Instance.new("TextButton")
+CloseButton.Name = "CloseButton"
+CloseButton.Parent = Frame
+CloseButton.Size = UDim2.new(0, 30, 0, 30)
+CloseButton.Position = UDim2.new(1, -35, 0, 5)
+CloseButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+CloseButton.TextColor3 = Color3.new(1, 1, 1)
+CloseButton.Text = "X"
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.TextScaled = true
+CloseButton.ZIndex = 2
+
+local closeCorner = Instance.new("UICorner", CloseButton)
+closeCorner.CornerRadius = UDim.new(0, 8)
+
+CloseButton.MouseButton1Click:Connect(function()
+	stopFly()
+	ScreenGui:Destroy()
+end)
+
+-- === FLY SYSTEM ===
+
+local function createCoreAndWeld()
+	if workspace:FindFirstChild("Core") then workspace.Core:Destroy() end
+
+	Core = Instance.new("Part")
+	Core.Name = "Core"
+	Core.Size = Vector3.new(0.05, 0.05, 0.05)
+	Core.Anchored = false
+	Core.CanCollide = false
+	Core.Transparency = 1
+	Core.Parent = workspace
+
+	local character = plr.Character
+	if not character then return end
+
+	local lowerTorso = character:WaitForChild("LowerTorso", 5)
+	if not lowerTorso then Core:Destroy() return end
+
+	Weld = Instance.new("Weld")
+	Weld.Part0 = Core
+	Weld.Part1 = lowerTorso
+	Weld.C0 = CFrame.new(0, 0, 0)
+	Weld.Parent = Core
+
+	torso = Core
+end
+
+local function createMobileFlyGui()
+	if mobileFlyGui then return end
+
+	mobileFlyGui = Instance.new("ScreenGui", plr:WaitForChild("PlayerGui"))
+	mobileFlyGui.Name = "MobileFly"
+	mobileFlyGui.ResetOnSpawn = false
+
+	local function makeButton(name, text, pos)
+		local btn = Instance.new("TextButton", mobileFlyGui)
+		btn.Name = name
+		btn.Text = text
+		btn.Size = UDim2.new(0, 100, 0, 100)
+		btn.Position = pos
+		btn.BackgroundColor3 = Color3.fromRGB(200, 200, 255)
+		btn.TextColor3 = Color3.new(0, 0, 0)
+		btn.TextScaled = true
+		btn.MouseButton1Down:Connect(function() keys[name:lower()] = true end)
+		btn.MouseButton1Up:Connect(function() keys[name:lower()] = false end)
+	end
+
+	makeButton("Q", "⬆️", UDim2.new(0.8, 0, 0.7, 0))
+	makeButton("E", "⬇️", UDim2.new(0.8, 0, 0.82, 0))
+end
+
+local function removeMobileFlyGui()
+	if mobileFlyGui then
+		mobileFlyGui:Destroy()
+		mobileFlyGui = nil
+	end
+	keys.q = false
+	keys.e = false
+end
+
+local function canMoveTo(position)
+	local character = plr.Character
+	local rootPart = character and character:FindFirstChild("HumanoidRootPart")
+	if not rootPart then return false end
+
+	local rayParams = RaycastParams.new()
+	rayParams.FilterDescendantsInstances = {character}
+	rayParams.FilterType = Enum.RaycastFilterType.Blacklist
+	rayParams.IgnoreWater = true
+
+	local direction = position - rootPart.Position
+	local raycast = workspace:Raycast(rootPart.Position, direction, rayParams)
+	if raycast then
+		local hitDist = (raycast.Position - rootPart.Position).Magnitude
+		return hitDist >= direction.Magnitude - 0.5
+	end
+	return true
+end
+
+local function loadAnimations()
+	local character = plr.Character
+	if not character then return end
+	local humanoid = character:FindFirstChildOfClass("Humanoid")
+	if not humanoid then return end
+
+	if idleAnimTrack then idleAnimTrack:Stop(); idleAnimTrack:Destroy() end
+	if flyAnimTrack then flyAnimTrack:Stop(); flyAnimTrack:Destroy() end
+
+	local idleAnim = Instance.new("Animation")
+	idleAnim.Name = "FlyIdleAnimation"
+	idleAnim.AnimationId = AnimationIdIdle
+
+	local flyAnim = Instance.new("Animation")
+	flyAnim.Name = "FlyAnimation"
+	flyAnim.AnimationId = AnimationIdFly
+
+	idleAnimTrack = humanoid:LoadAnimation(idleAnim)
+	flyAnimTrack = humanoid:LoadAnimation(flyAnim)
+
+	idleAnimTrack.Looped = true
+	flyAnimTrack.Looped = true
+end
+
+function startFly()
+	if flyLoopRunning or not torso then return end
+	flying = true
+	flyLoopRunning = true
+
+	if not idleAnimTrack or not flyAnimTrack then
+		loadAnimations()
+	end
+
+	if idleAnimTrack then idleAnimTrack:Play() end
+
+	pos = Instance.new("BodyPosition", torso)
+	pos.Name = "FlyPosition"
+	pos.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+	pos.Position = torso.Position
+
+	gyro = Instance.new("BodyGyro", torso)
+	gyro.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+	gyro.CFrame = torso.CFrame
+
+	task.spawn(function()
+		while flying and torso and pos and gyro do
+			task.wait()
+
+			local character = plr.Character
+			local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+			local root = character and character:FindFirstChild("HumanoidRootPart")
+			if humanoid then humanoid.PlatformStand = true end
+
+			local cam = workspace.CurrentCamera
+			local camLook = cam.CFrame.LookVector
+			local moveDir = humanoid and humanoid.MoveDirection or Vector3.zero
+			local vertical = (keys.q and speed or 0) - (keys.e and speed or 0)
+
+			local move = moveDir.Magnitude > 0 and moveDir.Unit * speed or Vector3.zero
+			move = Vector3.new(move.X, vertical, move.Z)
+
+			local targetPos = pos.Position + move
+			if canMoveTo(targetPos) then
+				pos.Position = targetPos
+			end
+
+			local movingHorizontally = moveDir.Magnitude > 0
+			local movingVertically = vertical ~= 0
+
+			if movingHorizontally or movingVertically then
+				local forward = Vector3.new(camLook.X, 0, camLook.Z)
+				if forward.Magnitude > 0 then
+					local lookCFrame = CFrame.new(Vector3.zero, forward.Unit)
+					gyro.CFrame = gyro.CFrame:Lerp(lookCFrame * CFrame.Angles(math.rad(-90), 0, 0), 0.2)
+				end
+
+				if flyAnimTrack and not flyAnimTrack.IsPlaying then flyAnimTrack:Play() end
+				if idleAnimTrack and idleAnimTrack.IsPlaying then idleAnimTrack:Stop() end
+			else
+				local forward = Vector3.new(camLook.X, 0, camLook.Z)
+				if forward.Magnitude > 0 then
+					local lookCFrame = CFrame.new(Vector3.zero, forward.Unit)
+					gyro.CFrame = gyro.CFrame:Lerp(lookCFrame, 0.2)
+				else
+					gyro.CFrame = gyro.CFrame:Lerp(CFrame.new(), 0.2)
+				end
+
+				if idleAnimTrack and not idleAnimTrack.IsPlaying then idleAnimTrack:Play() end
+				if flyAnimTrack and flyAnimTrack.IsPlaying then flyAnimTrack:Stop() end
+			end
+		end
+	end)
+end
+
+function stopFly()
+	flying = false
+	flyLoopRunning = false
+
+	if pos then pos:Destroy() pos = nil end
+	if gyro then gyro:Destroy() gyro = nil end
+	if Weld then Weld:Destroy() Weld = nil end
+	if Core then Core:Destroy() Core = nil end
+
+	removeMobileFlyGui()
+
+	local character = plr.Character
+	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+	local root = character and character:FindFirstChild("HumanoidRootPart")
+
+	if humanoid then
+		humanoid.PlatformStand = false
+		humanoid:SetStateEnabled(Enum.HumanoidStateType.PlatformStanding, false)
+		humanoid:ChangeState(Enum.HumanoidStateType.Running)
+		humanoid.WalkSpeed = 16
+		if idleAnimTrack and idleAnimTrack.IsPlaying then idleAnimTrack:Stop() end
+		if flyAnimTrack and flyAnimTrack.IsPlaying then flyAnimTrack:Stop() end
+	end
+
+	if root then
+		root.Velocity = Vector3.zero
+		root.AssemblyLinearVelocity = Vector3.zero
+		root.CFrame = root.CFrame + Vector3.new(0, 2, 0)
+	end
+
+	keys.q = false
+	keys.e = false
+end
+
+local function onCharacterAdded(char)
+	stopFly()
+	createCoreAndWeld()
+	loadAnimations()
+	task.wait(0.1)
+end
+
+plr.CharacterAdded:Connect(onCharacterAdded)
+if plr.Character then onCharacterAdded(plr.Character) end
+
+UserInputService.InputBegan:Connect(function(input, processed)
+	if processed then return end
+	local key = input.KeyCode.Name:lower()
+	if keys[key] ~= nil then
+		keys[key] = true
+	end
+end)
+
+UserInputService.InputEnded:Connect(function(input, processed)
+	if processed then return end
+	local key = input.KeyCode.Name:lower()
+	if keys[key] ~= nil then
+		keys[key] = false
+	end
+end)
+
+-- === GUI TOGGLE CONNECTION ===
+local isFlying = false
+
+ToggleButton.MouseButton1Click:Connect(function()
+	isFlying = not isFlying
+	ToggleButton.Text = isFlying and "Toggle OFF" or "Toggle ON"
+	local targetColor = isFlying and Color3.fromRGB(200, 70, 70) or Color3.fromRGB(55, 165, 95)
+	TweenService:Create(ToggleButton, TweenInfo.new(0.3), {BackgroundColor3 = targetColor}):Play()
+
+	if isFlying then
+		createCoreAndWeld()
+		loadAnimations()
+		startFly()
+		createMobileFlyGui()
+	else
+		stopFly()
+	end
+end)
