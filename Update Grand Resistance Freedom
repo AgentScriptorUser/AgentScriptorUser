@@ -2262,6 +2262,14 @@ createButtonRow(52, {
         if humanoid then
             humanoid.Health = 0
         end
+    end},
+
+    {"SuperHero Fly", function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Superhero%20Fly"))()
+    end},
+
+    {"SuperHuman", function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/AgentScriptorUser/AgentScriptorUser/main/Superhero%20Zzz"))()
     end}
 })
 
