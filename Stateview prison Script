@@ -1,5 +1,5 @@
 local player = game.Players.LocalPlayer
-local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+local gui = Instance.new("ScreenGui", game:GetService("CoreGui"))
 gui.Name = "Resistance Freedom"
 gui.ResetOnSpawn = false
 
