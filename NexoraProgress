@@ -4,10 +4,11 @@ game:GetService("StarterGui"):SetCore("SendNotification", {
     Duration = 2
 })
 
-local player = game.Players.LocalPlayer
-local gui = Instance.new("CoreGui", player:WaitForChild("PlayerGui"))
+local CoreGui = game:GetService("CoreGui")
+local gui = Instance.new("ScreenGui")
 gui.Name = "Nexora"
 gui.ResetOnSpawn = false
+gui.Parent = CoreGui
 
 -- Main Frame
 local bg = Instance.new("Frame", gui)
