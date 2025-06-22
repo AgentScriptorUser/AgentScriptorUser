@@ -4,6 +4,8 @@ game:GetService("StarterGui"):SetCore("SendNotification", {
     Duration = 2
 })
 
+local player = game.Players.LocalPlayer -- ✅ FIXED: defines 'player'
+
 local CoreGui = game:GetService("CoreGui")
 local gui = Instance.new("ScreenGui")
 gui.Name = "Nexora"
