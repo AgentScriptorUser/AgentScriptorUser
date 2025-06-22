@@ -4,13 +4,11 @@ game:GetService("StarterGui"):SetCore("SendNotification", {
     Duration = 2
 })
 
-local player = game.Players.LocalPlayer -- ✅ FIXED: defines 'player'
-
-local CoreGui = game:GetService("CoreGui")
 local gui = Instance.new("ScreenGui")
 gui.Name = "Nexora"
 gui.ResetOnSpawn = false
-gui.Parent = CoreGui
+gui.IgnoreGuiInset = true
+gui.Parent = game:GetService("CoreGui") -- This makes it persist across respawns
 
 -- Main Frame
 local bg = Instance.new("Frame", gui)
